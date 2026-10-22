@@ -66,7 +66,7 @@ docs/
   acceptance/
     screenshots/                 功能截图
     personal-summaries/          个人总结
-  development-issues/            开发问题及处理记录
+  development-issues/            可选本地问题记录，Git忽略，克隆时不包含
   templates/                     协作记录模板
 .github/
   ISSUE_TEMPLATE/

@@ -48,7 +48,7 @@ docker compose ps
 | 团队分工、分支和评审流程 | [团队协作规范](docs/collaboration.md) |
 | 接口命名、请求响应、分页、错误码 | [接口规范](docs/api/README.md) |
 | 可供工具读取的公共接口契约 | [OpenAPI](docs/api/openapi.yaml) |
-| 开发问题记录 | [问题记录索引](docs/development-issues/README.md) |
+| 开发问题总结参考 | [可选问题记录模板](docs/templates/issue-template.md)，本地记录不纳入Git跟踪，由组员手动总结 |
 | 本次初始化验证结果 | [验证报告](docs/testing/bootstrap-verification.md) |
 | 工程选型及变更记录 | [决策记录](docs/management/decisions.md) |
 
