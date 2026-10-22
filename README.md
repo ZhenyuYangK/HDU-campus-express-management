@@ -29,7 +29,7 @@ AGENTS.md            自动读取入口，指向agent.md
 ## 开始协作
 
 1. 阅读[团队协作规范](docs/collaboration.md)、[接口规范](docs/api/README.md)和[agent.md](agent.md)。
-2. 查看[课程交付要求](docs/course-requirements.md)，在[团队分工表](docs/management/team.md)登记负责人。
+2. 查看[课程交付要求](docs/course-requirements.md)、[项目任务流程与计划](docs/management/plans/project-plan.md)和[项目验收清单](docs/acceptance/README.md)，在[团队分工表](docs/management/team.md)登记负责人及排期。
 3. 安装Docker Desktop并启用Linux容器及Compose，然后在项目根目录执行：
 
 ```powershell
@@ -45,6 +45,10 @@ docker compose ps
 
 | 内容 | 文件 |
 | --- | --- |
+| 课程各阶段提交物、格式与最低要求 | [课程交付要求](docs/course-requirements.md) |
+| 全过程任务分解、依赖与阶段完成条件 | [项目任务流程与计划](docs/management/plans/project-plan.md) |
+| 真实成员、任务负责人、进度与排期 | [团队分工与任务登记](docs/management/team.md) |
+| 最终材料、系统演示及11周周报核对 | [项目验收清单](docs/acceptance/README.md) |
 | 团队分工、分支和评审流程 | [团队协作规范](docs/collaboration.md) |
 | 接口命名、请求响应、分页、错误码 | [接口规范](docs/api/README.md) |
 | 可供工具读取的公共接口契约 | [OpenAPI](docs/api/openapi.yaml) |
