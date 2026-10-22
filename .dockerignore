@@ -1,0 +1,10 @@
+.git
+.local
+task_source
+.env
+**/node_modules
+**/target
+**/dist
+**/coverage
+*.zip
+*.pdf
