@@ -1,0 +1,29 @@
+# 本地校验工具、资料解压及预览
+.local/
+
+# 教师提供的原始资料保留在本机，不纳入项目提交
+/软件工程课程设计PPT.pdf
+/范例及模版.zip
+/task_source/
+
+# 本地环境与密钥
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# 构建、依赖与测试输出
+**/target/
+**/node_modules/
+**/dist/
+**/coverage/
+**/.vite/
+*.log
+
+# IDE与操作系统
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
