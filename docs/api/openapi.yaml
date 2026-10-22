@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: 校园快递收发系统公共接口契约
+  version: 0.1.0
+  description: >-
+    初始化阶段仅定义公共传输契约。尚无已确认业务端点，paths为空。
+    角色、认证、业务状态和具体字段在需求分析及接口评审后补充。
+    此文件不是已实现接口清单。
+servers:
+  - url: http://localhost:8080/api/v1
+    description: 本地后端，应用初始化并启动后生效
+paths: {}
+components:
+  parameters:
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: false
+      description: 可选请求标识；缺省时由后端生成，响应头与响应体返回相同值。
+      schema:
+        $ref: '#/components/schemas/RequestId'
+    Page:
+      name: page
+      in: query
+      required: false
+      description: 从1开始的页码。
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Size:
+      name: size
+      in: query
+      required: false
+      description: 每页数量；超出范围返回400。
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  headers:
+    RequestId:
+      description: 与响应体requestId相同的请求标识。
+      schema:
+        $ref: '#/components/schemas/RequestId'
+  schemas:
+    RequestId:
+      type: string
+      minLength: 1
+      maxLength: 64
+      pattern: '^[A-Za-z0-9_-]+$'
+      example: req-example-001
+    ResourceId:
+      type: string
+      minLength: 1
+      description: 公共资源ID类型，业务接口需进一步明确取值与长度。
+      example: '1'
+    SuccessResponse:
+      type: object
+      required: [code, message, data, requestId]
+      properties:
+        code:
+          type: string
+          enum: [OK]
+        message:
+          type: string
+          example: 成功
+        data:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: 业务端点必须替换或细化为具体响应Schema；无内容时为null。
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+    PageData:
+      type: object
+      required: [items, page, size, total]
+      properties:
+        items:
+          type: array
+          description: 具体业务端点必须明确数组元素Schema。
+          items:
+            type: object
+        page:
+          type: integer
+          minimum: 1
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          description: 无效字段的JSON路径或参数名。
+        message:
+          type: string
+          description: 可供用户理解的字段校验说明。
+    ErrorResponse:
+      type: object
+      required: [code, message, data, requestId]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          description: 见接口规范中的公共错误码表，业务错误码须评审登记。
+          example: INVALID_ARGUMENT
+        message:
+          type: string
+          example: 请求参数不符合约定
+        data:
+          type: object
+          nullable: true
+          enum: [null]
+          description: 失败时固定为null。
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+  responses:
+    BadRequest:
+      description: 参数格式或字段校验失败，code为INVALID_ARGUMENT。
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: 未认证或认证失效，code为UNAUTHENTICATED；认证方案待需求分析确认。
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: 无权限，code为FORBIDDEN；角色权限待需求分析确认。
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在，code为NOT_FOUND。
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: 资源状态或唯一约束冲突，code为CONFLICT。
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: 未预期异常，code为INTERNAL_ERROR。
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
