@@ -56,8 +56,4 @@ docker compose ps
 | 本次初始化验证结果 | [验证报告](docs/testing/bootstrap-verification.md) |
 | 工程选型及变更记录 | [决策记录](docs/management/decisions.md) |
 
-## Git远程仓库
 
-目标仓库：<https://github.com/ZhenyuYangK/HDU-campus-express-management>。
-
-初始化内容按仓库规范、后端、前端、数据库、测试、接口契约、Docker环境和验证记录分批提交并推送至`main`。提交前检查`git status`，确认没有包含本地环境、密码或原始课程资料；后续开发遵循团队协作规范中的任务分支和PR流程。
