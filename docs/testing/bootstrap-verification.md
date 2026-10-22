@@ -57,7 +57,7 @@ git ls-remote --symref origin
 | Spring Boot和Vue应用启动 | 本次只创建目录，没有构建清单和代码 | 后续初始化应用后启动 |
 | 业务接口联调与功能测试 | 详细业务需求、接口和实现尚未完成 | 需求评审、实现后按用例验证 |
 
-静态校验通过不能替代上述运行验证。Docker运行问题保持[DEV-0002](../development-issues/DEV-0002-docker-runtime.md)为待验证，业务接口问题保持[DEV-0003](../development-issues/DEV-0003-business-contract.md)为未解决。
+静态校验通过不能替代上述运行验证。初始化时Docker运行仍待验证，详细业务接口仍待需求分析确认。后续状态由组员根据各自环境及实际验证结果手动汇总，本报告不依赖本地问题记录目录。
 
 ## 初始化时的Git交付快照
 
