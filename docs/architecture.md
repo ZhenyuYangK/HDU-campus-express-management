@@ -1,6 +1,6 @@
 # 项目结构与分层
 
-当前采用一个仓库管理前端、后端、数据库和课程交付材料。这里只定义技术结构，不推断快递业务模块。
+当前采用一个仓库管理前端、后端、数据库和课程交付材料。本文件定义技术结构；已确认的业务范围与模块主责见[项目计划书](management/plans/project-plan.md)。
 
 ```text
 backend/
@@ -75,4 +75,4 @@ docs/
 
 前端通过HTTP调用后端；后端内部按Controller→Service→Repository分层访问MySQL。接口DTO与数据库实体分开，避免数据库字段变更直接改变对外接口。
 
-具体角色、页面、业务Service、表结构和状态转换在需求分析后确定，再放入对应目录。当前不生成`pom.xml`、`package.json`、Java/TypeScript/Vue文件或SQL脚本，避免把目录初始化扩大为应用实现。
+学生、工作人员、管理员三类角色及业务范围已由负责人确认；具体页面、业务Service、表结构和状态转换经需求与设计确认后放入对应目录。本次计划编制不生成`pom.xml`、`package.json`、Java/TypeScript/Vue文件或SQL脚本。

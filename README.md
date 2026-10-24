@@ -7,7 +7,7 @@
 ## 依据与选型
 
 - 技术栈由项目负责人确认：Spring Boot+Vue3+MySQL。技术版本与工程约定见[开发环境](docs/development-environment.md)。
-- 资料尚未规定具体业务角色、字段和收发流程，业务接口须在需求分析后确定，不能把通用模板中的示例当作本项目已确认的需求。
+- 项目负责人已确认单驿站双端服务，包含学生、工作人员、管理员三类角色，以及核心收发、拒收与退件、取消寄件和简单统计。范围与第5～15周排期见[项目计划书](docs/management/plans/project-plan.md)。具体字段、状态和业务接口在需求与设计阶段确认。
 
 ## 项目目录
 
@@ -47,6 +47,7 @@ docker compose ps
 | --- | --- |
 | 课程各阶段提交物、格式与最低要求 | [课程交付要求](docs/course-requirements.md) |
 | 全过程任务分解、依赖与阶段完成条件 | [项目任务流程与计划](docs/management/plans/project-plan.md) |
+| 已确认范围、人员分工与第5～15周排期的正式计划书 | [项目计划书DOCX](docs/management/plans/校园快递收发系统项目计划书.docx) |
 | 真实成员、任务负责人、进度与排期 | [团队分工与任务登记](docs/management/team.md) |
 | 最终材料、系统演示及11周周报核对 | [项目验收清单](docs/acceptance/README.md) |
 | 团队分工、分支和评审流程 | [团队协作规范](docs/collaboration.md) |
@@ -56,8 +57,4 @@ docker compose ps
 | 本次初始化验证结果 | [验证报告](docs/testing/bootstrap-verification.md) |
 | 工程选型及变更记录 | [决策记录](docs/management/decisions.md) |
 
-## Git远程仓库
 
-目标仓库：<https://github.com/ZhenyuYangK/HDU-campus-express-management>。
-
-初始化内容按仓库规范、后端、前端、数据库、测试、接口契约、Docker环境和验证记录分批提交并推送至`main`。提交前检查`git status`，确认没有包含本地环境、密码或原始课程资料；后续开发遵循团队协作规范中的任务分支和PR流程。
