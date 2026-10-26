@@ -7,7 +7,7 @@
 ## 依据与选型
 
 - 技术栈由项目负责人确认：Spring Boot+Vue3+MySQL。技术版本与工程约定见[开发环境](docs/development-environment.md)。
-- 项目负责人已确认单驿站双端服务，包含学生、工作人员、管理员三类角色，以及核心收发、拒收与退件、取消寄件和简单统计。范围与第6～17周实施排期见[项目计划书](docs/management/plans/project-plan.md)。具体字段、状态和业务接口在需求与设计阶段确认。
+- 项目负责人已确认单驿站双端服务，包含学生、工作人员、管理员三类角色，以及核心收发、拒收与退件、取消寄件和简单统计。范围与第6～17周实施排期见[项目计划书](docs/management/plans/project-plan.md)。成员模块主责统一见[团队分工表](docs/management/team.md)，已确认的业务规则见[调研分析报告](docs/requirements/research/校园快递收发系统调研分析报告.docx)。取件采用学生自助核验、系统确认出库。具体字段、状态和业务接口在需求与设计阶段确认。
 
 ## 项目目录
 
