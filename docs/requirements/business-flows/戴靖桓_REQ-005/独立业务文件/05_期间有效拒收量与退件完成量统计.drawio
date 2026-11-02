@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="127.0.0.1" agent="draw.io" pages="1">
+  <diagram id="05" name="05 期间有效拒收量与退件完成量统计">
+    <mxGraphModel dx="1875" dy="960" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="990" pageHeight="800" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="05  期间有效拒收量与退件完成量统计" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;shape=text;align=left;fontSize=24;fontStyle=1;strokeColor=none;fillColor=none;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="30" y="22" width="930" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="lane0" value="管理员" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;shape=swimlane;horizontal=1;startSize=42;container=1;collapsible=0;recursiveResize=0;fillColor=#EEEEEE;swimlaneFillColor=#FFFFFF;fontSize=17;fontStyle=1;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="30" y="110" width="310" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="lane1" value="系统" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;shape=swimlane;horizontal=1;startSize=42;container=1;collapsible=0;recursiveResize=0;fillColor=#EEEEEE;swimlaneFillColor=#FFFFFF;fontSize=17;fontStyle=1;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="340" y="110" width="310" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="lane2" value="业务记录" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;shape=swimlane;horizontal=1;startSize=42;container=1;collapsible=0;recursiveResize=0;fillColor=#EEEEEE;swimlaneFillColor=#FFFFFF;fontSize=17;fontStyle=1;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="650" y="110" width="310" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="s" value="" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;shape=ellipse;fillColor=#000000;" vertex="1" parent="lane0">
+          <mxGeometry x="144" y="54" width="22" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="trigger" value="查看拒收与退件统计" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane0">
+          <mxGeometry x="43" y="119" width="224" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="view" value="查看两项指标及口径说明&#10;（转图06）" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane0">
+          <mxGeometry x="43" y="463" width="224" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="end" value="" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;shape=ellipse;" vertex="1" parent="lane0">
+          <mxGeometry x="144" y="580" width="22" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="enddot" value="" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=0;fillColor=#000000;shadow=0;shape=ellipse;" vertex="1" parent="end">
+          <mxGeometry x="5" y="5" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="read" value="读取期间内拒收与退件记录" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
+          <mxGeometry x="43" y="119" width="224" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="calc1" value="计算期间有效拒收量" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
+          <mxGeometry x="43" y="223" width="224" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="calc2" value="计算期间退件完成量" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
+          <mxGeometry x="43" y="343" width="224" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="result" value="两项指标结果&#10;（转图06）" style="shape=document;size=0.25;whiteSpace=wrap;html=0;rounded=0;align=center;verticalAlign=middle;fontFamily=Microsoft YaHei;fontSize=15;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;spacing=8;" vertex="1" parent="lane1">
+          <mxGeometry x="43" y="463" width="224" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="records" value="拒收记录 / 退件记录" style="shape=document;size=0.25;whiteSpace=wrap;html=0;rounded=0;align=center;verticalAlign=middle;fontFamily=Microsoft YaHei;fontSize=15;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;spacing=8;" vertex="1" parent="lane2">
+          <mxGeometry x="43" y="119" width="224" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="note1" value="有效拒收：按当前有效请求的&#10;提交时间；已撤回不计；已完成&#10;退件仍计入；同一包裹不重复。&#10;&#10;退件完成：按退件完成时间；&#10;含拒收与人工异常退件。&#10;两项分别统计，不要求相等。" style="shape=text;html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;spacing=4;strokeColor=none;fillColor=none;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="383" y="650" width="224" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s" target="trigger">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="trigger" target="read">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="读取" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="records" target="read">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="read" target="calc1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="calc1" target="calc2">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="calc2" target="result">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="result" target="view">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=20;html=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.2;fontFamily=Microsoft YaHei;fontSize=13;fontColor=#000000;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="view" target="end">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
