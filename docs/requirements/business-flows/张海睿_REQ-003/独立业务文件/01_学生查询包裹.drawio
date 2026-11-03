@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" version="24.7.17">
+  <diagram name="01 学生查询包裹" id="01">
+    <mxGraphModel dx="1100" dy="1220" grid="1" gridSize="10" page="1" pageWidth="1100" pageHeight="1220">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="01 学生查询包裹" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;text;strokeColor=none;align=left;fontStyle=1;fontSize=34;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="24" y="12" width="1040" height="55" />
+        </mxCell>
+        <mxCell id="student" value="学生" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=swimlane;startSize=48;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="20" y="85" width="530" height="1085" />
+        </mxCell>
+        <mxCell id="system" value="系统" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=swimlane;startSize=48;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="550" y="85" width="530" height="1085" />
+        </mxCell>
+        <mxCell id="footer" value="归属规则：账号手机号变更不自动转移历史包裹，已完成业务保留原账号归属。" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;text;strokeColor=none;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="20" y="1175" width="1060" height="40" />
+        </mxCell>
+        <mxCell id="s" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;ellipse;fillColor=#000000;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="273" y="145" width="24" height="24" />
+        </mxCell>
+        <mxCell id="enter" value="登录后进入“我的包裹”查询页" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="95" y="195" width="380" height="80" />
+        </mxCell>
+        <mxCell id="identity" value="校验学生身份与访问范围" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="195" width="380" height="80" />
+        </mxCell>
+        <mxCell id="allowed" value="是否获准查询&lt;br&gt;本人包裹？" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rhombus;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="315" width="380" height="140" />
+        </mxCell>
+        <mxCell id="denied" value="查看无查询权限提示&lt;br&gt;未获得包裹信息" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="95" y="345" width="380" height="80" />
+        </mxCell>
+        <mxCell id="deniedEnd" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=endState;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="271" y="465" width="28" height="28" />
+        </mxCell>
+        <mxCell id="query" value="按账号关联查询本人包裹&lt;br&gt;未关联包裹不向学生展示" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="500" width="380" height="90" />
+        </mxCell>
+        <mxCell id="exists" value="是否存在本人包裹？" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rhombus;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="630" width="380" height="140" />
+        </mxCell>
+        <mxCell id="result" value="返回包裹列表、当前状态&lt;br&gt;取件码及取件相关信息" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="825" width="380" height="100" />
+        </mxCell>
+        <mxCell id="view" value="查看本人包裹&lt;br&gt;及取件相关信息" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="95" y="835" width="380" height="80" />
+        </mxCell>
+        <mxCell id="end" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=endState;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="271" y="985" width="28" height="28" />
+        </mxCell>
+        <mxCell id="empty" value="提示暂无本人包裹记录" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="1000" width="380" height="75" />
+        </mxCell>
+        <mxCell id="emptyEnd" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=endState;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="801" y="1110" width="28" height="28" />
+        </mxCell>
+        <mxCell id="e1" value="" edge="1" parent="1" source="s" target="enter" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="" edge="1" parent="1" source="enter" target="identity" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="" edge="1" parent="1" source="identity" target="allowed" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="否" edge="1" parent="1" source="allowed" target="denied" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="" edge="1" parent="1" source="denied" target="deniedEnd" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="是" edge="1" parent="1" source="allowed" target="query" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="" edge="1" parent="1" source="query" target="exists" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="是" edge="1" parent="1" source="exists" target="result" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="否" edge="1" parent="1" source="exists" target="empty" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1040" y="700" />
+              <mxPoint x="1040" y="1037" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="" edge="1" parent="1" source="result" target="view" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="" edge="1" parent="1" source="view" target="end" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="" edge="1" parent="1" source="empty" target="emptyEnd" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

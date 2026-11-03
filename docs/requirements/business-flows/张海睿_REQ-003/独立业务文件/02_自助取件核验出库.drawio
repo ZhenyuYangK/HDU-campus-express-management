@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" version="24.7.17">
+  <diagram name="02 自助取件核验出库" id="02">
+    <mxGraphModel dx="1100" dy="1220" grid="1" gridSize="10" page="1" pageWidth="1100" pageHeight="1220">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="02 自助取件核验出库" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;text;strokeColor=none;align=left;fontStyle=1;fontSize=34;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="24" y="12" width="1040" height="55" />
+        </mxCell>
+        <mxCell id="student" value="学生" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=swimlane;startSize=48;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="20" y="85" width="530" height="1085" />
+        </mxCell>
+        <mxCell id="system" value="系统" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=swimlane;startSize=48;fontStyle=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="550" y="85" width="530" height="1085" />
+        </mxCell>
+        <mxCell id="footer" value="拒收撤回并恢复待取后，才可重新办理正常取件；工作人员不执行取件核验。" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;text;strokeColor=none;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="20" y="1175" width="1060" height="40" />
+        </mxCell>
+        <mxCell id="s" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;ellipse;fillColor=#000000;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="273" y="145" width="24" height="24" />
+        </mxCell>
+        <mxCell id="input" value="到站后自助提交取件码&lt;br&gt;和收件手机号后四位" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="95" y="185" width="380" height="85" />
+        </mxCell>
+        <mxCell id="owner" value="是否为本人获准&lt;br&gt;办理的包裹？" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rhombus;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="620" y="295" width="390" height="140" />
+        </mxCell>
+        <mxCell id="denied" value="查看无办理权限提示&lt;br&gt;本次未完成出库" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="95" y="325" width="380" height="80" />
+        </mxCell>
+        <mxCell id="deniedEnd" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=endState;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="271" y="435" width="28" height="28" />
+        </mxCell>
+        <mxCell id="code" value="取件码与收件手机号&lt;br&gt;后四位是否正确？" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rhombus;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="620" y="465" width="390" height="140" />
+        </mxCell>
+        <mxCell id="retry" value="查看核验失败提示&lt;br&gt;重新输入取件信息" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="95" y="495" width="380" height="80" />
+        </mxCell>
+        <mxCell id="state" value="是否允许取件？&lt;br&gt;未取件且未拒收暂停&lt;br&gt;未进入退件流程" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rhombus;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="620" y="645" width="390" height="170" />
+        </mxCell>
+        <mxCell id="blocked" value="提示当前不可取件原因&lt;br&gt;不完成出库" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="855" width="380" height="80" />
+        </mxCell>
+        <mxCell id="blockedEnd" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=endState;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="801" y="965" width="28" height="28" />
+        </mxCell>
+        <mxCell id="complete" value="系统确认取件并出库&lt;br&gt;更新包裹状态为已取件" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="625" y="1030" width="380" height="90" />
+        </mxCell>
+        <mxCell id="take" value="取走包裹，取件完成" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;rounded=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="95" y="1035" width="380" height="80" />
+        </mxCell>
+        <mxCell id="end" value="" style="html=1;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;fillColor=#FFFFFF;whiteSpace=wrap;fontSize=25;shape=endState;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="271" y="1135" width="28" height="28" />
+        </mxCell>
+        <mxCell id="e1" value="" edge="1" parent="1" source="s" target="input" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="" edge="1" parent="1" source="input" target="owner" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="815" y="227" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="否" edge="1" parent="1" source="owner" target="denied" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="" edge="1" parent="1" source="denied" target="deniedEnd" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="是" edge="1" parent="1" source="owner" target="code" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="否" edge="1" parent="1" source="code" target="retry" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="" edge="1" parent="1" source="retry" target="input" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="48" y="535" />
+              <mxPoint x="48" y="227" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="是" edge="1" parent="1" source="code" target="state" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="否" edge="1" parent="1" source="state" target="blocked" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="" edge="1" parent="1" source="blocked" target="blockedEnd" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="是" edge="1" parent="1" source="state" target="complete" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;exitX=0;exitY=0.5;entryX=0.5;entryY=0;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="580" y="730" />
+              <mxPoint x="580" y="1005" />
+              <mxPoint x="815" y="1005" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="" edge="1" parent="1" source="complete" target="take" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="" edge="1" parent="1" source="take" target="end" style="edgeStyle=none;html=1;endArrow=block;endFill=1;rounded=0;strokeColor=#000000;fontColor=#000000;fontSize=23;">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
