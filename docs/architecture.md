@@ -54,6 +54,7 @@ docs/
     function-analysis/           功能分析
     prototypes/                  界面原型
   design/
+    frontend-design.md            前端字体与视觉设计规范
     architecture/                模块结构图
     database/                    ER图与表结构交付件
     detail/                      至少两个模块的详细设计
