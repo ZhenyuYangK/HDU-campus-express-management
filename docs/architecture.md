@@ -47,19 +47,20 @@ infra/docker/
   backend/Dockerfile.dev         JDK/Maven开发环境
   frontend/Dockerfile.dev        Node/npm开发环境
 docs/
+  standards.md                   分析、设计与开发的跨阶段协作规范
   api/                           接口协议与OpenAPI
   requirements/
     business-flows/              业务流程
-    data-analysis/               数据分析
-    function-analysis/           功能分析
-    prototypes/                  界面原型
+    data-analysis/               数据分析、阶段规范与共享数据定义登记
+    function-analysis/           功能分析及阶段规范
+    prototypes/                  界面原型及阶段规范
   design/
     frontend-design.md            前端字体与视觉设计规范
     backend-design.md             后端分层、接口与业务实现规范
     database-design.md            数据建模、约束与迁移规范
-    architecture/                模块结构图
+    architecture/                系统设计规范及模块结构图
     database/                    ER图与表结构交付件
-    detail/                      至少两个模块的详细设计
+    detail/                      详细设计规范及模块逻辑图
   testing/
     cases/                       课程测试用例
     bugs/                        课程BUG清单
@@ -79,5 +80,7 @@ docs/
 ```
 
 前端通过HTTP调用后端；后端内部按Controller→Service→Repository分层访问MySQL。接口DTO与数据库实体分开，避免数据库字段变更直接改变对外接口。
+
+分析、原型、设计与编码之间的定义归属、追踪及交接执行[全过程协作规范](standards.md)。业务语义引用数据分析与共享登记，HTTP结构引用OpenAPI，物理存储引用表结构及迁移；各层保持明确映射，不能分别维护冲突定义。
 
 学生、工作人员、管理员三类角色及业务范围已由负责人确认；具体页面、业务Service、表结构和状态转换经需求与设计确认后放入对应目录。本次计划编制不生成`pom.xml`、`package.json`、Java/TypeScript/Vue文件或SQL脚本。
