@@ -8,6 +8,8 @@
 
 ## 技术与配置
 
+分析与实现的交接同时执行[全过程协作规范](../standards.md)和[详细设计规范](detail/README.md)。数据含义与共享约束引用[数据分析规范](../requirements/data-analysis/README.md)及[共享登记](../requirements/data-analysis/shared-data-dictionary.md)，接口结构继续以OpenAPI为准；公共变化须同步调用方、DTO、前端类型、物理映射和用例。
+
 | 项目 | 规范 |
 | --- | --- |
 | 技术栈 | Spring Boot、Java21、Maven；环境依据见[开发环境](../development-environment.md) |

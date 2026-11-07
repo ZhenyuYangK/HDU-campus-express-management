@@ -2,6 +2,8 @@
 
 本文用于统一校园快递收发系统的前端视觉设计，适用于学生、工作人员、管理员相关页面及公共组件。本文保留已确定的字体方案，并提炼用户提供的`premium-ui-polish`技能资料中的层级、排版和动效原则；示例色值与动效参数用于后续设计参考，不代表页面已经实现或通过验收。
 
+开始任务先读取[团队进度](../management/team.md)和[全过程协作规范](../standards.md)。原型任务同时执行[原型规范](../requirements/prototypes/README.md)，功能与数据含义引用对应分析及[共享登记](../requirements/data-analysis/shared-data-dictionary.md)。实现接口调用时读取[接口规范](../api/README.md)及[OpenAPI](../api/openapi.yaml)，HTTP调用和公共类型分别集中在`frontend/src/api/`及`frontend/src/types/`；页面不得自行改变字段、枚举、空值或统计口径。
+
 ## 字体风格
 
 ### 选型与使用范围
