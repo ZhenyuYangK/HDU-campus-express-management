@@ -1,6 +1,6 @@
 # 项目开发执行规范
 
-适用对象：参与本项目的开发者与开发代理。执行任务前阅读本文件、[团队协作规范](docs/collaboration.md)、[接口规范](docs/api/README.md)及目标模块相关资料。
+适用对象：参与本项目的开发者与开发代理。执行任务前阅读本文件、[团队协作规范](docs/collaboration.md)、[分析、设计与开发协作规范](docs/standards.md)、[接口规范](docs/api/README.md)及目标模块相关资料。
 
 ## 项目边界
 
@@ -23,11 +23,17 @@
 
 | 任务范围 | 必须读取的规范及资料 |
 | --- | --- |
+| 数据分析、数据项与共享口径整理 | [数据分析规范](docs/requirements/data-analysis/README.md)、[共享数据定义登记](docs/requirements/data-analysis/shared-data-dictionary.md)、对应需求和业务流程、[接口规范](docs/api/README.md)及[数据库规范](docs/design/database-design.md)；涉及对外字段时读取[OpenAPI](docs/api/openapi.yaml) |
+| 功能分析与权限操作分解 | [功能分析规范](docs/requirements/function-analysis/README.md)、对应需求、流程和数据分析、共享数据定义；涉及调用时读取接口规范和OpenAPI |
+| 系统总体设计、模块边界与跨模块调用 | [系统设计规范](docs/design/architecture/README.md)、[项目结构与分层](docs/architecture.md)、对应数据、功能及原型、接口规范和OpenAPI；涉及具体技术范围时合并读取下方规范 |
+| 模块详细设计与程序逻辑 | [详细设计规范](docs/design/detail/README.md)、对应总体设计、功能、数据、原型及表结构、后端规范、数据库规范、接口规范和OpenAPI；涉及前端处理时读取前端规范 |
 | 前端页面、原型、样式、组件及交互 | [前端设计规范](docs/design/frontend-design.md)、对应需求及原型；涉及接口调用时同时读取[接口规范](docs/api/README.md)和[OpenAPI](docs/api/openapi.yaml) |
 | 后端结构、接口、业务逻辑、权限及事务 | [后端设计与开发规范](docs/design/backend-design.md)、[接口规范](docs/api/README.md)、[OpenAPI](docs/api/openapi.yaml)、[项目结构与分层](docs/architecture.md)及对应需求、业务流程和详细设计 |
 | 数据库建模、表结构、字段、约束、索引、迁移及初始化数据 | [数据库设计与开发规范](docs/design/database-design.md)、对应数据分析、业务流程及现有E-R图、表结构和迁移文件 |
 
 后端任务涉及持久化、事务或数据结构时，必须同时读取数据库规范及对应数据设计；数据库任务涉及后端映射、事务或接口字段时，必须同时读取后端规范、接口规范和OpenAPI。涉及运行配置时，还须读取[开发环境](docs/development-environment.md)及实际配置。
+
+界面原型任务还须读取[原型设计规范](docs/requirements/prototypes/README.md)及对应功能、数据分析。实际编码与联调同时执行[全过程规范的编码要求](docs/standards.md#编码联调与交付)，按实际影响合并读取前端、后端、数据库规范。共享字段、字典、状态和统计口径先核对共享登记，再同步接口及存储映射；未登记、待评审与已确认分别说明，不自行定稿。
 
 所需模块设计资料尚未形成时，结合项目进度列出缺失项，先完成本次授权范围内的分析与设计，不凭空补造已确认字段、状态或接口。规范之间或规范与已确认需求冲突时，先指出冲突并取得明确结论。
 

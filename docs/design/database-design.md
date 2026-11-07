@@ -8,6 +8,8 @@
 
 ## 环境与文件位置
 
+数据分析阶段先按[数据分析规范](../requirements/data-analysis/README.md)及[共享登记](../requirements/data-analysis/shared-data-dictionary.md)核对业务含义、来源、维护方和约束；数据库设计逐项记录到物理表列的映射，不把逻辑类型或JSON类型直接作为MySQL类型。跨阶段评审与变更执行[全过程协作规范](../standards.md)，涉及事务的处理步骤同时核对[详细设计](detail/README.md)。
+
 | 项目 | 规范 |
 | --- | --- |
 | 数据库 | MySQL8.4，镜像及启动参数以根目录[compose.yaml](../../compose.yaml)为准 |

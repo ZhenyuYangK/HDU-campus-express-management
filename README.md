@@ -29,7 +29,7 @@ AGENTS.md            开发代理自动读取入口及完整开发执行规范
 
 ## 开始协作
 
-1. 阅读[团队协作规范](docs/collaboration.md)、[接口规范](docs/api/README.md)和[AGENTS.md](AGENTS.md)。
+1. 阅读[团队协作规范](docs/collaboration.md)、[分析、设计与开发协作规范](docs/standards.md)、[接口规范](docs/api/README.md)和[AGENTS.md](AGENTS.md)。
 2. 查看[课程交付要求](docs/course-requirements.md)、[项目任务流程与计划](docs/management/plans/project-plan.md)和[项目验收清单](docs/acceptance/README.md)，在[团队分工表](docs/management/team.md)登记负责人及排期。
 3. 安装Docker Desktop并启用Linux容器及Compose，然后在项目根目录执行：
 
@@ -52,6 +52,13 @@ docker compose ps
 | 真实成员、任务负责人、进度与排期 | [团队分工与任务登记](docs/management/team.md) |
 | 最终材料、系统演示及11周周报核对 | [项目验收清单](docs/acceptance/README.md) |
 | 团队分工、分支和评审流程 | [团队协作规范](docs/collaboration.md) |
+| 各阶段交接、定义维护位置、编号追踪与编码联调 | [全过程协作规范](docs/standards.md) |
+| 数据项含义、格式、约束与汇总检查 | [数据分析规范](docs/requirements/data-analysis/README.md) |
+| 跨模块字段、字典、状态、统计口径及映射登记 | [共享数据定义登记](docs/requirements/data-analysis/shared-data-dictionary.md) |
+| 功能分解、权限、输入输出与验收条件 | [功能分析规范](docs/requirements/function-analysis/README.md) |
+| 逐功能原型、页面状态与交互一致性 | [原型规范](docs/requirements/prototypes/README.md) |
+| 系统模块边界、公共依赖与设计交接 | [系统设计规范](docs/design/architecture/README.md) |
+| 程序逻辑、失败分支、事务与并发设计 | [详细设计规范](docs/design/detail/README.md) |
 | 接口命名、请求响应、分页、错误码 | [接口规范](docs/api/README.md) |
 | 前端字体搭配、全局样式与字体验收 | [前端设计规范](docs/design/frontend-design.md) |
 | 后端分层、接口实现、权限、事务与验证 | [后端设计与开发规范](docs/design/backend-design.md) |
