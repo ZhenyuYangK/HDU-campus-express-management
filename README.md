@@ -22,15 +22,14 @@ infra/docker/        前后端开发工具镜像配置
 docs/                需求、设计、测试、项目管理与协作记录
 .github/             Issue和PR模板
 compose.yaml         统一开发环境
-agent.md             开发代理及开发者执行规范
-AGENTS.md            自动读取入口，指向agent.md
+AGENTS.md            开发代理自动读取入口及完整开发执行规范
 ```
 
 完整分层与目录用途见[项目结构](docs/architecture.md)。Git不跟踪空目录，因此叶子目录使用空的`.gitkeep`保留结构。
 
 ## 开始协作
 
-1. 阅读[团队协作规范](docs/collaboration.md)、[接口规范](docs/api/README.md)和[agent.md](agent.md)。
+1. 阅读[团队协作规范](docs/collaboration.md)、[接口规范](docs/api/README.md)和[AGENTS.md](AGENTS.md)。
 2. 查看[课程交付要求](docs/course-requirements.md)、[项目任务流程与计划](docs/management/plans/project-plan.md)和[项目验收清单](docs/acceptance/README.md)，在[团队分工表](docs/management/team.md)登记负责人及排期。
 3. 安装Docker Desktop并启用Linux容器及Compose，然后在项目根目录执行：
 
@@ -55,6 +54,8 @@ docker compose ps
 | 团队分工、分支和评审流程 | [团队协作规范](docs/collaboration.md) |
 | 接口命名、请求响应、分页、错误码 | [接口规范](docs/api/README.md) |
 | 前端字体搭配、全局样式与字体验收 | [前端设计规范](docs/design/frontend-design.md) |
+| 后端分层、接口实现、权限、事务与验证 | [后端设计与开发规范](docs/design/backend-design.md) |
+| 数据建模、字段约束、索引、迁移与验证 | [数据库设计与开发规范](docs/design/database-design.md) |
 | 可供工具读取的公共接口契约 | [OpenAPI](docs/api/openapi.yaml) |
 | 开发问题总结参考 | [可选问题记录模板](docs/templates/issue-template.md)，本地记录不纳入Git跟踪，由组员手动总结 |
 | 本次初始化验证结果 | [验证报告](docs/testing/bootstrap-verification.md) |
