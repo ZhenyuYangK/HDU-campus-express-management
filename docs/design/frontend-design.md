@@ -4,6 +4,8 @@
 
 开始任务先读取[团队进度](../management/team.md)和[全过程协作规范](../standards.md)。原型任务同时执行[原型规范](../requirements/prototypes/README.md)，功能与数据含义引用对应分析及[共享登记](../requirements/data-analysis/shared-data-dictionary.md)。实现接口调用时读取[接口规范](../api/README.md)及[OpenAPI](../api/openapi.yaml)，HTTP调用和公共类型分别集中在`frontend/src/api/`及`frontend/src/types/`；页面不得自行改变字段、枚举、空值或统计口径。
 
+双端原型及编码阶段的前端交互一致性由杨振煜协调，各模块负责人完成本模块页面与组件，执行[ADR-006](../management/decisions.md#adr-006第8周周报修订与协作分工调整)。
+
 ## 字体风格
 
 ### 选型与使用范围

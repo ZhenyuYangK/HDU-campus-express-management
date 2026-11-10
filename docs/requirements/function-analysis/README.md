@@ -4,7 +4,7 @@
 
 开始前读取[团队进度](../../management/team.md)、[全过程规范](../../standards.md)、已确认需求、业务流程、[数据分析规范](../data-analysis/README.md)及对应数据分析。涉及对外调用时读取[接口规范](../../api/README.md)和[OpenAPI](../../api/openapi.yaml)。
 
-各模块负责人按教师模板完成本模块XLSX，任奕阳汇总。文件放在本目录的`姓名_REQ-编号/`，缺少的说明放同目录Markdown，保留模板布局。课程要求见[CR-03](../../course-requirements.md)。
+各模块负责人按教师模板完成本模块XLSX，张海睿汇总。文件放在本目录的`姓名_REQ-编号/`，缺少的说明放同目录Markdown，保留模板布局。课程要求见[CR-03](../../course-requirements.md)。
 
 ## 功能分解与统一用语
 
