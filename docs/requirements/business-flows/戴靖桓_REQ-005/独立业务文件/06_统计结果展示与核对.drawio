@@ -20,13 +20,13 @@
         <mxCell id="s" value="" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;shape=ellipse;fillColor=#000000;" vertex="1" parent="lane0">
           <mxGeometry x="144" y="54" width="22" height="22" as="geometry" />
         </mxCell>
-        <mxCell id="view" value="查看七项统计指标&#10;及统计期间" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane0">
+        <mxCell id="view" value="查看七项统计指标&#10;及统计期间、查询时刻" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane0">
           <mxGeometry x="43" y="119" width="224" height="64" as="geometry" />
         </mxCell>
-        <mxCell id="check" value="选择指标核对&#10;实际业务记录" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane0">
+        <mxCell id="check" value="按期间或查询时刻&#10;核对对应业务记录" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane0">
           <mxGeometry x="43" y="213" width="224" height="64" as="geometry" />
         </mxCell>
-        <mxCell id="d1" value="统计结果与业务&#10;记录一致？" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;shape=rhombus;" vertex="1" parent="lane0">
+        <mxCell id="d1" value="同一基准下&#10;结果一致？" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;shape=rhombus;" vertex="1" parent="lane0">
           <mxGeometry x="40" y="307" width="230" height="102" as="geometry" />
         </mxCell>
         <mxCell id="confirm" value="确认统计结果" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane0">
@@ -44,13 +44,13 @@
         <mxCell id="enddot" value="" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=0;fillColor=#000000;shadow=0;shape=ellipse;" vertex="1" parent="end">
           <mxGeometry x="5" y="5" width="12" height="12" as="geometry" />
         </mxCell>
-        <mxCell id="summary" value="汇总七项指标&#10;并展示统计期间" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
+        <mxCell id="summary" value="汇总并展示七项指标&#10;及期间、查询时刻" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
           <mxGeometry x="43" y="119" width="224" height="64" as="geometry" />
         </mxCell>
-        <mxCell id="recordIssue" value="记录差异&#10;（指标、期间、实际值）" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
+        <mxCell id="recordIssue" value="记录差异&#10;指标、期间或时刻、实际值" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
           <mxGeometry x="43" y="449" width="224" height="64" as="geometry" />
         </mxCell>
-        <mxCell id="recompute" value="按同一期间重新统计" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
+        <mxCell id="recompute" value="期间指标按所选期间重查&#10;当前待取量按新时刻计算" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane1">
           <mxGeometry x="43" y="620" width="224" height="64" as="geometry" />
         </mxCell>
         <mxCell id="checkRecord" value="核对业务记录&#10;与统计口径" style="html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=#000000;strokeWidth=1.2;fillColor=#FFFFFF;shadow=0;rounded=0;align=center;verticalAlign=middle;fontSize=15;spacing=8;" vertex="1" parent="lane2">
@@ -62,8 +62,8 @@
         <mxCell id="note1" value="七项指标来源：&#10;图03 四项期间指标；&#10;图04 当前待取量；&#10;图05 拒收与退件两项指标。" style="shape=text;html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;spacing=4;strokeColor=none;fillColor=none;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="383" y="320" width="224" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="note2" value="核对使用同一统计期间和&#10;同一批业务记录；差异需记录&#10;指标、期间、实际值。" style="shape=text;html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;spacing=4;strokeColor=none;fillColor=none;verticalAlign=middle;" vertex="1" parent="1">
-          <mxGeometry x="693" y="770" width="224" height="80" as="geometry" />
+        <mxCell id="note2" value="期间指标按原期间核对。&#10;当前待取量有原查询依据时&#10;按原时刻复核；缺失时说明。&#10;重查按新时刻生成，业务变化&#10;可导致新旧结果不同。" style="shape=text;html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;spacing=4;strokeColor=none;fillColor=none;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="693" y="770" width="224" height="85" as="geometry" />
         </mxCell>
         <mxCell id="note3" value="重新核对" style="shape=text;html=0;whiteSpace=wrap;fontFamily=Microsoft YaHei;fontColor=#000000;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;spacing=4;strokeColor=none;fillColor=none;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="58" y="530" width="90" height="24" as="geometry" />

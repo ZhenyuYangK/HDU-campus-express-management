@@ -32,16 +32,16 @@
         <mxCell id="section3" value="学生拒收来源的退件开始操作" style="whiteSpace=wrap;html=0;fontColor=#000000;fontSize=12;fillColor=#f4f4f4;strokeColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="0" y="582" width="928" height="15" as="geometry" />
         </mxCell>
-        <mxCell id="note" value="工作人员“通过／驳回”候选分支按P002-04待评审，本图不展开。" style="whiteSpace=wrap;html=0;fontColor=#000000;fontSize=12;fillColor=#f5f5f5;strokeColor=#000000;" vertex="1" parent="1">
+        <mxCell id="note" value="学生提交时由系统校验。工作人员在退件开始前核对实物及原因。" style="whiteSpace=wrap;html=0;fontColor=#000000;fontSize=12;fillColor=#f5f5f5;strokeColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="0" y="763" width="928" height="32" as="geometry" />
         </mxCell>
         <mxCell id="s1" value="" style="ellipse;fillColor=#000000;whiteSpace=wrap;html=0;fillColor=#000000;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="162" y="78" width="16" height="16" as="geometry" />
         </mxCell>
-        <mxCell id="submit" value="学生线上提交拒收" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="submit" value="选择本人包裹并提交拒收" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="75" y="108" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="validate" value="系统校验本人包裹、未取走&#10;及当前业务条件" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="validate" value="按入库记录编号定位包裹&#10;校验本人归属及可拒收状态" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="650" y="108" width="244" height="48" as="geometry" />
         </mxCell>
         <mxCell id="valid" value="提交有效？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
@@ -77,7 +77,7 @@
         <mxCell id="deny" value="系统拒绝撤回&#10;维持当前业务状态" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="650" y="519" width="244" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="begin" value="工作人员发起退件办理" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="begin" value="核对实物及退件原因&#10;发起退件办理" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="359" y="609" width="220" height="45" as="geometry" />
         </mxCell>
         <mxCell id="effective" value="当前拒收有效&#10;且未撤回？" style="rhombus;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
@@ -86,7 +86,7 @@
         <mxCell id="beginFail" value="提示请求已撤回等异常&#10;不开始退件，状态不变" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="359" y="704" width="220" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="return" value="系统标记“退件中”&#10;衔接图03办理并完成退件" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="return" value="记录开始事实，包裹转退件中&#10;衔接图03；REQ-003更新拒收状态" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#FFFFFF;fontColor=#000000;strokeColor=#000000;fontFamily=Microsoft YaHei;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="650" y="704" width="244" height="45" as="geometry" />
         </mxCell>
         <mxCell id="a1" value="" edge="1" parent="1" source="s1" target="submit" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;">
@@ -164,13 +164,10 @@
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="c3" value="否" edge="1" parent="1" source="effective" target="beginFail" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;">
+        <mxCell id="c3" value="否" edge="1" parent="1" source="effective" target="beginFail" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=0;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;exitX=0.25;exitY=0.75;entryX=0.5;entryY=0;">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="620" y="632" />
-              <mxPoint x="620" y="682" />
-              <mxPoint x="469" y="682" />
-            </Array>
+              <mxPoint x="726" y="668" /><mxPoint x="469" y="668" /></Array>
           </mxGeometry>
         </mxCell>
       </root>
