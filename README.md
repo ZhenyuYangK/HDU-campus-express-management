@@ -1,4 +1,4 @@
-# 校园快递收发系统
+# CampusDelivery Station
 
 杭州电子科技大学软件工程课程设计项目。
 
