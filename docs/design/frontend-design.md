@@ -1,8 +1,24 @@
 # 前端设计
 
+## 项目品牌
+
+![CampusDelivery Station校园驿站Logo](assets/campus-delivery-station.svg)
+
+品牌字样为`CampusDelivery Station`。Logo采用杨振煜于2026-11-19确认的「校园驿站」方案，深青色门廊`#0e4749`与青绿色包裹`#65b8a2`共同表达校园快递收发站点。
+
+登录页、工作台导航及强制改密页共用[品牌SVG](assets/campus-delivery-station.svg)。品牌栏图标使用`34×34px`，右侧显示品牌字样。窄栏中`Station`可换行。浏览器标签图标引用同一SVG。图标与品牌字样相邻时，图像使用空替代文本。
+
+## 页面底色
+
+登录入口、学生端页面及工作人员和管理员工作台的页面底色统一使用米白`#FAF8F3`，通过公共设计变量`--surface-0-l`设置页面最外层背景。
+
 ## 界面文案
 
 避免不必要的次要标签、说明文字、辅助文案、描述性文字和冗余的微文案，让布局、视觉层级、间距和清晰的主操作自己完成解释。
+
+## 首页导航
+
+首页顶栏左侧显示品牌，桌面端在品牌与右侧`Sign in`之间放置「取件指南」「寄件指南」「常见问题」三个黑色文字链接。窄屏将导航移至第二行。点击导航跳转到插画下方的对应区块，点击品牌返回顶部。指南和常见问题可在登录前阅读，个人包裹查询和寄件办理经登录后进入对应业务页面。
 
 ## 这个 skill 在解决什么
 
@@ -41,8 +57,8 @@
   --surface-2: #1A1A19;  /* 卡片内浮层 / hover */
   --surface-3: #20201F;  /* 弹窗 / 菜单 / 输入框 */
 
-  /* 亮色：同一套层级，用暖白而不是纯白 */
-  --surface-0-l: #FAF8F3;
+  /* 亮色表面层级 */
+  --surface-0-l: #FAF8F3;  /* 项目页面底色：米白 */
   --surface-1-l: #FFFFFF;
   --surface-2-l: #F4F1EA;
   --surface-3-l: #EDE9E0;
@@ -214,7 +230,7 @@ font-variation-settings: "wght" 360;
 | Dusty Rose | `#d6aec1`，`--color-dusty-rose` | 玫瑰色装饰和插画局部填色 |
 | Mint Mist | `#a2cbcd`，`--color-mint-mist` | 浅色描边、插画水洗色 |
 | Sea Foam | `#cae1e2`，`--color-sea-foam` | 高光和装饰背景 |
-| Paper White | `#f2f8f7`，`--color-paper-white` | 页面画布，不使用纯白代替 |
+| Paper White | `#f2f8f7`，`--color-paper-white` | User Interviews参考画布，项目采用[米白页面底色](#页面底色) |
 | Card Mint | `#e4f0f1`，`--color-card-mint` | 普通卡片和功能面板 |
 | Blush Sand | `#f2e8e2`，`--color-blush-sand` | 交替区块和暖色插画背景 |
 | Charcoal Navy | `#283338`，`--color-charcoal-navy` | 主要文字、导航及导航边界 |
