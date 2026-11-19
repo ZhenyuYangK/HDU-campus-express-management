@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="REQ-001账号、权限与基础信息界面原型；所有数据均为合成示例，不包含真实接口调用。">
+  <title>REQ-001界面原型｜CampusDelivery Station</title>
+  <link rel="icon" type="image/svg+xml" sizes="any" href="../../../design/assets/campus-delivery-station.svg">
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至主要内容</a>
+  <svg class="icon-defs" aria-hidden="true">
+    <defs>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="m4 7 8-4 8 4-8 4-8-4Zm0 0v10l8 4 8-4V7M12 11v10M8 5l8 4"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 2-7 6-7s6 3 6 7M16 5c3 0 4 5 1 6M17 13c3 0 5 3 5 6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></symbol>
+      <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 5h12v12H2zM14 9h4l4 4v4h-8z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="m4 16-1 5 5-1L19 9l-4-4L4 16ZM13 7l4 4"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5M12 17v1"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3 9 8 11 5-2 8-6 8-11V5l-8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M19 12a7 7 0 0 0-12-5L4 10M5 12a7 7 0 0 0 12 5l3-3"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="prototype-toolbar" aria-label="原型导览">
+    <div class="prototype-toolbar__title"><span class="prototype-dot"></span><strong>REQ-001原型导览</strong><span>12张原型图</span></div>
+    <div class="prototype-toolbar__controls">
+      <label for="page-picker">原型</label>
+      <select id="page-picker"></select>
+      <label for="state-picker">清单状态</label>
+      <select id="state-picker">
+        <option value="normal">正常</option>
+        <option value="loading">加载中</option>
+        <option value="empty">无数据</option>
+        <option value="error">请求失败</option>
+      </select>
+      <button class="toolbar-button" id="reset-prototype" type="button">重置演示</button>
+    </div>
+    <span class="prototype-toolbar__note">合成数据 · 无接口调用 · 非运行验收证据</span>
+  </header>
+
+  <div id="app"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script src="prototype.js"></script>
+</body>
+</html>
