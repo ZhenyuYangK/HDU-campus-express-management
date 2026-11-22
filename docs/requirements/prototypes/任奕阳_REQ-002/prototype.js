@@ -257,32 +257,34 @@ function intakeSuccessPage(record) {
 }
 
 /* FUNC-002-02 补关联 */
-function pendingRows() {
-  return `<tr><td class="mono">RK20261122001</td><td>顺丰速运</td><td class="mono">SF000123456789</td><td>示例学生</td><td class="mono">13800000001</td><td>A-3</td><td class="mono">2026-11-22 09:05</td><td><div class="row-actions"><button class="button-text" type="button" data-action="open-link">补关联</button></div></td></tr>
-  <tr><td class="mono">RK20261121008</td><td>中通快递</td><td class="mono">ZT000111222333</td><td>示例收件人</td><td class="mono">13700000007</td><td>C-1</td><td class="mono">2026-11-21 15:26</td><td><div class="row-actions"><button class="button-text" type="button" data-action="open-link">补关联</button></div></td></tr>`;
+function linkReview(account, matching) {
+  const feedback = matching ? `<p class="inline-note">确认后建立账号归属，该包裹可在学生查询中显示。</p>` :
+    `<div class="form-alert" role="alert">${icon("alert")}<div><strong>不能确认补关联</strong><p>收件手机号与账号的绑定手机号不一致。请核对账号，包裹信息有误时先更正记录。</p></div></div>`;
+  return `<div class="identity-card"><div class="identity-card__title"><strong>账号核对结果</strong><span class="status-badge${matching ? "" : " warning"}">${matching ? "手机号一致" : "手机号不一致"}</span></div>
+    <dl class="identity-grid"><div><dt>账号姓名</dt><dd>${account.name}</dd></div><div><dt>绑定手机号</dt><dd class="mono">${account.phone}</dd></div><div><dt>关联方式（DATA-002-15）</dt><dd>人工补关联</dd></div></dl>
+  </div>${feedback}`;
 }
 
-function linkingPage(mismatch) {
-  const page = pages[mismatch ? "linking-mismatch" : "linking"];
+function linkingPage(account, showDrawer = true) {
+  const record = initialRecords[0];
+  const matching = account.phone === record.phone;
+  const accounts = intakeAccounts.map(option => `<option value="${option.account}"${option === account ? " selected" : ""}>${option.account} · ${option.name}</option>`).join("");
   const list = demoState === "normal" ? `<div class="table-scroll"><table class="data-table">
       <thead><tr><th>入库记录编号</th><th>公司</th><th>运单号</th><th>收件人</th><th>收件手机号</th><th>位置</th><th>到站时间</th><th>操作</th></tr></thead>
-      <tbody>${pendingRows()}</tbody></table></div>${pagination(2)}` : listStateBlock("没有符合条件的待关联包裹。");
-  const drawer = `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="link-title">
-    <div class="drawer-header"><div><h2 id="link-title">补关联核对</h2><span class="function-tag">目标入库记录RK20261122001（DATA-002-01）</span></div><button class="icon-button" type="button" data-route="linking" aria-label="关闭">${icon("close")}</button></div>
+      <tbody><tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${record.tracking}</td><td>${record.receiver}</td><td class="mono">${record.phone}</td><td>${record.location}</td><td class="mono">${record.arrivedAt}</td><td><div class="row-actions"><button class="button-text" type="button" data-route="linking">补关联</button></div></td></tr></tbody></table></div>${pagination(1)}` : listStateBlock("没有符合条件的待关联包裹。");
+  const drawer = showDrawer && demoState === "normal" ? `<div class="overlay"></div><aside class="drawer link-drawer" role="dialog" aria-modal="true" aria-labelledby="link-title">
+    <div class="drawer-header"><div><h2 id="link-title">补关联核对</h2><span class="function-tag">目标入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-route="linking/list" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
-      <dl class="detail-grid"><div><dt>包裹状态</dt><dd>待取件</dd></div><div><dt>账号关联状态（DATA-002-14）</dt><dd>待关联</dd></div><div><dt>收件手机号（DATA-003-03）</dt><dd class="mono">13800000001</dd></div><div><dt>取件码</dt><dd class="mono">009876</dd></div></dl>
+      <dl class="detail-grid"><div><dt>包裹状态</dt><dd>${record.status}</dd></div><div><dt>账号关联状态（DATA-002-14）</dt><dd>待关联</dd></div><div><dt>收件手机号（DATA-003-03）</dt><dd class="mono">${record.phone}</dd></div><div><dt>取件码</dt><dd class="mono">009876</dd></div></dl>
       <form id="link-form" novalidate>
-        ${field("目标学生账号（学号）", "DATA-001-01 · 归属只保存账号ID", `<input name="account" id="link-account" value="${mismatch ? "00120002" : "00120001"}" autocomplete="off">`)}
-        <div class="identity-card"><div class="identity-card__title"><strong>账号核对结果</strong><span class="status-badge ${mismatch ? "warning" : ""}">${mismatch ? "手机号不一致" : "可建立归属"}</span></div>
-          <dl class="identity-grid"><div><dt>账号姓名</dt><dd>${mismatch ? otherStudent.name : student.name}</dd></div><div><dt>绑定手机号</dt><dd class="mono">${mismatch ? otherStudent.phone : student.phone}</dd></div><div><dt>关联方式（DATA-002-15）</dt><dd>人工补关联</dd></div></dl>
-        </div>
-        ${mismatch ? `<div class="form-alert" role="alert">${icon("alert")}<div><strong>不能确认补关联</strong><p>收件手机号与账号绑定手机号不一致，请核对后再办理；如包裹信息有误请先更正记录。</p></div></div>` : `<p class="inline-note">确认后写入归属账号、关联方式、补关联操作人（DATA-002-17）与关联建立时间（DATA-002-16），该包裹立即在FUNC-003-01对学生可见。</p>`}
-        <div class="drawer-footer"><button class="button button-secondary" type="button" data-route="correction">先更正记录</button><button class="button button-primary" type="submit" ${mismatch ? "disabled" : ""}>确认补关联</button></div>
+        <div class="field"><label for="link-account">目标学生账号（学号）<span class="required" aria-hidden="true">*</span></label><select name="account" id="link-account">${accounts}</select><span class="data-ref">DATA-001-01 · 归属只保存账号ID</span></div>
+        <div id="link-review" aria-live="polite">${linkReview(account, matching)}</div>
+        <div class="drawer-footer"><button class="button button-secondary" type="button" data-route="correction/${record.id}">先更正记录</button><button class="button button-primary" type="submit" ${matching ? "" : "disabled"}>确认补关联</button></div>
       </form>
-      <section class="detail-section"><h3>关联历史</h3><ul class="history-list"><li>入库自动匹配：未命中唯一账号，标记待关联<small class="mono">2026-11-22 09:05 · 系统</small></li></ul></section>
+      <section class="detail-section"><h3>关联历史</h3><ul class="history-list"><li>入库自动匹配：未命中唯一账号，标记待关联<small class="mono">${record.arrivedAt} · 系统</small></li></ul></section>
     </div>
-  </aside>`;
-  return pageHeading(page, "默认只列待关联且待取件包裹，按到站时间升序；已关联或其他状态不提供补关联入口。") +
+  </aside>` : "";
+  return pageHeading(pages.linking, "工作人员核对待关联包裹的收件手机号与目标账号的绑定手机号。") +
     `<section class="filter-card"><div class="filter-grid">
       <div class="field"><label for="link-keyword">关键词</label><input id="link-keyword" value="SF000123456789"><span class="data-ref">DATA-002-48 · 运单号/手机号/收件人</span></div>
       <div class="field"><label for="link-from">到站时间起</label><input id="link-from" type="date" value="2026-11-21"><span class="data-ref">DATA-002-47 · 端点待P002-08</span></div>
@@ -497,8 +499,8 @@ function render() {
   if (route === "intake") html = intakePage();
   else if (route === "intake-duplicate") html = intakePage() + duplicateDialog(recordId ? record : initialRecords[0]);
   else if (route === "intake-success") html = intakeSuccessPage(recordId ? record : intakeExample);
-  else if (route === "linking") html = linkingPage(false);
-  else if (route === "linking-mismatch") html = linkingPage(true);
+  else if (route === "linking") html = linkingPage(student, recordId !== "list");
+  else if (route === "linking-mismatch") html = linkingPage(otherStudent);
   else if (route === "returns") html = returnsPage(record, recordId);
   else if (route === "return-start") html = returnStartPage();
   else if (route === "return-manual") html = returnManualPage();
@@ -603,10 +605,15 @@ function handleIntake(form) {
 }
 
 function handleLink(form) {
-  const account = form.elements.account;
-  if (!account.value) { setFieldError(account, "请填写目标学生账号。"); account.focus(); return; }
-  if (account.value !== student.account) { window.location.hash = "linking-mismatch"; return; }
-  submitWithFeedback(form, () => showToast("运单号SF000123456789已关联至账号00120001（姓名：示例学生），该包裹现可被学生查询。"));
+  const record = initialRecords[0];
+  const input = form.elements.account;
+  const account = intakeAccounts.find(option => option.account === input.value);
+  if (input.disabled || account?.phone !== record.phone) return;
+  input.disabled = true;
+  submitWithFeedback(form, () => {
+    input.disabled = false;
+    showToast(`演示确认通过。运单号${record.tracking}可关联至账号${account.account}。`);
+  });
 }
 
 function handleReturn(form) {
@@ -703,7 +710,6 @@ document.addEventListener("click", event => {
     intakeDraft = { company: record.company, location: record.location, tracking: "", receiver: "", phone: "" };
     window.location.hash = "intake";
   }
-  if (action === "open-link") window.location.hash = "linking";
   if (action === "finish-return") {
     const record = findRecord(actionButton.dataset.recordId);
     if (record?.status !== "退件中" || !record.returnInfo) return;
@@ -724,6 +730,15 @@ document.addEventListener("click", event => {
   }
   if (action === "search") showToast("已按当前条件刷新待关联清单。");
   if (action === "retry") { demoState = "normal"; render(); }
+});
+
+document.getElementById("app").addEventListener("change", event => {
+  const input = event.target;
+  if (input.id !== "link-account") return;
+  const account = intakeAccounts.find(option => option.account === input.value);
+  const matching = account.phone === initialRecords[0].phone;
+  input.form.querySelector("#link-review").innerHTML = linkReview(account, matching);
+  input.form.querySelector('[type="submit"]').disabled = !matching;
 });
 
 document.addEventListener("submit", event => {
