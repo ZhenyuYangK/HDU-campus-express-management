@@ -23,7 +23,6 @@ const pages = {
 
 const exportRoutes = Object.keys(pages).filter(key => !pages[key].hidden);
 const companies = ["顺丰速运", "京东快递", "韵达快递", "中通快递", "圆通速递", "申通快递", "极兔速递", "德邦快递", "中国邮政", "邮政EMS", "菜鸟速递", "跨越速运"];
-const locations = ["A-1", "A-2", "A-3", "B-1", "B-2", "B-3", "C-1", "C-2", "C-3"];
 const student = { account: "00120001", name: "示例学生", phone: "13800000001" };
 const otherStudent = { account: "00120002", name: "示例学生乙", phone: "13900000009" };
 const intakeAccounts = [student, otherStudent];
@@ -143,8 +142,8 @@ function companyOptions(selected = "顺丰速运") {
   return companies.map(name => `<option ${name === selected ? "selected" : ""}>${name}</option>`).join("");
 }
 
-function locationOptions(selected = "A-1") {
-  return `<optgroup label="A～C区示例，完整清单为A-1～L-6共72层位（DATA-001-12）">${locations.map(name => `<option ${name === selected ? "selected" : ""}>${name}</option>`).join("")}</optgroup>`;
+function locationOptions(selected) {
+  return fixedLocationGroups.map(({ zone, locations }) => `<optgroup label="${zone}区">${locations.map(location => `<option${location === selected ? " selected" : ""}>${location}</option>`).join("")}</optgroup>`).join("");
 }
 
 function field(label, ref, control, full = false) {
@@ -177,7 +176,7 @@ function intakeForm() {
       ${field("运单号", "DATA-003-01 · 去首尾空白，与公司组合查重", `<input name="tracking" id="intake-tracking" value="${escapeHtml(draft.tracking)}" autocomplete="off">`)}
       ${field("收件人姓名", "DATA-003-02 · 仅辅助核对，不参与账号匹配", `<input name="receiver" id="intake-receiver" value="${escapeHtml(draft.receiver)}" autocomplete="off">`)}
       ${field("收件手机号", "DATA-003-03 · 11位，用于匹配账号", `<input name="phone" id="intake-phone" value="${escapeHtml(draft.phone)}" inputmode="numeric" autocomplete="off">`)}
-      ${field("存放位置", "DATA-001-12 · 固定72层位", `<select name="location" id="intake-location">${locationOptions(draft.location)}</select>`)}
+      ${field("存放位置", `DATA-001-12 · 固定${fixedLocations.length}层位`, `<select name="location" id="intake-location">${locationOptions(draft.location)}</select>`)}
       <div class="field"><span class="field-label">系统生成项</span><p class="inline-note">取件码（DATA-003-04）、到站时间（DATA-003-06）、包裹状态（DATA-003-05）、入库操作人（DATA-002-20）不接受填写。</p></div>
     </div>
     <p class="inline-note">查重命中已取件或已退件记录时，允许按新包裹重新入库并关联原入库记录编号（DATA-002-05）；命中未办结记录见UI-002-02。</p>
@@ -588,7 +587,7 @@ function handleIntake(form) {
     [form.elements.tracking, draft.tracking ? "" : "请填写运单号。"],
     [form.elements.receiver, draft.receiver ? "" : "请填写收件人姓名。"],
     [form.elements.phone, /^1\d{10}$/.test(draft.phone) ? "" : draft.phone ? "收件手机号应为11位中国大陆手机号。" : "请填写收件手机号。"],
-    [form.elements.location, locations.includes(draft.location) ? "" : "请选择有效的存放位置。"]
+    [form.elements.location, fixedLocations.includes(draft.location) ? "" : "请选择有效的存放位置。"]
   ];
   errors.forEach(([input, message]) => setFieldError(input, message));
   const firstError = form.querySelector('[aria-invalid="true"]');

@@ -293,11 +293,10 @@ function companyPage(mode) {
 
 function locationsPage() {
   const page = pages.locations;
-  const zones = "ABCDEFGHIJKL".split("");
-  const rows = zones.map(zone => `<tr><td>${zone}区</td>${[1,2,3,4,5,6].map(level => `<td><span class="location-cell">${zone}-${level}</span></td>`).join("")}</tr>`).join("");
+  const rows = fixedLocationGroups.map(({ zone, locations }) => `<tr><td>${zone}区</td>${locations.map(location => `<td><span class="location-cell">${location}</span></td>`).join("")}</tr>`).join("");
   const content = `${pageHeading(page, "", '<span class="status-badge neutral">只读</span>')}
-    <div class="location-summary"><div class="location-stat"><strong>12</strong><span>分区 A～L</span></div><div class="location-stat"><strong>6</strong><span>每区层数</span></div><div class="location-stat"><strong>72</strong><span>固定层位 · DATA-001-12</span></div></div>
-    ${demoState !== "normal" ? listStateBlock() : `<section class="location-table-wrap" aria-label="72个固定存放层位"><table class="location-table"><thead><tr><th>分区</th>${[1,2,3,4,5,6].map(n => `<th>第${n}层</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`}`;
+    <div class="location-summary"><div class="location-stat"><strong>${fixedLocationGroups.length}</strong><span>分区 A～L</span></div><div class="location-stat"><strong>${fixedLocationLevels.length}</strong><span>每区层数</span></div><div class="location-stat"><strong>${fixedLocations.length}</strong><span>固定层位 · DATA-001-12</span></div></div>
+    ${demoState !== "normal" ? listStateBlock() : `<section class="location-table-wrap" aria-label="${fixedLocations.length}个固定存放层位"><table class="location-table"><thead><tr><th>分区</th>${fixedLocationLevels.map(level => `<th>第${level}层</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`}`;
   return shell("locations", content);
 }
 
