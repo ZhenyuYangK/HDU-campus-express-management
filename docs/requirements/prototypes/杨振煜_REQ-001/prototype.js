@@ -1,8 +1,10 @@
 "use strict";
 
-const VERSION = "2026-11-19";
+const VERSION = "2026-11-22";
 const exportMode = new URLSearchParams(window.location.search).get("export") === "1";
 const brandLogo = document.querySelector('link[rel="icon"]').href;
+const intakePrototype = "../任奕阳_REQ-002/REQ-002_界面原型.html";
+const pickupPrototype = "../张海睿_REQ_003/REQ-003_界面原型.html";
 document.body.classList.toggle("export", exportMode);
 
 const pages = {
@@ -32,7 +34,7 @@ let companies = initialCompanies.map(([name, referenced]) => ({ name, referenced
 let selectedCompany = "京东快递";
 let demoState = "normal";
 let toastTimer;
-let studentNeedsPasswordChange = true;
+let studentNeedsPasswordChange = !window.history.state?.studentPasswordChanged;
 const demoPassword = "Demo2026";
 let studentDemoPassword = demoPassword;
 const studentAccount = "00120001";
@@ -73,6 +75,17 @@ function navButton(route, active, label, iconName) {
   return `<button type="button" class="nav-item" data-route="${route}" ${active ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`;
 }
 
+function prototypeUrl(file, route) {
+  const url = new URL(file, window.location.href);
+  url.hash = route;
+  if (exportMode) url.searchParams.set("export", "1");
+  return url.href;
+}
+
+function navLink(file, route, label, iconName) {
+  return `<a class="nav-item" href="${prototypeUrl(file, route)}">${icon(iconName)}<span>${label}</span></a>`;
+}
+
 function shell(route, content) {
   const page = pages[route];
   const role = page.role;
@@ -86,7 +99,14 @@ function shell(route, content) {
     <div class="nav-group"><p class="sidebar-caption">基础信息</p>
       ${navButton("company-list", route.startsWith("company-"), "快递公司", "truck")}
       ${navButton("locations", route === "locations", "存放位置", "grid")}
+    </div>
+    <div class="nav-group"><p class="sidebar-caption">收件与退件</p>
+      ${navLink(intakePrototype, "records-admin", "记录查询（只读）", "eye")}
     </div>` : `
+    <div class="nav-group"><p class="sidebar-caption">包裹服务</p>
+      ${navLink(pickupPrototype, "list", "我的包裹", "box")}
+      ${navLink(pickupPrototype, "pickup", "自助取件", "shield")}
+    </div>
     <div class="nav-group"><p class="sidebar-caption">账号安全</p>
       ${navButton("password", route === "password", "修改密码", "lock")}
     </div>`;
@@ -213,10 +233,10 @@ function passwordResetPage() {
     <div class="form-layout single"><form class="form-card" id="password-reset-form" novalidate>
       <div class="field"><label for="reset-account">目标账号<span class="required" aria-hidden="true">*</span></label><select id="reset-account" data-account-select="reset">${accountOptions()}</select></div>
       ${identityCard("reset")}
-      <label class="check-field"><input type="checkbox" id="reset-confirm" checked data-submit-gate="reset-submit"><span><strong>已完成线下身份核对</strong></span></label>
+      <label class="check-field"><input type="checkbox" id="reset-confirm" data-submit-gate="reset-submit"><span><strong>已完成线下身份核对</strong></span></label>
       <div class="field"><label for="reset-password">临时密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="reset-password" name="password" type="password" value="Reset2026" autocomplete="new-password"><button class="input-action" type="button" data-toggle-password="reset-password" aria-label="显示临时密码">显示</button></div><p class="field-hint">DATA-001-04 · 8～20位，含字母和数字</p></div>
       <div class="info-card warning" style="margin-top:20px">下次登录须先修改密码。</div>
-      <div class="form-footer"><button class="button button-primary" id="reset-submit" type="submit">确认重置密码</button></div>
+      <div class="form-footer"><button class="button button-primary" id="reset-submit" type="submit" disabled>确认重置密码</button></div>
     </form></div>`;
   return shell("password-reset", content);
 }
@@ -227,10 +247,10 @@ function phoneChangePage() {
     <div class="form-layout single"><form class="form-card" id="phone-change-form" novalidate>
       <div class="field"><label for="phone-account">目标账号<span class="required" aria-hidden="true">*</span></label><select id="phone-account" data-account-select="phone">${accountOptions()}</select></div>
       ${identityCard("phone")}
-      <label class="check-field"><input type="checkbox" id="phone-confirm" checked data-submit-gate="phone-submit"><span><strong>已完成线下身份核对</strong></span></label>
+      <label class="check-field"><input type="checkbox" id="phone-confirm" data-submit-gate="phone-submit"><span><strong>已完成线下身份核对</strong></span></label>
       <div class="field"><label for="new-phone">新绑定手机号<span class="required" aria-hidden="true">*</span></label><input id="new-phone" name="phone" value="13800000099" inputmode="numeric" maxlength="11"><p class="field-hint">DATA-001-10 · 11位数字，不可重复</p></div>
       <div class="info-card warning" style="margin-top:20px">不修改包裹联系信息或历史业务归属。</div>
-      <div class="form-footer"><button class="button button-primary" id="phone-submit" type="submit">确认变更手机号</button></div>
+      <div class="form-footer"><button class="button button-primary" id="phone-submit" type="submit" disabled>确认变更手机号</button></div>
     </form></div>`;
   return shell("phone-change", content);
 }
@@ -302,6 +322,9 @@ function locationsPage() {
 
 function render() {
   const route = currentRoute();
+  if (pages[route].role === "学生" && !studentNeedsPasswordChange && !window.history.state?.studentPasswordChanged) {
+    window.history.replaceState({ ...window.history.state, studentPasswordChanged: true }, "");
+  }
   const listRoute = route === "company-list" || route === "locations";
   if (!listRoute) demoState = "normal";
   let html;
@@ -329,10 +352,6 @@ function render() {
   statePicker.value = demoState;
   statePicker.title = listRoute ? "切换清单的加载、无数据和请求失败状态" : "该公共状态示例在快递公司清单或存放位置页查看";
   document.querySelectorAll("[data-password-rules]").forEach(updatePasswordRules);
-  document.querySelectorAll("[data-submit-gate]").forEach(input => {
-    const button = document.getElementById(input.dataset.submitGate);
-    if (button) button.disabled = !input.checked;
-  });
   const passwordDialog = document.getElementById("forced-password-dialog");
   if (passwordDialog) {
     passwordDialog.addEventListener("cancel", event => event.preventDefault());
@@ -394,8 +413,12 @@ function requireFields(form, names) {
 
 function submitWithFeedback(form, callback) {
   const button = form.querySelector('[type="submit"]') || document.querySelector(`[form="${form.id}"]`);
+  if (button?.disabled) return;
+  const identityControls = form.querySelectorAll("[data-account-select], [data-submit-gate]");
+  identityControls.forEach(control => { control.disabled = true; });
   if (button) { button.disabled = true; button.dataset.originalText = button.textContent; button.textContent = "正在提交…"; }
   setTimeout(() => {
+    identityControls.forEach(control => { control.disabled = false; });
     if (button) { button.disabled = false; button.textContent = button.dataset.originalText; }
     callback();
   }, 450);
@@ -426,9 +449,7 @@ function handleLogin(form) {
     }
     const role = matched[1].role;
     if (role === "工作人员") {
-      const workbench = new URL("../任奕阳_REQ-002/REQ-002_界面原型.html#intake", window.location.href);
-      if (exportMode) workbench.searchParams.set("export", "1");
-      window.location.assign(workbench.href);
+      window.location.assign(prototypeUrl(intakePrototype, "intake"));
     } else {
       window.location.hash = role === "管理员" ? "account-create" : "student";
     }
@@ -482,11 +503,9 @@ function handleForcedPassword(form) {
     if (currentRoute() === "password-forced") {
       const studentUrl = new URL(window.location.href);
       studentUrl.hash = "student";
-      window.history.replaceState(null, "", studentUrl);
-      render();
-    } else {
-      form.closest("dialog").close();
+      window.history.replaceState(window.history.state, "", studentUrl);
     }
+    render();
     document.getElementById("main").focus({ preventScroll: true });
     showToast("密码修改成功，强制改密已解除");
   });
@@ -538,6 +557,13 @@ function updateAccountDetails(select) {
   document.getElementById(`${prefix}-detail-account`).textContent = select.value;
   document.getElementById(`${prefix}-detail-name`).textContent = item.name;
   document.getElementById(`${prefix}-detail-phone`).textContent = item.phone;
+  const confirmation = select.form.querySelector("[data-submit-gate]");
+  confirmation.checked = false;
+  syncSubmitGate(confirmation);
+}
+
+function syncSubmitGate(confirmation) {
+  document.getElementById(confirmation.dataset.submitGate).disabled = !confirmation.checked;
 }
 
 function populatePicker() {
@@ -602,10 +628,7 @@ document.addEventListener("change", event => {
     document.getElementById("create-account").placeholder = placeholders[event.target.value];
   }
   if (event.target.matches("[data-account-select]")) updateAccountDetails(event.target);
-  if (event.target.matches("[data-submit-gate]")) {
-    const button = document.getElementById(event.target.dataset.submitGate);
-    if (button) button.disabled = !event.target.checked;
-  }
+  if (event.target.matches("[data-submit-gate]")) syncSubmitGate(event.target);
 });
 
 document.addEventListener("submit", event => {
