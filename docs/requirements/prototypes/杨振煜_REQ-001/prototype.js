@@ -149,10 +149,10 @@ function accountCreatePage() {
   const content = `${pageHeading(page, "首次登录须修改密码。")}
     <div class="form-layout single"><form class="form-card" id="account-create-form" novalidate>
       ${rolePicker()}<div class="form-grid">
-        <div class="field"><label for="create-account">账号<span class="required" aria-hidden="true">*</span></label><input id="create-account" name="account" value="00120001" maxlength="8" placeholder="00120001" aria-describedby="create-account-hint"><p class="field-hint" id="create-account-hint">DATA-001-01 · 8位数字，保留前导零</p></div>
+        <div class="field"><label for="create-account">账号<span class="required" aria-hidden="true">*</span></label><input id="create-account" name="account" value="00120003" maxlength="8" placeholder="00120001" aria-describedby="create-account-hint"><p class="field-hint" id="create-account-hint">DATA-001-01 · 8位数字，保留前导零</p></div>
         <div class="field"><label for="create-name">账号姓名<span class="required" aria-hidden="true">*</span></label><input id="create-name" name="name" value="示例学生" maxlength="50"><p class="field-hint">DATA-001-02 · 最多50个字符</p></div>
-        <div class="field"><label for="create-phone">绑定手机号<span class="required" aria-hidden="true">*</span></label><input id="create-phone" name="phone" value="13800000001" inputmode="numeric" maxlength="11"><p class="field-hint">DATA-001-03 · 11位数字，不可重复</p></div>
-        <div class="field"><label for="create-password">初始密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="create-password" name="password" type="password" value="Demo2026" minlength="8" maxlength="20" autocomplete="new-password"><button class="input-action" type="button" data-toggle-password="create-password" aria-label="显示初始密码">显示</button></div><p class="field-hint">DATA-001-04 · 8～20位，含字母和数字</p></div>
+        <div class="field"><label for="create-phone">绑定手机号<span class="required" aria-hidden="true">*</span></label><input id="create-phone" name="phone" value="13800000004" inputmode="numeric" maxlength="11"><p class="field-hint">DATA-001-03 · 11位数字，不可重复</p></div>
+        <div class="field"><label for="create-password">初始密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="create-password" name="password" type="password" value="${demoPassword}" minlength="8" maxlength="20" autocomplete="new-password"><button class="input-action" type="button" data-toggle-password="create-password" aria-label="显示初始密码">显示</button></div><p class="field-hint">DATA-001-04 · 8～20位，含字母和数字</p></div>
       </div>
       <div class="form-footer"><button class="button button-primary" type="submit">创建账号${icon("arrow")}</button></div>
     </form></div>`;
@@ -437,6 +437,8 @@ function handleLogin(form) {
 }
 
 function handleAccountCreate(form) {
+  if (form.querySelector('[type="submit"]').disabled) return;
+  document.getElementById("toast").hidden = true;
   if (!requireFields(form, ["account", "name", "phone", "password"])) return;
   const account = form.elements.account;
   const name = form.elements.name;
@@ -449,9 +451,15 @@ function handleAccountCreate(form) {
   if (!name.value.trim()) { setFieldError(name, "账号姓名不能仅为空白字符。"); name.focus(); return; }
   if (phone.value !== phone.value.trim() || !/^\d{11}$/.test(phone.value)) { setFieldError(phone, "请输入11位数字手机号，且不能含首尾空白。"); phone.focus(); return; }
   if (!validPassword(password.value)) { setFieldError(password, "初始密码须为8～20位，含字母和数字，不含空白。"); password.focus(); return; }
-  if (["admin001", "staff001"].includes(account.value)) { setFieldError(account, "该账号已存在，请更换账号；重复提交不得形成新账号。"); account.focus(); return; }
-  if (phone.value === "13800000002") { setFieldError(phone, "该手机号已被其他账号绑定，请核对后再提交。"); phone.focus(); return; }
-  submitWithFeedback(form, () => showToast("账号已建立；首次登录须修改密码", `原型反馈：固定角色为${role}，强制改密标记为“是”；未保存真实账号。`));
+  const duplicateAccount = Object.hasOwn(accountExamples, account.value);
+  const duplicatePhone = Object.values(accountExamples).some(example => example.phone === phone.value);
+  if (duplicateAccount) setFieldError(account, "该账号已存在，请更换账号。");
+  if (duplicatePhone) setFieldError(phone, "该手机号已被绑定，请更换手机号。");
+  const firstError = form.querySelector('[aria-invalid="true"]');
+  if (firstError) { firstError.focus(); return; }
+  submitWithFeedback(form, () => {
+    if (form.isConnected) showToast("账号已创建。首次登录须修改密码。");
+  });
 }
 
 function handleNormalPassword(form) {
