@@ -26,6 +26,22 @@ const companies = ["顺丰速运", "京东快递", "韵达快递", "中通快递
 const locations = ["A-1", "A-2", "A-3", "B-1", "B-2", "B-3", "C-1", "C-2", "C-3"];
 const student = { account: "00120001", name: "示例学生", phone: "13800000001" };
 const otherStudent = { account: "00120002", name: "示例学生乙", phone: "13900000009" };
+const records = [
+  {
+    id: "RK20261122001", company: "顺丰速运", tracking: "SF000123456789", receiver: student.name,
+    phone: student.phone, location: "A-3", status: "待取件", account: null, arrivedAt: "2026-11-22 09:05",
+    correction: { field: "存放位置名称", operator: "示例工作人员", at: "2026-11-22 09:30" }
+  },
+  {
+    id: "RK20261121006", company: "京东快递", tracking: "JD000444555666", receiver: student.name,
+    phone: student.phone, location: "B-1", status: "退件中", account: student.account, arrivedAt: "2026-11-21 16:02",
+    returnInfo: { id: "TJ20261122002", source: "学生拒收", reason: "学生拒收", destination: "退回原快递公司", startedAt: "2026-11-22 09:40" }
+  },
+  {
+    id: "RK20261122002", company: "京东快递", tracking: "JD000987654321", receiver: student.name,
+    phone: student.phone, location: "A-1", status: "已取件", account: student.account, arrivedAt: "2026-11-21 16:40"
+  }
+];
 let demoState = "normal";
 let toastTimer;
 
@@ -41,8 +57,12 @@ function brand() {
 }
 
 function currentRoute() {
-  const route = window.location.hash.replace(/^#/, "") || "intake";
+  const route = window.location.hash.slice(1).split("/")[0];
   return Object.hasOwn(pages, route) ? route : "intake";
+}
+
+function isRecordClosed(record) {
+  return record.status === "已取件" || record.status === "已退件";
 }
 
 function metaFooter(page) {
@@ -72,7 +92,7 @@ function shell(route, content) {
       ${navButton("linking", route.startsWith("linking"), "待关联补关联", "users")}
       ${navButton("returns", route.startsWith("return"), "退件办理", "return")}
       ${navButton("correction", route.startsWith("correction"), "记录更正", "edit")}
-      ${navButton("records", route === "records", "记录查询", "search")}
+      ${navButton("records", route === "records" || route === "record-detail", "记录查询", "search")}
     </div>`;
   const displayName = isAdmin ? "示例管理员" : "示例工作人员";
   const account = isAdmin ? "admin001" : "staff001";
@@ -243,14 +263,26 @@ function returnList() {
   </table></div>${pagination(1)}`;
 }
 
-function inReturnList() {
+function inReturnList(record) {
+  const returnInfo = record?.returnInfo ?? {
+    id: "TJ20261122001", source: "人工异常", destination: "退回原快递公司", startedAt: "2026-11-22 09:50"
+  };
+  const recordAttribute = record ? ` data-record-id="${record.id}"` : "";
   return `<div class="table-scroll"><table class="data-table">
     <thead><tr><th>退件记录编号</th><th>来源</th><th>运单号</th><th>退回去向</th><th>开始退件时间</th><th>状态</th><th>操作</th></tr></thead>
-    <tbody><tr><td class="mono">TJ20261122001</td><td>人工异常</td><td class="mono">ZT000111222333</td><td>退回原快递公司</td><td class="mono">2026-11-22 09:50</td><td><span class="status-badge warning">退件中</span></td><td><div class="row-actions"><button class="button-text" type="button" data-action="finish-return">完成登记</button></div></td></tr></tbody>
+    <tbody><tr><td class="mono">${returnInfo.id}</td><td>${returnInfo.source}</td><td class="mono">${record?.tracking ?? "ZT000111222333"}</td>
+      <td>${returnInfo.destination}</td><td class="mono">${returnInfo.startedAt}</td><td><span class="status-badge warning">退件中</span></td>
+      <td><div class="row-actions"><button class="button-text" type="button" data-action="finish-return"${recordAttribute}>完成登记</button></div></td></tr></tbody>
   </table></div>`;
 }
 
-function returnsPage() {
+function returnsPage(record, requestedRecordId) {
+  if (requestedRecordId) {
+    const canContinue = record?.status === "退件中" && record.returnInfo;
+    const back = `<button class="button button-secondary" type="button" data-route="${record ? `record-detail/${record.id}` : "records"}">${record ? "返回记录详情" : "返回记录查询"}</button>`;
+    return pageHeading(pages.returns, canContinue ? `继续办理入库记录${record.id}的退件。` : "该记录当前没有可继续办理的退件。", back) +
+      (canContinue ? `<section class="list-card"><div class="list-toolbar"><strong>退件中</strong></div>${inReturnList(record)}</section>` : "");
+  }
   return pageHeading(pages.returns, "来源由入口确定：学生拒收须拒收待退件且当前申请有效；人工异常仅适用于待取件包裹，可无拒收申请。") +
     `<div class="tabs" role="tablist" aria-label="退件发起入口"><button class="tab" role="tab" aria-selected="true" type="button">学生拒收</button><button class="tab" role="tab" aria-selected="false" type="button" data-route="return-manual">人工发起</button></div>
     <section class="list-card"><div class="list-toolbar"><strong>待退件｜学生拒收</strong><span class="list-count">拒收申请由REQ-003维护，本页只读</span></div>${demoState === "normal" ? returnList() : listStateBlock("没有符合条件的待退件包裹。")}</section>
@@ -293,55 +325,91 @@ function returnManualPage() {
 }
 
 /* FUNC-002-04 更正 */
-function correctionPage(closed) {
+function recordCorrectionHistory(record) {
+  const correction = record.correction;
+  return correction ? `<li>更正字段：${correction.field}；更正人：${correction.operator}<small class="mono">${correction.at} · DATA-002-44/45</small></li>` : "<li>无更正记录</li>";
+}
+
+function correctionPage(closed, selectedRecord, requestedRecordId) {
   const page = pages[closed ? "correction-closed" : "correction"];
-  const form = closed ? `<form class="form-card" id="correction-form" novalidate>
+  if (requestedRecordId && !selectedRecord) return pageHeading(page, "未找到该记录。", `<button class="button button-secondary" type="button" data-route="records">返回记录查询</button>`);
+  const record = selectedRecord ?? records[closed ? 2 : 0];
+  const formAttributes = selectedRecord ? ` data-record-id="${record.id}"` : "";
+  const back = selectedRecord ? `<button class="button button-secondary" type="button" data-route="record-detail/${record.id}">返回记录详情</button>` : "";
+  const form = closed ? `<form class="form-card" id="correction-form"${formAttributes} novalidate>
       <div class="info-card warning"><div class="info-card__title">${icon("info")}该记录已完成</div><p>已取件、已退件记录保留原内容，只能追加更正说明；不提供字段修改入口，不转移归属。</p></div>
-      <dl class="detail-grid" style="margin-top:20px"><div><dt>更正方式（DATA-002-39）</dt><dd>追加更正说明</dd></div><div><dt>记录是否已完成（DATA-002-38）</dt><dd>是 · 已取件</dd></div><div><dt>运单号</dt><dd class="mono">JD000987654321</dd></div><div><dt>归属账号</dt><dd class="mono">00120001</dd></div></dl>
-      ${field("更正原因", "DATA-002-42", `<input name="reason" value="面单手机号誊写有误，补充说明" autocomplete="off">`)}
-      <div class="field field-full"><label for="correction-note">更正说明<span class="required" aria-hidden="true">*</span></label><textarea id="correction-note" name="note">实际面单收件手机号与记录一致，学生已完成自助取件；本次仅补充核对说明。</textarea><span class="data-ref">DATA-002-43 · 只追加，不改原业务结果</span></div>
+      <dl class="detail-grid" style="margin-top:20px"><div><dt>入库记录编号</dt><dd class="mono">${record.id}</dd></div><div><dt>运单号</dt><dd class="mono">${record.tracking}</dd></div><div><dt>更正方式（DATA-002-39）</dt><dd>追加更正说明</dd></div><div><dt>记录是否已完成（DATA-002-38）</dt><dd>是 · ${record.status}</dd></div><div><dt>归属账号</dt><dd class="mono">${record.account}</dd></div></dl>
+      ${field("更正原因", "DATA-002-42", `<input name="reason" value="${selectedRecord ? "" : "面单手机号誊写有误，补充说明"}" autocomplete="off">`)}
+      <div class="field field-full"><label for="correction-note">更正说明<span class="required" aria-hidden="true">*</span></label><textarea id="correction-note" name="note">${selectedRecord ? "" : "实际面单收件手机号与记录一致，学生已完成自助取件；本次仅补充核对说明。"}</textarea><span class="data-ref">DATA-002-43 · 只追加，不改原业务结果</span></div>
       <div class="form-footer"><button class="button button-primary" type="submit">保存更正说明</button></div>
-    </form>` : `<form class="form-card" id="correction-form" novalidate>
+    </form>` : `<form class="form-card" id="correction-form"${formAttributes} novalidate>
       <div class="form-grid">
-        ${field("更正对象类型", "DATA-002-37", `<select name="objectType"><option>入库记录</option><option>退件记录</option></select>`)}
-        ${field("更正对象编号", "DATA-002-07 · 定位待更正记录", `<input name="objectId" value="RK20261122001" autocomplete="off">`)}
+        ${field("更正对象类型", "DATA-002-37", `<select name="objectType" ${selectedRecord ? "disabled" : ""}><option>入库记录</option><option>退件记录</option></select>`)}
+        ${field("更正对象编号", "DATA-002-07 · 定位待更正记录", `<input name="objectId" value="${record.id}" autocomplete="off" ${selectedRecord ? "readonly" : ""}>`)}
         ${field("更正字段", "DATA-002-40 · 不允许直接修改包裹状态", `<select name="fieldName" id="correction-field"><option value="phone">收件手机号</option><option value="tracking">运单号</option><option value="location">存放位置名称</option></select>`)}
-        ${field("更正后内容", "按更正字段引用DATA-003-03等原定义", `<input name="newValue" id="correction-value" value="13900000009" autocomplete="off">`)}
-        ${field("更正原因", "DATA-002-42", `<input name="reason" value="入库时收件手机号录错" autocomplete="off">`, true)}
+        ${field("更正后内容", "按更正字段引用DATA-003-03等原定义", `<input name="newValue" id="correction-value" value="${selectedRecord ? "" : otherStudent.phone}" autocomplete="off">`)}
+        ${field("更正原因", "DATA-002-42", `<input name="reason" value="${selectedRecord ? "" : "入库时收件手机号录错"}" autocomplete="off">`, true)}
       </div>
       <div class="snapshot-compare">
-        <section class="snapshot-box"><h4>更正前内容快照（DATA-002-41）</h4><dl><dt>归属账号</dt><dd class="mono">待关联（允许缺失）</dd><dt>运单号</dt><dd class="mono">SF000123456789</dd><dt>收件手机号</dt><dd class="mono">13800000001</dd><dt>存放位置</dt><dd>A-3</dd></dl></section>
-        <section class="snapshot-box new"><h4>按新号码重新匹配</h4><dl><dt>匹配结果</dt><dd class="mono">00120002 · 示例学生乙</dd><dt>归属变化</dt><dd>待关联 → 00120002</dd><dt>学生可见性</dt><dd>入库后对示例学生乙可见</dd></dl></section>
+        <section class="snapshot-box"><h4>更正前内容快照（DATA-002-41）</h4><dl><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联（允许缺失）"}</dd><dt>运单号</dt><dd class="mono">${record.tracking}</dd><dt>收件手机号</dt><dd class="mono">${record.phone}</dd><dt>存放位置</dt><dd>${record.location}</dd></dl></section>
+        ${selectedRecord ? "" : `<section class="snapshot-box new"><h4>按新号码重新匹配</h4><dl><dt>匹配结果</dt><dd class="mono">${otherStudent.account} · ${otherStudent.name}</dd><dt>归属变化</dt><dd>待关联 → ${otherStudent.account}</dd><dt>学生可见性</dt><dd>入库后对${otherStudent.name}可见</dd></dl></section>`}
       </div>
       <p class="inline-note">快照字段为P002-09建议最小范围，具体结构待数据库设计确认；更正运单号时须重新查重，命中其他未办结记录则阻止保存。</p>
       <div class="form-footer"><button class="button button-primary" type="submit">保存更正</button></div>
     </form>`;
-  return `<div class="correction-page">` + pageHeading(page, closed ? "已完成记录仅追加说明，原状态、归属及完成时间保持。" : "先定位记录并核对是否已完成，再选择更正字段；保存时留痕操作人与时间。") + form +
-    `<div style="height:16px"></div><section class="list-card"><div class="list-toolbar"><strong>更正留痕</strong><span class="list-count">按更正时间倒序 · 不可删除</span></div><ul class="history-list" style="padding:0 20px 12px"><li>更正字段：存放位置名称；更正人：示例工作人员<small class="mono">2026-11-22 09:30 · DATA-002-44/45</small></li></ul></section></div>`;
+  return `<div class="correction-page">` + pageHeading(page, closed ? "已完成记录仅追加说明，原状态、归属及完成时间保持。" : "先定位记录并核对是否已完成，再选择更正字段；保存时留痕操作人与时间。", back) + form +
+    `<div style="height:16px"></div><section class="list-card"><div class="list-toolbar"><strong>更正留痕</strong><span class="list-count">按更正时间倒序 · 不可删除</span></div><ul class="history-list" style="padding:0 20px 12px">${recordCorrectionHistory(record)}</ul></section></div>`;
 }
 
 /* FUNC-002-05 查询 */
 function recordRows() {
-  return `<tr><td class="mono">RK20261122001</td><td>顺丰速运</td><td class="mono">SF000123456789</td><td>示例学生</td><td class="mono">13800000001</td><td>A-3</td><td><span class="status-badge">待取件</span></td><td>待关联</td><td class="mono">2026-11-22 09:05</td><td><div class="row-actions"><button class="button-text" type="button" data-action="record-detail">详情</button></div></td></tr>
-  <tr><td class="mono">RK20261121006</td><td>京东快递</td><td class="mono">JD000444555666</td><td>示例学生</td><td class="mono">13800000001</td><td>B-1</td><td><span class="status-badge warning">退件中</span></td><td>已关联</td><td class="mono">2026-11-21 16:02</td><td><div class="row-actions"><button class="button-text" type="button" data-action="record-detail">详情</button></div></td></tr>
-  <tr><td class="mono">RK20261122002</td><td>京东快递</td><td class="mono">JD000987654321</td><td>示例学生</td><td class="mono">13800000001</td><td>A-1</td><td><span class="status-badge neutral">已取件</span></td><td>已关联</td><td class="mono">2026-11-21 16:40</td><td><div class="row-actions"><button class="button-text" type="button" data-action="record-detail">详情</button></div></td></tr>`;
+  return records.map(record => {
+    const statusStyle = isRecordClosed(record) ? " neutral" : record.status === "退件中" ? " warning" : "";
+    return `<tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${record.tracking}</td><td>${record.receiver}</td>
+      <td class="mono">${record.phone}</td><td>${record.location}</td><td><span class="status-badge${statusStyle}">${record.status}</span></td>
+      <td>${record.account ? "已关联" : "待关联"}</td><td class="mono">${record.arrivedAt}</td>
+      <td><div class="row-actions"><button class="button-text" type="button" data-action="record-detail" data-record-id="${record.id}">详情</button></div></td></tr>`;
+  }).join("");
 }
 
-function recordsPage(admin, showDetail = admin) {
-  const page = pages[admin ? "records-admin" : showDetail ? "record-detail" : "records"];
+function recordDetail(record, admin) {
+  const closed = isRecordClosed(record);
+  const returnInfo = record.returnInfo;
+  const canContinue = record.status === "退件中" && returnInfo;
+  const actions = admin ? "" : `<div class="drawer-footer">
+      <button class="button ${canContinue ? "button-secondary" : "button-primary"}" type="button" data-route="${closed ? "correction-closed" : "correction"}/${record.id}">${closed ? "追加说明" : "记录更正"}</button>
+      ${canContinue ? `<button class="button button-primary" type="button" data-route="returns/${record.id}">继续退件办理</button>` : ""}
+    </div>`;
+  return `<div class="overlay"></div><aside class="drawer record-detail-drawer" role="dialog" aria-modal="true" aria-labelledby="record-title">
+    <div class="drawer-header"><div><h2 id="record-title">记录详情</h2><span class="function-tag">${record.id} · ${admin ? "只读" : record.status}</span></div><button class="icon-button" type="button" data-route="${admin ? "records-admin" : "records"}" aria-label="关闭">${icon("close")}</button></div>
+    <div class="drawer-body">
+      <dl class="detail-grid">
+        <div><dt>快递公司</dt><dd>${record.company}</dd></div><div><dt>运单号</dt><dd class="mono">${record.tracking}</dd></div>
+        <div><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联"}</dd></div><div><dt>包裹状态</dt><dd>${record.status}</dd></div>
+        <div><dt>存放位置</dt><dd>${record.location}</dd></div><div><dt>到站时间</dt><dd class="mono">${record.arrivedAt}</dd></div>
+      </dl>
+      <section class="detail-section"><h3>退件办理情况</h3>
+        ${returnInfo ? `<dl class="detail-grid">
+          <div><dt>退件记录编号</dt><dd class="mono">${returnInfo.id}</dd></div><div><dt>退件来源</dt><dd>${returnInfo.source}</dd></div>
+          <div><dt>退件原因</dt><dd>${returnInfo.reason}</dd></div><div><dt>退回去向</dt><dd>${returnInfo.destination}</dd></div>
+          <div><dt>开始退件时间</dt><dd class="mono">${returnInfo.startedAt}</dd></div><div><dt>退件完成时间</dt><dd>${returnInfo.finishedAt ?? "未完成"}</dd></div>
+        </dl>` : "<p>暂无退件记录。</p>"}
+      </section>
+      <section class="detail-section"><h3>更正留痕</h3><ul class="history-list">${recordCorrectionHistory(record)}</ul></section>
+      ${actions}
+    </div>
+  </aside>`;
+}
+
+function recordsPage(route, record, unavailable) {
+  const admin = route === "records-admin";
+  const page = pages[route];
   const table = demoState === "normal" ? `<div class="table-scroll"><table class="data-table records-table">
       <thead><tr><th>入库记录编号</th><th>公司</th><th>运单号</th><th>收件人</th><th>收件手机号</th><th>位置</th><th>包裹状态</th><th>关联状态</th><th>到站时间</th><th>操作</th></tr></thead>
-      <tbody>${recordRows()}</tbody></table></div>${pagination(3)}` : listStateBlock("没有符合条件的记录，请调整查询条件。");
-  const detail = showDetail ? `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="record-title">
-    <div class="drawer-header"><div><h2 id="record-title">记录详情</h2><span class="function-tag">RK20261121006 · ${admin ? "只读" : "退件中"}</span></div><button class="icon-button" type="button" data-route="${admin ? "records-admin" : "records"}" aria-label="关闭">${icon("close")}</button></div>
-    <div class="drawer-body">
-      <dl class="detail-grid"><div><dt>快递公司</dt><dd>京东快递</dd></div><div><dt>运单号</dt><dd class="mono">JD000444555666</dd></div><div><dt>归属账号</dt><dd class="mono">00120001</dd></div><div><dt>包裹状态</dt><dd>退件中</dd></div></dl>
-      <section class="detail-section"><h3>退件办理情况</h3><dl class="detail-grid"><div><dt>退件记录编号</dt><dd class="mono">TJ20261122002</dd></div><div><dt>退件来源</dt><dd>学生拒收</dd></div><div><dt>退件原因</dt><dd>学生拒收</dd></div><div><dt>退回去向</dt><dd>退回原快递公司</dd></div><div><dt>开始退件时间</dt><dd class="mono">2026-11-22 09:40</dd></div><div><dt>退件完成时间</dt><dd>未完成，允许缺失</dd></div></dl></section>
-      <section class="detail-section"><h3>更正留痕</h3><ul class="history-list"><li>无更正记录<small>当前值与留痕分开查看</small></li></ul></section>
-      ${admin ? `<div class="info-card"><p>当前账号仅可查看，不能办理业务；后端同样拒绝办理类请求（403 FORBIDDEN待接口登记）。</p></div>` : `<div class="drawer-footer"><button class="button button-secondary" type="button" data-route="correction">记录更正</button><button class="button button-primary" type="button" data-route="returns">继续退件办理</button></div>`}
-    </div>
-  </aside>` : "";
+      <tbody>${recordRows()}</tbody></table></div>${pagination(records.length)}` : listStateBlock("没有符合条件的记录，请调整查询条件。");
+  const detail = record && demoState === "normal" ? recordDetail(record, admin) : "";
   return pageHeading(page, admin ? "管理员只读查看全部获准记录，不显示任何办理入口。" : "查询为只读操作；办理入口仍按记录当前状态进入对应功能。", admin ? `<span class="role-badge">管理员 · 只读</span>` : "") +
+    (unavailable ? `<p class="form-alert" role="alert">未找到该记录，请从清单重新选择。</p>` : "") +
     `<form class="filter-card" id="record-filter" novalidate><div class="filter-grid">
       <div class="field"><label for="record-status">包裹状态</label><select id="record-status"><option value="">不限</option><option>待取件</option><option>已取件</option><option>拒收待退件</option><option>退件中</option><option>已退件</option></select><span class="data-ref">DATA-002-46</span></div>
       <div class="field"><label for="record-link">账号关联状态</label><select id="record-link"><option value="">不限</option><option>已关联</option><option>待关联</option></select><span class="data-ref">DATA-002-49</span></div>
@@ -353,7 +421,10 @@ function recordsPage(admin, showDetail = admin) {
 }
 
 function render() {
-  const route = currentRoute();
+  let route = currentRoute();
+  const [, recordId] = window.location.hash.split("/");
+  const record = records.find(item => item.id === recordId);
+  if (route.startsWith("correction") && record) route = isRecordClosed(record) ? "correction-closed" : "correction";
   const listRoute = ["linking", "linking-mismatch", "returns", "records", "record-detail", "records-admin"].includes(route);
   if (!listRoute) demoState = "normal";
   let html;
@@ -362,14 +433,12 @@ function render() {
   else if (route === "intake-success") html = intakeSuccessPage();
   else if (route === "linking") html = linkingPage(false);
   else if (route === "linking-mismatch") html = linkingPage(true);
-  else if (route === "returns") html = returnsPage();
+  else if (route === "returns") html = returnsPage(record, recordId);
   else if (route === "return-start") html = returnStartPage();
   else if (route === "return-manual") html = returnManualPage();
-  else if (route === "correction") html = correctionPage(false);
-  else if (route === "correction-closed") html = correctionPage(true);
-  else if (route === "records") html = recordsPage(false, false);
-  else if (route === "record-detail") html = recordsPage(false, true);
-  else html = recordsPage(true, true);
+  else if (route.startsWith("correction")) html = correctionPage(route === "correction-closed", record, recordId);
+  else if (route === "records") html = recordsPage(route);
+  else html = recordsPage(route, route === "record-detail" && !recordId ? records[1] : record, Boolean(recordId && !record));
   document.getElementById("app").innerHTML = shell(route, html);
   document.title = `${pages[route].ui} ${pages[route].title}｜REQ-002原型`;
   const picker = document.getElementById("page-picker");
@@ -452,12 +521,29 @@ function handleCorrection(form) {
   if (!reason.value.trim()) { setFieldError(reason, "请填写更正原因。"); reason.focus(); return; }
   const fieldInput = form.elements.fieldName;
   const value = form.elements.newValue;
+  const record = records.find(item => item.id === form.dataset.recordId);
   if (fieldInput && value) {
     if (!value.value.trim()) { setFieldError(value, "请填写更正后内容。"); value.focus(); return; }
     if (fieldInput.value === "phone" && !/^1\d{10}$/.test(value.value)) { setFieldError(value, "收件手机号应为11位中国大陆手机号。"); value.focus(); return; }
-    if (fieldInput.value === "tracking" && value.value.trim() === "SF000123456789") { setFieldError(value, "更正后运单号与该快递公司已有记录重复（入库记录编号：RK20261122001），请先核对。"); value.focus(); return; }
+    if (fieldInput.value === "tracking") {
+      const tracking = value.value.trim();
+      const duplicate = record
+        ? records.find(item => item.id !== record.id && item.company === record.company && item.tracking === tracking && !isRecordClosed(item))
+        : tracking === records[0].tracking ? records[0] : null;
+      if (duplicate) { setFieldError(value, `更正后运单号与该快递公司已有记录重复（入库记录编号：${duplicate.id}），请先核对。`); value.focus(); return; }
+    }
   }
-  submitWithFeedback(form, () => showToast(fieldInput ? "入库记录RK20261122001已更正，更正字段：收件手机号，更正人：示例工作人员。" : "已完成记录已追加更正说明，原业务结果未改变。"));
+  const note = form.elements.note;
+  if (record && note) {
+    const missingNote = !note.value.trim();
+    setFieldError(note, missingNote ? "请填写更正说明。" : "");
+    if (missingNote) { note.focus(); return; }
+  }
+  const fieldLabel = fieldInput?.selectedOptions[0].textContent;
+  const result = fieldInput
+    ? `入库记录${record?.id ?? records[0].id}已更正，更正字段：${fieldLabel}，更正人：示例工作人员。`
+    : `入库记录${record?.id ?? records[2].id}已追加更正说明，原业务结果未改变。`;
+  submitWithFeedback(form, () => showToast(result));
 }
 
 function handleRecordFilter(form) {
@@ -485,8 +571,15 @@ document.addEventListener("click", event => {
   if (action === "confirm-duplicate") { window.location.hash = "intake"; showToast("已确认为重复包裹，未新增入库记录。"); }
   if (action === "print-label") showToast("标签仅作页面预览与浏览器打印，不设置物理打印设备或专用纸张版式。");
   if (action === "open-link") window.location.hash = "linking";
-  if (action === "finish-return") showToast("退件已完成登记，完成时间：2026-11-22 10:30，办理人：示例工作人员；重复提交不改写完成事实。");
-  if (action === "record-detail") window.location.hash = currentRoute() === "records" ? "record-detail" : "records-admin";
+  if (action === "finish-return") {
+    const selected = records.find(record => record.id === actionButton.dataset.recordId);
+    const prefix = selected ? `退件记录${selected.returnInfo.id}（运单号${selected.tracking}）` : "退件";
+    showToast(`${prefix}已完成登记，完成时间：2026-11-22 10:30，办理人：示例工作人员；重复提交不改写完成事实。`);
+  }
+  if (action === "record-detail") {
+    const detailRoute = currentRoute() === "records-admin" ? "records-admin" : "record-detail";
+    window.location.hash = `${detailRoute}/${actionButton.dataset.recordId}`;
+  }
   if (action === "search") showToast("已按当前条件刷新待关联清单。");
   if (action === "retry") { demoState = "normal"; render(); }
 });
