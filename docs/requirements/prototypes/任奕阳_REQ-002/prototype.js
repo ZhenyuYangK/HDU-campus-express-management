@@ -46,9 +46,13 @@ const initialRecords = [
   {
     id: "RK20261122002", company: "京东快递", tracking: "JD000987654321", receiver: student.name,
     phone: student.phone, location: "A-1", status: "已取件", account: student.account, arrivedAt: "2026-11-21 16:40"
-  }
+  },
+  intakeExample
 ];
 const records = [...initialRecords];
+const recordSearches = new Map();
+const emptyRecordFilters = { status: "", association: "", from: "", to: "", keyword: "" };
+const pageSize = 20;
 let intakeDraft;
 let demoState = "normal";
 let toastTimer;
@@ -79,7 +83,7 @@ function escapeHtml(value) {
 }
 
 function findRecord(id) {
-  return id === intakeExample.id ? intakeExample : records.find(record => record.id === id);
+  return records.find(record => record.id === id);
 }
 
 function metaFooter(page) {
@@ -139,18 +143,21 @@ function field(label, ref, control, full = false) {
   return `<div class="field${full ? " field-full" : ""}"><label>${label}<span class="required" aria-hidden="true">*</span></label>${control}<span class="data-ref">${ref}</span></div>`;
 }
 
-function listStateBlock(message) {
-  if (demoState === "loading") {
+function listStateBlock(message, state = demoState) {
+  if (state === "loading") {
     return `<div class="skeleton-wrap" role="status" aria-label="清单加载中"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>`;
   }
-  if (demoState === "empty") {
+  if (state === "empty") {
     return `<div class="empty-state"><div class="empty-state__inner"><div class="empty-state__icon">${icon("box")}</div><h2>没有符合条件的记录</h2><p>${message}</p></div></div>`;
   }
   return `<div class="state-error" role="alert"><p>清单加载失败，请重试。</p><button class="button button-secondary" type="button" data-action="retry">${icon("refresh")}重新加载</button></div>`;
 }
 
-function pagination(total) {
-  return `<div class="list-footer"><span>共${total}条 · 每页20条 · page从1开始</span><div class="pagination"><span class="page-number">1</span></div></div>`;
+function pagination(total, page = 1) {
+  const pageCount = Math.ceil(total / pageSize);
+  const previous = pageCount > 1 ? `<button class="button button-secondary" type="button" data-action="record-page" data-page="${page - 1}" ${page === 1 ? "disabled" : ""}>上一页</button>` : "";
+  const next = pageCount > 1 ? `<button class="button button-secondary" type="button" data-action="record-page" data-page="${page + 1}" ${page === pageCount ? "disabled" : ""}>下一页</button>` : "";
+  return `<div class="list-footer"><span>共${total}条 · 每页${pageSize}条 · page从1开始</span><div class="pagination">${previous}<span class="page-number" aria-current="page">${page}</span>${next}</div></div>`;
 }
 
 /* FUNC-002-01 收件入库 */
@@ -389,8 +396,28 @@ function correctionPage(closed, selectedRecord, requestedRecordId) {
 }
 
 /* FUNC-002-05 查询 */
-function recordRows() {
-  return records.map(record => {
+function recordSearchScope(route) {
+  return route === "records-admin" ? "records-admin" : "records";
+}
+
+function filterOptions(values, selected) {
+  return `<option value="">不限</option>${values.map(value => `<option${value === selected ? " selected" : ""}>${value}</option>`).join("")}`;
+}
+
+function filteredRecords(filters) {
+  const keyword = filters.keyword.toLowerCase();
+  return records.filter(record => {
+    const association = record.account ? "已关联" : "待关联";
+    const date = record.arrivedAt.slice(0, 10);
+    return (!filters.status || record.status === filters.status) &&
+      (!filters.association || association === filters.association) &&
+      (!filters.from || date >= filters.from) && (!filters.to || date <= filters.to) &&
+      (!keyword || [record.tracking, record.receiver, record.phone].some(value => value.toLowerCase().includes(keyword)));
+  }).sort((a, b) => b.arrivedAt.localeCompare(a.arrivedAt) || b.id.localeCompare(a.id));
+}
+
+function recordRows(entries) {
+  return entries.map(record => {
     const statusStyle = isRecordClosed(record) ? " neutral" : record.status === "退件中" ? " warning" : "";
     return `<tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${escapeHtml(record.receiver)}</td>
       <td class="mono">${record.phone}</td><td>${record.location}</td><td><span class="status-badge${statusStyle}">${record.status}</span></td>
@@ -431,20 +458,26 @@ function recordDetail(record, admin) {
 function recordsPage(route, record, unavailable) {
   const admin = route === "records-admin";
   const page = pages[route];
-  const table = demoState === "normal" ? `<div class="table-scroll"><table class="data-table records-table">
+  const search = recordSearches.get(recordSearchScope(route));
+  const filters = search?.filters ?? emptyRecordFilters;
+  const results = filteredRecords(filters);
+  const resultPage = Math.min(search?.page ?? 1, Math.max(1, Math.ceil(results.length / pageSize)));
+  const offset = (resultPage - 1) * pageSize;
+  const table = demoState === "normal" && results.length ? `<div class="table-scroll"><table class="data-table records-table">
       <thead><tr><th>入库记录编号</th><th>公司</th><th>运单号</th><th>收件人</th><th>收件手机号</th><th>位置</th><th>包裹状态</th><th>关联状态</th><th>到站时间</th><th>操作</th></tr></thead>
-      <tbody>${recordRows()}</tbody></table></div>${pagination(records.length)}` : listStateBlock("没有符合条件的记录，请调整查询条件。");
+      <tbody>${recordRows(results.slice(offset, offset + pageSize))}</tbody></table></div>${pagination(results.length, resultPage)}` :
+    listStateBlock("请调整查询条件后重试。", demoState === "normal" ? "empty" : demoState);
   const detail = record && demoState === "normal" ? recordDetail(record, admin) : "";
   return pageHeading(page, admin ? "管理员只读查看全部获准记录，不显示任何办理入口。" : "查询为只读操作；办理入口仍按记录当前状态进入对应功能。", admin ? `<span class="role-badge">管理员 · 只读</span>` : "") +
     (unavailable ? `<p class="form-alert" role="alert">未找到该记录，请从清单重新选择。</p>` : "") +
     `<form class="filter-card" id="record-filter" novalidate><div class="filter-grid">
-      <div class="field"><label for="record-status">包裹状态</label><select id="record-status"><option value="">不限</option><option>待取件</option><option>已取件</option><option>拒收待退件</option><option>退件中</option><option>已退件</option></select><span class="data-ref">DATA-002-46</span></div>
-      <div class="field"><label for="record-link">账号关联状态</label><select id="record-link"><option value="">不限</option><option>已关联</option><option>待关联</option></select><span class="data-ref">DATA-002-49</span></div>
-      <div class="field"><label for="record-from">时间范围起</label><input id="record-from" name="from" type="date" value="2026-11-21"><span class="data-ref">DATA-002-47 · 端点待P002-08</span></div>
-      <div class="field"><label for="record-to">时间范围止</label><input id="record-to" name="to" type="date" value="2026-11-22"><span class="data-ref">起止成对，起不晚于止</span></div>
-      <div class="field field-full"><label for="record-keyword">关键词</label><input id="record-keyword" name="keyword" value="SF000123456789" maxlength="120" autocomplete="off"><span class="data-ref">DATA-002-48 · 运单号/收件人/手机号，最长50字符，超长报错不截断查询</span></div>
+      <div class="field"><label for="record-status">包裹状态</label><select id="record-status" name="status">${filterOptions(["待取件", "已取件", "拒收待退件", "退件中", "已退件"], filters.status)}</select><span class="data-ref">DATA-002-46</span></div>
+      <div class="field"><label for="record-link">账号关联状态</label><select id="record-link" name="association">${filterOptions(["已关联", "待关联"], filters.association)}</select><span class="data-ref">DATA-002-49</span></div>
+      <div class="field"><label for="record-from">到站日期起</label><input id="record-from" name="from" type="date" value="${filters.from}"><span class="data-ref">DATA-002-47 · 含起止日期</span></div>
+      <div class="field"><label for="record-to">到站日期止</label><input id="record-to" name="to" type="date" value="${filters.to}"><span class="data-ref">起止成对，起不晚于止</span></div>
+      <div class="field field-full"><label for="record-keyword">关键词</label><input id="record-keyword" name="keyword" value="${escapeHtml(filters.keyword)}" autocomplete="off"><span class="data-ref">DATA-002-48 · 运单号/收件人/手机号，最多50个字符</span></div>
     </div><div class="filter-footer"><button class="button button-primary" type="submit">${icon("search")}查询</button></div></form>
-    <section class="list-card"><div class="list-toolbar"><strong>收件退件记录</strong><span class="list-count">默认按到站时间降序，可切换退件完成时间</span></div>${table}</section>${detail}`;
+    <section class="list-card"><div class="list-toolbar"><strong>收件退件记录</strong><span class="list-count">按到站时间降序</span></div>${table}</section>${detail}`;
 }
 
 function render() {
@@ -519,7 +552,7 @@ function readIntakeForm(form) {
 }
 
 function matchingIntakes({ company, tracking }) {
-  return [...records, intakeExample].filter(record => record.company === company && record.tracking === tracking);
+  return records.filter(record => record.company === company && record.tracking === tracking);
 }
 
 function showIntakeDuplicate(draft, record) {
@@ -609,14 +642,21 @@ function handleCorrection(form) {
 }
 
 function handleRecordFilter(form) {
-  const from = form.elements.from.value;
-  const to = form.elements.to.value;
-  const keyword = form.elements.keyword;
-  if ((from && !to) || (!from && to)) { showToast("时间范围起止须成对填写。"); return; }
-  if (from && to && from > to) { showToast("起始时间不能晚于结束时间。"); return; }
-  if (keyword.value.length > 50) { setFieldError(keyword, "关键词最长50个字符，请缩短后再查询。"); keyword.focus(); return; }
-  setFieldError(keyword, "");
-  showToast("已按当前条件刷新列表；查询不修改业务数据，条件不持久保存。");
+  const { status, association, from, to, keyword } = form.elements;
+  const fromError = from.validity.badInput ? "请输入有效的起始日期。" : !from.value && to.value ? "请填写起始日期。" : "";
+  let toError = to.validity.badInput ? "请输入有效的结束日期。" : from.value && !to.value ? "请填写结束日期。" : "";
+  if (from.valueAsNumber > to.valueAsNumber) toError = "起始日期不能晚于结束日期。";
+  setFieldError(from, fromError);
+  setFieldError(to, toError);
+  setFieldError(keyword, Array.from(keyword.value).length > 50 ? "关键词最长50个字符，请缩短后再查询。" : "");
+  const firstError = form.querySelector('[aria-invalid="true"]');
+  if (firstError) { firstError.focus(); return; }
+
+  const filters = { status: status.value, association: association.value, from: from.value, to: to.value, keyword: keyword.value.trim() };
+  recordSearches.set(recordSearchScope(currentRoute()), { filters, page: 1 });
+  demoState = "normal";
+  render();
+  document.querySelector('#record-filter [type="submit"]').focus({ preventScroll: true });
 }
 
 document.addEventListener("click", event => {
@@ -655,6 +695,12 @@ document.addEventListener("click", event => {
     const detailRoute = currentRoute() === "records-admin" ? "records-admin" : "record-detail";
     window.location.hash = `${detailRoute}/${actionButton.dataset.recordId}`;
   }
+  if (action === "record-page") {
+    const scope = recordSearchScope(currentRoute());
+    const filters = recordSearches.get(scope)?.filters ?? emptyRecordFilters;
+    recordSearches.set(scope, { filters, page: Number(actionButton.dataset.page) });
+    render();
+  }
   if (action === "search") showToast("已按当前条件刷新待关联清单。");
   if (action === "retry") { demoState = "normal"; render(); }
 });
@@ -681,6 +727,7 @@ document.getElementById("state-picker").addEventListener("change", event => { de
 document.getElementById("reset-prototype").addEventListener("click", () => {
   demoState = "normal";
   records.splice(initialRecords.length);
+  recordSearches.clear();
   intakeDraft = undefined;
   if (window.location.hash === "#intake") render();
   else window.location.hash = "intake";
