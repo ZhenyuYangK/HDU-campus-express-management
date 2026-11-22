@@ -33,6 +33,8 @@ let selectedCompany = "京东快递";
 let demoState = "normal";
 let toastTimer;
 let studentNeedsPasswordChange = true;
+const demoPassword = "Demo2026";
+let studentDemoPassword = demoPassword;
 const studentAccount = "00120001";
 const accountExamples = {
   [studentAccount]: { name: "示例学生", phone: "13800000001", role: "学生" },
@@ -114,14 +116,14 @@ function loginPage(hasError) {
       </section>
       <section class="login-panel" aria-labelledby="login-title">
         <h2 id="login-title">登录驿站</h2>
-        ${hasError ? `<div class="form-alert" role="alert">${icon("alert")}<span>登录信息有误，请检查后重试。</span></div>` : ""}
+        <div class="form-alert" id="login-alert" role="alert" ${hasError ? "" : "hidden"}>${icon("alert")}<span>账号、绑定手机号或密码有误，请核对后重试。</span></div>
         <form id="login-form" novalidate>
           <div class="field"><label for="login-id">账号或绑定手机号<span class="required" aria-hidden="true">*</span></label>
-            <input id="login-id" name="loginId" autocomplete="username" inputmode="text" value="${hasError ? "Staff001" : ""}" placeholder="8位账号或11位手机号" ${hasError ? 'aria-invalid="true" aria-describedby="login-id-error"' : ""}>
-            ${hasError ? `<p class="field-error" id="login-id-error">${icon("alert")}账号前缀仅接受小写staff或admin，且不能含首尾空白。</p>` : `<p class="field-hint">DATA-001-07 · 保留前导零</p>`}
+            <input id="login-id" name="loginId" autocomplete="username" inputmode="text" value="${hasError ? "Staff001" : ""}" placeholder="8位账号或11位手机号" ${hasError ? 'aria-invalid="true" aria-describedby="login-id-dynamic-error"' : ""}>
+            ${hasError ? `<p class="field-error dynamic-error" id="login-id-dynamic-error">${icon("alert")}账号前缀仅接受小写staff或admin，且不能含首尾空白。</p>` : `<p class="field-hint">DATA-001-07 · 保留前导零</p>`}
           </div>
           <div class="field"><label for="login-password">密码<span class="required" aria-hidden="true">*</span></label>
-            <div class="input-with-action"><input id="login-password" name="password" type="password" autocomplete="current-password" value="${hasError ? "Demo2026" : ""}" placeholder="输入密码"><button class="input-action" type="button" data-toggle-password="login-password" aria-label="显示密码">显示</button></div>
+            <div class="input-with-action"><input id="login-password" name="password" type="password" autocomplete="current-password" value="${hasError ? demoPassword : ""}" placeholder="输入密码"><button class="input-action" type="button" data-toggle-password="login-password" aria-label="显示密码">显示</button></div>
             <p class="field-hint">DATA-001-04 · 8～20位，含字母和数字</p>
           </div>
           <button class="button button-primary login-submit" type="submit">登录${icon("arrow")}</button>
@@ -401,23 +403,36 @@ function submitWithFeedback(form, callback) {
 }
 
 function handleLogin(form) {
+  if (form.querySelector('[type="submit"]').disabled) return;
+  const loginAlert = document.getElementById("login-alert");
+  loginAlert.hidden = true;
   if (!requireFields(form, ["loginId", "password"])) return;
   const idInput = form.elements.loginId;
   const passwordInput = form.elements.password;
   const id = idInput.value;
+  const password = passwordInput.value;
   if (id !== id.trim()) { setFieldError(idInput, "账号或手机号不能含首尾空白，请更正后再登录。"); idInput.focus(); return; }
   const accountValid = /^\d{8}$/.test(id) || /^staff\d{3}$/.test(id) || /^admin\d{3}$/.test(id);
   const phoneValid = /^\d{11}$/.test(id);
   if (!accountValid && !phoneValid) { setFieldError(idInput, "请输入8位账号或11位绑定手机号；staff和admin前缀仅接受小写。"); idInput.focus(); return; }
-  if (!validPassword(passwordInput.value)) { setFieldError(passwordInput, "密码为8～20个字符，至少含字母和数字，且不含空白。"); passwordInput.focus(); return; }
+  if (!validPassword(password)) { setFieldError(passwordInput, "密码为8～20个字符，至少含字母和数字，且不含空白。"); passwordInput.focus(); return; }
+  const matched = Object.entries(accountExamples).find(([account, example]) => id === account || id === example.phone);
   submitWithFeedback(form, () => {
     if (!form.isConnected) return;
-    if (id === studentAccount || id === accountExamples[studentAccount].phone) {
-      window.location.hash = "student";
+    const expectedPassword = matched?.[0] === studentAccount ? studentDemoPassword : demoPassword;
+    if (!matched || password !== expectedPassword) {
+      loginAlert.hidden = false;
+      passwordInput.focus();
       return;
     }
-    const role = /^admin/.test(id) ? "管理员" : /^staff/.test(id) ? "工作人员" : "学生";
-    showToast(`登录核验通过 · ${role}`);
+    const role = matched[1].role;
+    if (role === "工作人员") {
+      const workbench = new URL("../任奕阳_REQ-002/REQ-002_界面原型.html#intake", window.location.href);
+      if (exportMode) workbench.searchParams.set("export", "1");
+      window.location.assign(workbench.href);
+    } else {
+      window.location.hash = role === "管理员" ? "account-create" : "student";
+    }
   });
 }
 
@@ -451,9 +466,11 @@ function handleNormalPassword(form) {
 function handleForcedPassword(form) {
   if (!requireFields(form, ["newPassword"])) return;
   const input = form.elements.newPassword;
-  if (!validPassword(input.value)) { setFieldError(input, "新密码须为8～20位，含字母和数字，不含空白字符。"); input.focus(); return; }
+  const newPassword = input.value;
+  if (!validPassword(newPassword)) { setFieldError(input, "新密码须为8～20位，含字母和数字，不含空白字符。"); input.focus(); return; }
   submitWithFeedback(form, () => {
     if (!form.isConnected) return;
+    studentDemoPassword = newPassword;
     studentNeedsPasswordChange = false;
     if (currentRoute() === "password-forced") {
       const studentUrl = new URL(window.location.href);
@@ -528,8 +545,9 @@ document.getElementById("reset-prototype").addEventListener("click", () => {
   selectedCompany = "京东快递";
   demoState = "normal";
   studentNeedsPasswordChange = true;
-  window.location.hash = "login";
-  render();
+  studentDemoPassword = demoPassword;
+  if (window.location.hash === "#login") render();
+  else window.location.hash = "login";
   showToast("原型演示已重置", "所有清单与页面已恢复到初始合成示例。");
 });
 
@@ -566,6 +584,7 @@ document.addEventListener("input", event => {
   if (event.target.matches("[data-password-rules]")) updatePasswordRules(event.target);
   if (event.target.matches("[data-char-count]")) document.getElementById(event.target.dataset.charCount).textContent = `${event.target.value.length} / 50`;
   if (event.target.matches("input")) setFieldError(event.target, "");
+  if (event.target.form?.id === "login-form") document.getElementById("login-alert").hidden = true;
 });
 
 document.addEventListener("change", event => {
