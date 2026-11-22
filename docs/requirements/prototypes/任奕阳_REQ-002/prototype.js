@@ -48,7 +48,8 @@ const initialRecords = [
   },
   {
     id: "RK20261122002", company: "京东快递", tracking: "JD000987654321", receiver: student.name,
-    phone: student.phone, location: "A-1", status: "已取件", account: student.account, arrivedAt: "2026-11-21 16:40"
+    phone: student.phone, location: "A-1", status: "已取件", account: student.account,
+    arrivedAt: "2026-11-21 16:40", pickedAt: "2026-11-21 17:05"
   },
   intakeExample
 ];
@@ -87,6 +88,10 @@ function escapeHtml(value) {
 
 function findRecord(id) {
   return records.find(record => record.id === id);
+}
+
+function demoTimestamp() {
+  return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 16).replace("T", " ");
 }
 
 function metaFooter(page) {
@@ -369,20 +374,24 @@ function returnManualPage() {
 /* FUNC-002-04 更正 */
 function recordCorrectionHistory(record) {
   const correction = record.correction;
-  return correction ? `<li>更正字段：${correction.field}；更正人：${correction.operator}<small class="mono">${correction.at} · DATA-002-44/45</small></li>` : "<li>无更正记录</li>";
+  const notes = (record.correctionNotes ?? []).map(note => `<li class="correction-note-entry"><strong>追加说明</strong> · ${escapeHtml(note.reason)}<div>${escapeHtml(note.text)}</div><small class="mono">${note.at} · 示例工作人员</small></li>`).join("");
+  const earlier = correction ? `<li>更正字段：${correction.field}；更正人：${correction.operator}<small class="mono">${correction.at} · DATA-002-44/45</small></li>` : "";
+  return notes + earlier || "<li>无更正记录</li>";
 }
 
 function correctionPage(closed, selectedRecord, requestedRecordId) {
   const page = pages[closed ? "correction-closed" : "correction"];
   if (requestedRecordId && !selectedRecord) return pageHeading(page, "未找到该记录。", `<button class="button button-secondary" type="button" data-route="records">返回记录查询</button>`);
   const record = selectedRecord ?? records[closed ? 2 : 0];
-  const formAttributes = selectedRecord ? ` data-record-id="${record.id}"` : "";
+  const formAttributes = closed || selectedRecord ? ` data-record-id="${record.id}"` : "";
   const back = selectedRecord ? `<button class="button button-secondary" type="button" data-route="record-detail/${record.id}">返回记录详情</button>` : "";
+  const showExampleText = !selectedRecord && !record.correctionNotes?.length;
+  const completionTime = record.status === "已退件" ? record.returnInfo?.finishedAt : record.pickedAt;
   const form = closed ? `<form class="form-card" id="correction-form"${formAttributes} novalidate>
       <div class="info-card warning"><div class="info-card__title">${icon("info")}该记录已完成</div><p>已取件、已退件记录保留原内容，只能追加更正说明；不提供字段修改入口，不转移归属。</p></div>
-      <dl class="detail-grid" style="margin-top:20px"><div><dt>入库记录编号</dt><dd class="mono">${record.id}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div><div><dt>更正方式（DATA-002-39）</dt><dd>追加更正说明</dd></div><div><dt>记录是否已完成（DATA-002-38）</dt><dd>是 · ${record.status}</dd></div><div><dt>归属账号</dt><dd class="mono">${record.account}</dd></div></dl>
-      ${field("更正原因", "DATA-002-42", `<input name="reason" value="${selectedRecord ? "" : "面单手机号誊写有误，补充说明"}" autocomplete="off">`)}
-      <div class="field field-full"><label for="correction-note">更正说明<span class="required" aria-hidden="true">*</span></label><textarea id="correction-note" name="note">${selectedRecord ? "" : "实际面单收件手机号与记录一致，学生已完成自助取件；本次仅补充核对说明。"}</textarea><span class="data-ref">DATA-002-43 · 只追加，不改原业务结果</span></div>
+      <dl class="detail-grid" style="margin-top:20px"><div><dt>入库记录编号</dt><dd class="mono">${record.id}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div><div><dt>更正方式（DATA-002-39）</dt><dd>追加更正说明</dd></div><div><dt>记录是否已完成（DATA-002-38）</dt><dd>是 · ${record.status}</dd></div><div><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联"}</dd></div><div><dt>${record.status === "已退件" ? "退件完成时间（DATA-002-35）" : "取件时间（DATA-003-09）"}</dt><dd class="mono">${completionTime ?? "—"}</dd></div></dl>
+      <div class="field"><label for="correction-reason">更正原因<span class="required" aria-hidden="true">*</span></label><input id="correction-reason" name="reason" value="${showExampleText ? "补充面单核对情况" : ""}" autocomplete="off"><span class="data-ref">DATA-002-42</span></div>
+      <div class="field field-full"><label for="correction-note">更正说明<span class="required" aria-hidden="true">*</span></label><textarea id="correction-note" name="note">${showExampleText ? "已核对面单手机号与取件记录。" : ""}</textarea><span class="data-ref">DATA-002-43 · 只追加，不改原业务结果</span></div>
       <div class="form-footer"><button class="button button-primary" type="submit">保存更正说明</button></div>
     </form>` : `<form class="form-card" id="correction-form"${formAttributes} novalidate>
       <div class="form-grid">
@@ -449,6 +458,7 @@ function recordDetail(record, admin) {
         <div><dt>快递公司</dt><dd>${record.company}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div>
         <div><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联"}</dd></div><div><dt>包裹状态</dt><dd>${record.status}</dd></div>
         <div><dt>存放位置</dt><dd>${record.location}</dd></div><div><dt>到站时间</dt><dd class="mono">${record.arrivedAt}</dd></div>
+        ${record.pickedAt ? `<div><dt>取件时间</dt><dd class="mono">${record.pickedAt}</dd></div>` : ""}
       </dl>
       <section class="detail-section"><h3>退件办理情况</h3>
         ${returnInfo ? `<dl class="detail-grid">
@@ -530,13 +540,15 @@ function showToast(title) {
 function setFieldError(input, message) {
   if (!input) return;
   const container = input.closest(".field");
+  const errorId = `${input.id}-dynamic-error`;
   container?.querySelectorAll(".field-error.dynamic-error").forEach(error => error.remove());
   input.removeAttribute("aria-invalid");
+  if (input.getAttribute("aria-describedby") === errorId) input.removeAttribute("aria-describedby");
   if (!message) return;
   input.setAttribute("aria-invalid", "true");
   const error = document.createElement("p");
   error.className = "field-error dynamic-error";
-  error.id = `${input.id}-dynamic-error`;
+  error.id = errorId;
   error.setAttribute("role", "alert");
   error.innerHTML = `${icon("alert")}<span></span>`;
   error.querySelector("span").textContent = message;
@@ -589,7 +601,7 @@ function handleIntake(form) {
   submitWithFeedback(form, () => {
     const accountMatches = intakeAccounts.filter(account => account.phone === draft.phone);
     const sequence = records.length - initialRecords.length;
-    const arrivedAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 16).replace("T", " ");
+    const arrivedAt = demoTimestamp();
     const record = {
       ...draft,
       id: `RK${arrivedAt.slice(0, 10).replaceAll("-", "")}${String(sequence + 4).padStart(3, "0")}`,
@@ -637,11 +649,29 @@ function handleReturn(form) {
 }
 
 function handleCorrection(form) {
-  const reason = form.elements.reason;
-  if (!reason.value.trim()) { setFieldError(reason, "请填写更正原因。"); reason.focus(); return; }
+  if (form.querySelector('[type="submit"]').disabled) return;
+  const { reason, note } = form.elements;
+  const reasonText = reason.value.trim();
+  const noteText = note?.value.trim();
+  setFieldError(reason, reasonText ? "" : "请填写更正原因。");
+  if (note) setFieldError(note, noteText ? "" : "请填写更正说明。");
+  if (!reasonText) { reason.focus(); return; }
+  if (note && !noteText) { note.focus(); return; }
+
+  const record = findRecord(form.dataset.recordId);
+  if (note) {
+    if (!record || !isRecordClosed(record)) return;
+    const entry = { reason: reasonText, text: noteText, at: demoTimestamp() };
+    submitWithFeedback(form, () => {
+      records[records.indexOf(record)] = { ...record, correctionNotes: [entry, ...(record.correctionNotes ?? [])] };
+      render();
+      showToast(`入库记录${record.id}已追加更正说明，原业务结果未改变。`);
+    });
+    return;
+  }
+
   const fieldInput = form.elements.fieldName;
   const value = form.elements.newValue;
-  const record = findRecord(form.dataset.recordId);
   if (fieldInput && value) {
     if (!value.value.trim()) { setFieldError(value, "请填写更正后内容。"); value.focus(); return; }
     if (fieldInput.value === "phone" && !/^1\d{10}$/.test(value.value)) { setFieldError(value, "收件手机号应为11位中国大陆手机号。"); value.focus(); return; }
@@ -653,16 +683,8 @@ function handleCorrection(form) {
       if (duplicate) { setFieldError(value, `更正后运单号与该快递公司已有记录重复（入库记录编号：${duplicate.id}），请先核对。`); value.focus(); return; }
     }
   }
-  const note = form.elements.note;
-  if (record && note) {
-    const missingNote = !note.value.trim();
-    setFieldError(note, missingNote ? "请填写更正说明。" : "");
-    if (missingNote) { note.focus(); return; }
-  }
-  const fieldLabel = fieldInput?.selectedOptions[0].textContent;
-  const result = fieldInput
-    ? `入库记录${record?.id ?? records[0].id}已更正，更正字段：${fieldLabel}，更正人：示例工作人员。`
-    : `入库记录${record?.id ?? records[2].id}已追加更正说明，原业务结果未改变。`;
+  const fieldLabel = fieldInput.selectedOptions[0].textContent;
+  const result = `入库记录${record?.id ?? records[0].id}已更正，更正字段：${fieldLabel}，更正人：示例工作人员。`;
   submitWithFeedback(form, () => showToast(result));
 }
 

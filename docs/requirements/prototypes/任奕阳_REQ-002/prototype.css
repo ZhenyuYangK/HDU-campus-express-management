@@ -387,6 +387,8 @@ h3 { margin-bottom: 8px; color: var(--ink); font-size: 16px; }
 .snapshot-box dd { margin: 2px 0 8px; color: var(--ink); overflow-wrap: anywhere; }
 .history-list { list-style: none; margin: 0; padding: 0; }
 .history-list li { padding: 12px 0; border-top: 1px solid var(--hairline); color: var(--ink); font-size: 13px; }
+.correction-note-entry { overflow-wrap: anywhere; }
+.correction-note-entry div { white-space: pre-wrap; }
 .history-list small { display: block; margin-top: 3px; color: var(--muted); }
 .prototype-banner { margin-bottom: 18px; padding: 12px 16px; border-left: 3px solid var(--sage); background: var(--card-mint); color: var(--ink); font-size: 12px; }
 .prototype-banner.warning { border-left-color: #b88435; background: var(--warning-bg); }
