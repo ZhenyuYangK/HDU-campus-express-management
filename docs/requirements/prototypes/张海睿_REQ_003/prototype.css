@@ -1,0 +1,74 @@
+.prototype-toolbar select { min-width: 0; }
+.prototype-toolbar .toolbar-button { display: inline-block; }
+.app-topbar .user-chip { margin-left: auto; }
+.package-heading { align-items: center; }
+.package-heading h1 { margin-bottom: 0; }
+.package-heading + .info-card { margin-bottom: 20px; }
+.back-link { margin: -6px 0 12px -8px; }
+.package-table { min-width: 0; }
+.package-table th { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; }
+.package-table td { height: 70px; padding-block: 10px; }
+.package-table th:nth-child(2) { width: 25%; }
+.package-table th:nth-child(5) { width: 23%; }
+.package-table th:last-child { width: 106px; text-align: right; }
+.package-table .cell-label { display: none; }
+.company-glyph .icon { width: 17px; height: 17px; }
+.compact-toolbar { min-height: 72px; }
+.compact-toolbar .actions-row { justify-content: flex-end; }
+.compact-toolbar .field label { margin-bottom: 0; }
+.compact-toolbar select { width: auto; min-height: 40px; padding-block: 6px; }
+.pickup-location { color: var(--pine); font-weight: 650; white-space: nowrap; }
+.detail-layout { display: grid; gap: 20px; max-width: 960px; }
+.detail-card header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.detail-card header h2 { margin: 0; }
+.detail-card .package-dl { margin: 24px 0 0; }
+.detail-card + .form-card h2 { margin-bottom: 16px; }
+.package-dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 24px; margin: 0; }
+.package-dl dt { margin-bottom: 5px; color: var(--muted); font-size: 13px; }
+.package-dl dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+.package-dl .wide { grid-column: 1 / -1; }
+.package-dl .reason { white-space: pre-wrap; }
+.detail-layout .info-card { border-radius: 0 9px 9px 0; }
+.detail-layout .info-card p { margin-bottom: 0; }
+.pickup-form { max-width: 960px; }
+.pickup-form .form-grid { margin-top: 24px; }
+.pickup-form .info-card { margin-top: 22px; }
+.pickup-form .form-footer { flex-wrap: wrap; }
+.pickup-result .package-dl { margin-top: 24px; }
+.pickup-result .result-icon { background: var(--card-mint); color: var(--pine); }
+.field textarea { display: block; width: 100%; min-height: 116px; padding: 10px 13px; border: 1px solid #a9b6b5; border-radius: 9px; background: var(--paper-warm); color: var(--soft-black); font: inherit; resize: vertical; }
+.field textarea:focus { border-color: var(--pine); outline: 0; box-shadow: 0 0 0 3px rgb(28 93 95 / 14%); }
+.package-dialog { width: min(540px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
+.package-dialog::backdrop { background: rgb(40 51 56 / 32%); }
+.package-dialog .identity-card { margin: 16px 0 20px; }
+.package-dialog .identity-grid { grid-template-columns: minmax(0, .85fr) minmax(0, 1.25fr); }
+.package-dialog .actions-row { margin-top: 20px; }
+.package-dialog .form-alert { margin-top: 14px; margin-bottom: 0; }
+.package-dialog .dialog-icon { color: var(--pine); margin-bottom: 12px; }
+.package-dialog .dialog-icon.destructive { color: var(--danger); }
+.empty-state .button { margin-top: 8px; }
+
+@media (max-width: 1120px) {
+  .package-table td, .package-table th { padding-inline: 12px; }
+  .package-table th:last-child { width: 74px; }
+}
+
+@media (max-width: 680px) {
+  .package-heading { align-items: flex-start; gap: 16px; }
+  .package-table, .package-table tbody { display: block; width: 100%; }
+  .package-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .package-table tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 14px; padding: 14px 16px; border-top: 1px solid var(--line); }
+  .package-table tr:first-child { border-top: 0; }
+  .package-table td { display: block; height: auto; padding: 0; border: 0; }
+  .package-table td:nth-child(1), .package-table td:nth-child(2), .package-table td:last-child { grid-column: 1 / -1; }
+  .package-table .cell-label { display: block; margin-bottom: 2px; color: var(--muted); font-size: 12px; }
+  .package-table .row-actions { justify-content: flex-start; }
+  .compact-toolbar { align-items: flex-start; }
+  .compact-toolbar .actions-row { justify-content: flex-start; }
+  .package-dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 400px) {
+  .prototype-toolbar__controls select { flex: 1 1 110px; }
+  .package-dialog .identity-grid { grid-template-columns: 1fr; }
+}
