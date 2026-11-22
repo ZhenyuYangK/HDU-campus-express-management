@@ -26,7 +26,13 @@ const companies = ["顺丰速运", "京东快递", "韵达快递", "中通快递
 const locations = ["A-1", "A-2", "A-3", "B-1", "B-2", "B-3", "C-1", "C-2", "C-3"];
 const student = { account: "00120001", name: "示例学生", phone: "13800000001" };
 const otherStudent = { account: "00120002", name: "示例学生乙", phone: "13900000009" };
-const records = [
+const intakeAccounts = [student, otherStudent];
+const intakeExample = {
+  id: "RK20261122003", company: "圆通速递", tracking: "YT000555666777", receiver: student.name,
+  phone: student.phone, location: "B-2", status: "待取件", account: student.account,
+  arrivedAt: "2026-11-22 10:12", pickupCode: "001234"
+};
+const initialRecords = [
   {
     id: "RK20261122001", company: "顺丰速运", tracking: "SF000123456789", receiver: student.name,
     phone: student.phone, location: "A-3", status: "待取件", account: null, arrivedAt: "2026-11-22 09:05",
@@ -42,6 +48,8 @@ const records = [
     phone: student.phone, location: "A-1", status: "已取件", account: student.account, arrivedAt: "2026-11-21 16:40"
   }
 ];
+const records = [...initialRecords];
+let intakeDraft;
 let demoState = "normal";
 let toastTimer;
 
@@ -63,6 +71,15 @@ function currentRoute() {
 
 function isRecordClosed(record) {
   return record.status === "已取件" || record.status === "已退件";
+}
+
+function escapeHtml(value) {
+  const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return value.replace(/[&<>"']/g, character => entities[character]);
+}
+
+function findRecord(id) {
+  return id === intakeExample.id ? intakeExample : records.find(record => record.id === id);
 }
 
 function metaFooter(page) {
@@ -138,13 +155,14 @@ function pagination(total) {
 
 /* FUNC-002-01 收件入库 */
 function intakeForm() {
+  const draft = intakeDraft ?? initialRecords[0];
   return `<form class="form-card" id="intake-form" novalidate>
     <div class="form-grid">
-      ${field("快递公司", "DATA-001-11 · 引用REQ-001有效清单，不手工新增", `<select name="company" id="intake-company">${companyOptions()}</select>`)}
-      ${field("运单号", "DATA-003-01 · 去首尾空白，与公司组合查重", `<input name="tracking" id="intake-tracking" value="SF000123456789" autocomplete="off">`)}
-      ${field("收件人姓名", "DATA-003-02 · 仅辅助核对，不参与账号匹配", `<input name="receiver" id="intake-receiver" value="示例学生" autocomplete="off">`)}
-      ${field("收件手机号", "DATA-003-03 · 11位，用于匹配账号", `<input name="phone" id="intake-phone" value="13800000001" inputmode="numeric" autocomplete="off">`)}
-      ${field("存放位置", "DATA-001-12 · 固定72层位", `<select name="location" id="intake-location">${locationOptions("A-3")}</select>`)}
+      ${field("快递公司", "DATA-001-11 · 引用REQ-001有效清单，不手工新增", `<select name="company" id="intake-company">${companyOptions(draft.company)}</select>`)}
+      ${field("运单号", "DATA-003-01 · 去首尾空白，与公司组合查重", `<input name="tracking" id="intake-tracking" value="${escapeHtml(draft.tracking)}" autocomplete="off">`)}
+      ${field("收件人姓名", "DATA-003-02 · 仅辅助核对，不参与账号匹配", `<input name="receiver" id="intake-receiver" value="${escapeHtml(draft.receiver)}" autocomplete="off">`)}
+      ${field("收件手机号", "DATA-003-03 · 11位，用于匹配账号", `<input name="phone" id="intake-phone" value="${escapeHtml(draft.phone)}" inputmode="numeric" autocomplete="off">`)}
+      ${field("存放位置", "DATA-001-12 · 固定72层位", `<select name="location" id="intake-location">${locationOptions(draft.location)}</select>`)}
       <div class="field"><span class="field-label">系统生成项</span><p class="inline-note">取件码（DATA-003-04）、到站时间（DATA-003-06）、包裹状态（DATA-003-05）、入库操作人（DATA-002-20）不接受填写。</p></div>
     </div>
     <p class="inline-note">查重命中已取件或已退件记录时，允许按新包裹重新入库并关联原入库记录编号（DATA-002-05）；命中未办结记录见UI-002-02。</p>
@@ -156,17 +174,19 @@ function intakeForm() {
 }
 
 function recentIntakeList() {
+  const recent = [...records.slice(initialRecords.length).reverse(), intakeExample, initialRecords[0], initialRecords[2]]
+    .sort((a, b) => b.arrivedAt.localeCompare(a.arrivedAt))
+    .slice(0, 3);
+  const rows = recent.map(record => `<tr><td class="mono">${record.id}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${record.location}</td>
+    <td><span class="status-badge${isRecordClosed(record) ? " neutral" : ""}">${record.status}</span></td>
+    <td>${record.account ? "已关联" : "待关联"}</td><td class="mono">${record.arrivedAt}</td></tr>`).join("");
   return `<section class="list-card" aria-label="最近入库记录">
     <div class="list-toolbar"><strong>最近入库记录</strong><span class="list-count">按到站时间降序 · 合成示例</span></div>
     <div class="table-scroll"><table class="data-table">
       <thead><tr><th>入库记录编号</th><th>运单号</th><th>位置</th><th>包裹状态</th><th>关联状态</th><th>到站时间</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">RK20261122003</td><td class="mono">YT000555666777</td><td>B-2</td><td><span class="status-badge">待取件</span></td><td>已关联</td><td class="mono">2026-11-22 10:12</td></tr>
-        <tr><td class="mono">RK20261122002</td><td class="mono">JD000987654321</td><td>A-1</td><td><span class="status-badge neutral">已取件</span></td><td>已关联</td><td class="mono">2026-11-21 16:40</td></tr>
-        <tr><td class="mono">RK20261122001</td><td class="mono">SF000123456789</td><td>A-3</td><td><span class="status-badge">待取件</span></td><td>待关联</td><td class="mono">2026-11-22 09:05</td></tr>
-      </tbody>
+      <tbody>${rows}</tbody>
     </table></div>
-    ${pagination(3)}
+    ${pagination(recent.length)}
   </section>`;
 }
 
@@ -174,45 +194,52 @@ function intakePage() {
   return pageHeading(pages.intake, "录入面单信息，先按快递公司＋运单号查重，再由系统匹配账号并生成取件码。") + intakeForm() + `<div style="height:22px"></div>` + recentIntakeList();
 }
 
-function duplicateDialog() {
+function duplicateDialog(record) {
+  if (!record) return `<p class="form-alert" role="alert">未找到查重命中的记录，请重新查重。</p>`;
   return `<div class="overlay"></div><div class="dialog-wrap"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="duplicate-title">
     <div class="dialog-icon">${icon("alert")}</div>
     <h2 id="duplicate-title">已存在未办结记录</h2>
-    <p>该快递公司下已存在运单号SF000123456789的包裹（状态：待取件，到站时间：2026-11-22 09:05），请核对是否为同一包裹。</p>
+    <p>该快递公司下已存在运单号${escapeHtml(record.tracking)}的包裹（状态：${record.status}，到站时间：${record.arrivedAt}），请核对是否为同一包裹。</p>
     <dl class="detail-grid">
-      <div><dt>入库记录编号（DATA-002-06）</dt><dd class="mono">RK20261122001</dd></div>
-      <div><dt>归属账号</dt><dd>待关联，暂不向学生展示</dd></div>
+      <div><dt>入库记录编号（DATA-002-06）</dt><dd class="mono">${record.id}</dd></div>
+      <div><dt>归属账号</dt><dd>${record.account ?? "待关联，暂不向学生展示"}</dd></div>
     </dl>
     <div class="info-card warning"><p>同公司同号最多一条未办结记录。核对为同一包裹则结束登记；即使核对为不同包裹也不新增，须先核对或更正已有记录。</p></div>
     <div class="actions-row">
-      <button class="button button-secondary" type="button" data-route="correction">转记录更正</button>
+      <button class="button button-secondary" type="button" data-route="correction/${record.id}">转记录更正</button>
       <button class="button button-primary" type="button" data-action="confirm-duplicate">确认为同一包裹</button>
     </div>
     <p class="dialog-meta">UI-002-02 · FUNC-002-01 · 查重处置不绕过保存前复核</p>
   </section></div>`;
 }
 
-function intakeSuccessPage() {
+function intakeSuccessPage(record) {
+  if (!record?.pickupCode) {
+    return pageHeading(pages["intake-success"], "当前演示中未找到该入库记录。", `<button class="button button-secondary" type="button" data-route="intake">返回收件入库</button>`);
+  }
+  const tracking = escapeHtml(record.tracking);
+  const associationMessage = record.account ? "已关联学生账号。" : "已入库，待关联。暂不向学生展示。";
+  const previousRecord = record.previousIntakeId ? `<p>原入库记录编号：${record.previousIntakeId}</p>` : "";
   return pageHeading(pages["intake-success"], "保存成功后展示取件码标签预览；本项目不设置物理打印设备，仅提供浏览器打印入口。") +
-    `<div class="info-card"><div class="info-card__title">${icon("check")}入库保存成功</div><p>运单号：YT000555666777已入库，取件码：001234，存放位置：B-2。未匹配到唯一学生账号时另提示“已入库并标记待关联，暂不向学生展示”。</p></div>
+    `<div class="info-card intake-result"><div class="info-card__title">${icon("check")}入库保存成功</div><p>运单号：${tracking}，取件码：${record.pickupCode}，存放位置：${record.location}。${associationMessage}</p>${previousRecord}</div>
     <div class="form-layout" style="margin-top:22px">
       <section class="form-card">
         <h2>取件码标签预览</h2>
         <div class="label-preview" aria-label="取件码标签合成示例">
           <span class="eyebrow">CampusDelivery Station</span>
-          <div class="label-preview__code">001234</div>
+          <div class="label-preview__code">${record.pickupCode}</div>
           <dl>
-            <dt>快递公司</dt><dd>圆通速递</dd>
-            <dt>运单号</dt><dd class="mono">YT000555666777</dd>
-            <dt>存放位置</dt><dd>B-2</dd>
-            <dt>收件人</dt><dd>示例学生</dd>
-            <dt>到站时间</dt><dd class="mono">2026-11-22 10:12</dd>
+            <dt>快递公司</dt><dd>${record.company}</dd>
+            <dt>运单号</dt><dd class="mono">${tracking}</dd>
+            <dt>存放位置</dt><dd>${record.location}</dd>
+            <dt>收件人</dt><dd>${escapeHtml(record.receiver)}</dd>
+            <dt>到站时间</dt><dd class="mono">${record.arrivedAt}</dd>
           </dl>
         </div>
         <p class="inline-note">取件码为合成示例；长度、字符范围及生成方式待P002-01评审。不定义专用纸张版式。</p>
         <div class="actions-row" style="margin-top:18px">
           <button class="button button-secondary" type="button" data-action="print-label">${icon("print")}浏览器打印</button>
-          <button class="button button-primary" type="button" data-route="intake">继续入库</button>
+          <button class="button button-primary" type="button" data-action="continue-intake" data-record-id="${record.id}">继续入库</button>
         </div>
       </section>
       <aside class="side-panel"><h3>连续入库</h3><p>继续入库保留快递公司与存放位置，清空运单号、收件人和收件手机号。</p><ul class="rule-list"><li>${icon("check")}一次提交只生成一条记录与一个取件码</li><li>${icon("check")}重新入库引用原入库记录编号并另生成新码</li><li>${icon("check")}补关联不改变到站时间与取件码</li></ul></aside>
@@ -270,7 +297,7 @@ function inReturnList(record) {
   const recordAttribute = record ? ` data-record-id="${record.id}"` : "";
   return `<div class="table-scroll"><table class="data-table">
     <thead><tr><th>退件记录编号</th><th>来源</th><th>运单号</th><th>退回去向</th><th>开始退件时间</th><th>状态</th><th>操作</th></tr></thead>
-    <tbody><tr><td class="mono">${returnInfo.id}</td><td>${returnInfo.source}</td><td class="mono">${record?.tracking ?? "ZT000111222333"}</td>
+    <tbody><tr><td class="mono">${returnInfo.id}</td><td>${returnInfo.source}</td><td class="mono">${escapeHtml(record?.tracking ?? "ZT000111222333")}</td>
       <td>${returnInfo.destination}</td><td class="mono">${returnInfo.startedAt}</td><td><span class="status-badge warning">退件中</span></td>
       <td><div class="row-actions"><button class="button-text" type="button" data-action="finish-return"${recordAttribute}>完成登记</button></div></td></tr></tbody>
   </table></div>`;
@@ -338,7 +365,7 @@ function correctionPage(closed, selectedRecord, requestedRecordId) {
   const back = selectedRecord ? `<button class="button button-secondary" type="button" data-route="record-detail/${record.id}">返回记录详情</button>` : "";
   const form = closed ? `<form class="form-card" id="correction-form"${formAttributes} novalidate>
       <div class="info-card warning"><div class="info-card__title">${icon("info")}该记录已完成</div><p>已取件、已退件记录保留原内容，只能追加更正说明；不提供字段修改入口，不转移归属。</p></div>
-      <dl class="detail-grid" style="margin-top:20px"><div><dt>入库记录编号</dt><dd class="mono">${record.id}</dd></div><div><dt>运单号</dt><dd class="mono">${record.tracking}</dd></div><div><dt>更正方式（DATA-002-39）</dt><dd>追加更正说明</dd></div><div><dt>记录是否已完成（DATA-002-38）</dt><dd>是 · ${record.status}</dd></div><div><dt>归属账号</dt><dd class="mono">${record.account}</dd></div></dl>
+      <dl class="detail-grid" style="margin-top:20px"><div><dt>入库记录编号</dt><dd class="mono">${record.id}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div><div><dt>更正方式（DATA-002-39）</dt><dd>追加更正说明</dd></div><div><dt>记录是否已完成（DATA-002-38）</dt><dd>是 · ${record.status}</dd></div><div><dt>归属账号</dt><dd class="mono">${record.account}</dd></div></dl>
       ${field("更正原因", "DATA-002-42", `<input name="reason" value="${selectedRecord ? "" : "面单手机号誊写有误，补充说明"}" autocomplete="off">`)}
       <div class="field field-full"><label for="correction-note">更正说明<span class="required" aria-hidden="true">*</span></label><textarea id="correction-note" name="note">${selectedRecord ? "" : "实际面单收件手机号与记录一致，学生已完成自助取件；本次仅补充核对说明。"}</textarea><span class="data-ref">DATA-002-43 · 只追加，不改原业务结果</span></div>
       <div class="form-footer"><button class="button button-primary" type="submit">保存更正说明</button></div>
@@ -351,7 +378,7 @@ function correctionPage(closed, selectedRecord, requestedRecordId) {
         ${field("更正原因", "DATA-002-42", `<input name="reason" value="${selectedRecord ? "" : "入库时收件手机号录错"}" autocomplete="off">`, true)}
       </div>
       <div class="snapshot-compare">
-        <section class="snapshot-box"><h4>更正前内容快照（DATA-002-41）</h4><dl><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联（允许缺失）"}</dd><dt>运单号</dt><dd class="mono">${record.tracking}</dd><dt>收件手机号</dt><dd class="mono">${record.phone}</dd><dt>存放位置</dt><dd>${record.location}</dd></dl></section>
+        <section class="snapshot-box"><h4>更正前内容快照（DATA-002-41）</h4><dl><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联（允许缺失）"}</dd><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd><dt>收件手机号</dt><dd class="mono">${record.phone}</dd><dt>存放位置</dt><dd>${record.location}</dd></dl></section>
         ${selectedRecord ? "" : `<section class="snapshot-box new"><h4>按新号码重新匹配</h4><dl><dt>匹配结果</dt><dd class="mono">${otherStudent.account} · ${otherStudent.name}</dd><dt>归属变化</dt><dd>待关联 → ${otherStudent.account}</dd><dt>学生可见性</dt><dd>入库后对${otherStudent.name}可见</dd></dl></section>`}
       </div>
       <p class="inline-note">快照字段为P002-09建议最小范围，具体结构待数据库设计确认；更正运单号时须重新查重，命中其他未办结记录则阻止保存。</p>
@@ -365,7 +392,7 @@ function correctionPage(closed, selectedRecord, requestedRecordId) {
 function recordRows() {
   return records.map(record => {
     const statusStyle = isRecordClosed(record) ? " neutral" : record.status === "退件中" ? " warning" : "";
-    return `<tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${record.tracking}</td><td>${record.receiver}</td>
+    return `<tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${escapeHtml(record.receiver)}</td>
       <td class="mono">${record.phone}</td><td>${record.location}</td><td><span class="status-badge${statusStyle}">${record.status}</span></td>
       <td>${record.account ? "已关联" : "待关联"}</td><td class="mono">${record.arrivedAt}</td>
       <td><div class="row-actions"><button class="button-text" type="button" data-action="record-detail" data-record-id="${record.id}">详情</button></div></td></tr>`;
@@ -384,7 +411,7 @@ function recordDetail(record, admin) {
     <div class="drawer-header"><div><h2 id="record-title">记录详情</h2><span class="function-tag">${record.id} · ${admin ? "只读" : record.status}</span></div><button class="icon-button" type="button" data-route="${admin ? "records-admin" : "records"}" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
       <dl class="detail-grid">
-        <div><dt>快递公司</dt><dd>${record.company}</dd></div><div><dt>运单号</dt><dd class="mono">${record.tracking}</dd></div>
+        <div><dt>快递公司</dt><dd>${record.company}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div>
         <div><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联"}</dd></div><div><dt>包裹状态</dt><dd>${record.status}</dd></div>
         <div><dt>存放位置</dt><dd>${record.location}</dd></div><div><dt>到站时间</dt><dd class="mono">${record.arrivedAt}</dd></div>
       </dl>
@@ -423,14 +450,14 @@ function recordsPage(route, record, unavailable) {
 function render() {
   let route = currentRoute();
   const [, recordId] = window.location.hash.split("/");
-  const record = records.find(item => item.id === recordId);
+  const record = findRecord(recordId);
   if (route.startsWith("correction") && record) route = isRecordClosed(record) ? "correction-closed" : "correction";
   const listRoute = ["linking", "linking-mismatch", "returns", "records", "record-detail", "records-admin"].includes(route);
   if (!listRoute) demoState = "normal";
   let html;
   if (route === "intake") html = intakePage();
-  else if (route === "intake-duplicate") html = intakePage() + duplicateDialog();
-  else if (route === "intake-success") html = intakeSuccessPage();
+  else if (route === "intake-duplicate") html = intakePage() + duplicateDialog(recordId ? record : initialRecords[0]);
+  else if (route === "intake-success") html = intakeSuccessPage(recordId ? record : intakeExample);
   else if (route === "linking") html = linkingPage(false);
   else if (route === "linking-mismatch") html = linkingPage(true);
   else if (route === "returns") html = returnsPage(record, recordId);
@@ -452,7 +479,9 @@ function render() {
 function showToast(title) {
   clearTimeout(toastTimer);
   const toast = document.getElementById("toast");
-  toast.innerHTML = `<strong>${title}</strong>`;
+  const message = document.createElement("strong");
+  message.textContent = title;
+  toast.replaceChildren(message);
   toast.hidden = false;
   toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
 }
@@ -484,21 +513,54 @@ function submitWithFeedback(form, callback) {
   }, 450);
 }
 
+function readIntakeForm(form) {
+  const { company, tracking, receiver, phone, location } = form.elements;
+  return { company: company.value, tracking: tracking.value.trim(), receiver: receiver.value.trim(), phone: phone.value, location: location.value };
+}
+
+function matchingIntakes({ company, tracking }) {
+  return [...records, intakeExample].filter(record => record.company === company && record.tracking === tracking);
+}
+
+function showIntakeDuplicate(draft, record) {
+  intakeDraft = draft;
+  window.location.hash = `intake-duplicate/${record.id}`;
+}
+
 function handleIntake(form) {
-  const company = form.elements.company;
-  const tracking = form.elements.tracking;
-  const receiver = form.elements.receiver;
-  const phone = form.elements.phone;
-  let valid = true;
-  [[tracking, "请填写运单号。"], [receiver, "请填写收件人姓名。"], [phone, "请填写收件手机号。"]].forEach(([input, message]) => {
-    if (!input.value) { setFieldError(input, message); valid = false; } else setFieldError(input, "");
+  if (form.querySelector('[type="submit"]').disabled) return;
+  const draft = readIntakeForm(form);
+  const errors = [
+    [form.elements.company, companies.includes(draft.company) ? "" : "请选择有效的快递公司。"],
+    [form.elements.tracking, draft.tracking ? "" : "请填写运单号。"],
+    [form.elements.receiver, draft.receiver ? "" : "请填写收件人姓名。"],
+    [form.elements.phone, /^1\d{10}$/.test(draft.phone) ? "" : draft.phone ? "收件手机号应为11位中国大陆手机号。" : "请填写收件手机号。"],
+    [form.elements.location, locations.includes(draft.location) ? "" : "请选择有效的存放位置。"]
+  ];
+  errors.forEach(([input, message]) => setFieldError(input, message));
+  const firstError = form.querySelector('[aria-invalid="true"]');
+  if (firstError) { firstError.focus(); return; }
+
+  const matches = matchingIntakes(draft);
+  const duplicate = matches.find(record => !isRecordClosed(record));
+  if (duplicate) { showIntakeDuplicate(draft, duplicate); return; }
+
+  submitWithFeedback(form, () => {
+    const accountMatches = intakeAccounts.filter(account => account.phone === draft.phone);
+    const sequence = records.length - initialRecords.length;
+    const arrivedAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 16).replace("T", " ");
+    const record = {
+      ...draft,
+      id: `RK${arrivedAt.slice(0, 10).replaceAll("-", "")}${String(sequence + 4).padStart(3, "0")}`,
+      pickupCode: String(sequence + 1235).padStart(6, "0"),
+      status: "待取件",
+      account: accountMatches.length === 1 ? accountMatches[0].account : null,
+      arrivedAt,
+      previousIntakeId: matches.at(-1)?.id
+    };
+    records.push(record);
+    window.location.hash = `intake-success/${record.id}`;
   });
-  if (tracking.value !== tracking.value.trim()) { setFieldError(tracking, "运单号已去首尾空白，不得只含空白字符。"); valid = false; }
-  if (phone.value && !/^1\d{10}$/.test(phone.value)) { setFieldError(phone, "收件手机号应为11位中国大陆手机号。"); valid = false; }
-  if (!valid) { form.querySelector('[aria-invalid="true"]')?.focus(); return; }
-  const key = `${company.value}|${tracking.value.trim()}`;
-  if (key === "顺丰速运|SF000123456789") { window.location.hash = "intake-duplicate"; showToast("命中未办结记录，请先核对，不新增入库。"); return; }
-  submitWithFeedback(form, () => { window.location.hash = "intake-success"; });
 }
 
 function handleLink(form) {
@@ -521,14 +583,14 @@ function handleCorrection(form) {
   if (!reason.value.trim()) { setFieldError(reason, "请填写更正原因。"); reason.focus(); return; }
   const fieldInput = form.elements.fieldName;
   const value = form.elements.newValue;
-  const record = records.find(item => item.id === form.dataset.recordId);
+  const record = findRecord(form.dataset.recordId);
   if (fieldInput && value) {
     if (!value.value.trim()) { setFieldError(value, "请填写更正后内容。"); value.focus(); return; }
     if (fieldInput.value === "phone" && !/^1\d{10}$/.test(value.value)) { setFieldError(value, "收件手机号应为11位中国大陆手机号。"); value.focus(); return; }
     if (fieldInput.value === "tracking") {
       const tracking = value.value.trim();
       const duplicate = record
-        ? records.find(item => item.id !== record.id && item.company === record.company && item.tracking === tracking && !isRecordClosed(item))
+        ? matchingIntakes({ company: record.company, tracking }).find(item => item.id !== record.id && !isRecordClosed(item))
         : tracking === records[0].tracking ? records[0] : null;
       if (duplicate) { setFieldError(value, `更正后运单号与该快递公司已有记录重复（入库记录编号：${duplicate.id}），请先核对。`); value.focus(); return; }
     }
@@ -565,11 +627,24 @@ document.addEventListener("click", event => {
   const action = actionButton.dataset.action;
   if (action === "check-duplicate") {
     const form = document.getElementById("intake-form");
-    if (form.elements.tracking.value.trim() === "SF000123456789" && form.elements.company.value === "顺丰速运") window.location.hash = "intake-duplicate";
+    const draft = readIntakeForm(form);
+    if (!draft.tracking) {
+      setFieldError(form.elements.tracking, "请填写运单号。");
+      form.elements.tracking.focus();
+      return;
+    }
+    setFieldError(form.elements.tracking, "");
+    const duplicate = matchingIntakes(draft).find(record => !isRecordClosed(record));
+    if (duplicate) showIntakeDuplicate(draft, duplicate);
     else showToast("未命中未办结记录，可继续登记；保存前仍会复核。");
   }
   if (action === "confirm-duplicate") { window.location.hash = "intake"; showToast("已确认为重复包裹，未新增入库记录。"); }
   if (action === "print-label") showToast("标签仅作页面预览与浏览器打印，不设置物理打印设备或专用纸张版式。");
+  if (action === "continue-intake") {
+    const record = findRecord(actionButton.dataset.recordId);
+    intakeDraft = { company: record.company, location: record.location, tracking: "", receiver: "", phone: "" };
+    window.location.hash = "intake";
+  }
   if (action === "open-link") window.location.hash = "linking";
   if (action === "finish-return") {
     const selected = records.find(record => record.id === actionButton.dataset.recordId);
@@ -603,6 +678,12 @@ exportRoutes.forEach(route => {
 });
 picker.addEventListener("change", () => { window.location.hash = picker.value; });
 document.getElementById("state-picker").addEventListener("change", event => { demoState = event.target.value; render(); });
-document.getElementById("reset-prototype").addEventListener("click", () => { demoState = "normal"; window.location.hash = "intake"; render(); });
+document.getElementById("reset-prototype").addEventListener("click", () => {
+  demoState = "normal";
+  records.splice(initialRecords.length);
+  intakeDraft = undefined;
+  if (window.location.hash === "#intake") render();
+  else window.location.hash = "intake";
+});
 window.addEventListener("hashchange", render);
 render();
