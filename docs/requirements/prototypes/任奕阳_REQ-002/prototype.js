@@ -27,6 +27,10 @@ const locations = ["A-1", "A-2", "A-3", "B-1", "B-2", "B-3", "C-1", "C-2", "C-3"
 const student = { account: "00120001", name: "示例学生", phone: "13800000001" };
 const otherStudent = { account: "00120002", name: "示例学生乙", phone: "13900000009" };
 const intakeAccounts = [student, otherStudent];
+const returnDemo = {
+  recordId: "RK20261121006", refusalId: "JS20261121002", refusedAt: "2026-11-21 18:20",
+  returnId: "TJ20261122002", startedAt: "2026-11-22 09:40", finishedAt: "2026-11-22 10:30"
+};
 const intakeExample = {
   id: "RK20261122003", company: "圆通速递", tracking: "YT000555666777", receiver: student.name,
   phone: student.phone, location: "B-2", status: "待取件", account: student.account,
@@ -39,9 +43,8 @@ const initialRecords = [
     correction: { field: "存放位置名称", operator: "示例工作人员", at: "2026-11-22 09:30" }
   },
   {
-    id: "RK20261121006", company: "京东快递", tracking: "JD000444555666", receiver: student.name,
-    phone: student.phone, location: "B-1", status: "退件中", account: student.account, arrivedAt: "2026-11-21 16:02",
-    returnInfo: { id: "TJ20261122002", source: "学生拒收", reason: "学生拒收", destination: "退回原快递公司", startedAt: "2026-11-22 09:40" }
+    id: returnDemo.recordId, company: "京东快递", tracking: "JD000444555666", receiver: student.name,
+    phone: student.phone, location: "B-1", status: "拒收待退件", account: student.account, arrivedAt: "2026-11-21 16:02"
   },
   {
     id: "RK20261122002", company: "京东快递", tracking: "JD000987654321", receiver: student.name,
@@ -290,47 +293,50 @@ function linkingPage(mismatch) {
 }
 
 /* FUNC-002-03 退件 */
-function returnList() {
+function returnList(record) {
   return `<div class="table-scroll"><table class="data-table">
     <thead><tr><th>入库记录编号</th><th>拒收申请编号</th><th>运单号</th><th>拒收原因</th><th>拒收时间</th><th>状态</th><th>操作</th></tr></thead>
-    <tbody><tr><td class="mono">RK20261121006</td><td class="mono">JS20261121002</td><td class="mono">JD000444555666</td><td>学生拒收</td><td class="mono">2026-11-21 18:20</td><td><span class="status-badge warning">拒收待退件</span></td><td><div class="row-actions"><button class="button-text" type="button" data-route="return-start">开始退件</button></div></td></tr></tbody>
+    <tbody><tr><td class="mono">${record.id}</td><td class="mono">${returnDemo.refusalId}</td><td class="mono">${record.tracking}</td><td>学生拒收</td><td class="mono">${returnDemo.refusedAt}</td><td><span class="status-badge warning">${record.status}</span></td><td><div class="row-actions"><button class="button-text" type="button" data-route="return-start">开始退件</button></div></td></tr></tbody>
   </table></div>${pagination(1)}`;
 }
 
-function inReturnList(record) {
-  const returnInfo = record?.returnInfo ?? {
-    id: "TJ20261122001", source: "人工异常", destination: "退回原快递公司", startedAt: "2026-11-22 09:50"
-  };
-  const recordAttribute = record ? ` data-record-id="${record.id}"` : "";
+function returnProgressList(record) {
+  const { returnInfo } = record;
+  const finished = record.status === "已退件";
+  const lastCell = finished ? `<td class="mono">${returnInfo.finishedAt}</td>` :
+    `<td><div class="row-actions"><button class="button-text" type="button" data-action="finish-return" data-record-id="${record.id}">完成登记</button></div></td>`;
   return `<div class="table-scroll"><table class="data-table">
-    <thead><tr><th>退件记录编号</th><th>来源</th><th>运单号</th><th>退回去向</th><th>开始退件时间</th><th>状态</th><th>操作</th></tr></thead>
-    <tbody><tr><td class="mono">${returnInfo.id}</td><td>${returnInfo.source}</td><td class="mono">${escapeHtml(record?.tracking ?? "ZT000111222333")}</td>
-      <td>${returnInfo.destination}</td><td class="mono">${returnInfo.startedAt}</td><td><span class="status-badge warning">退件中</span></td>
-      <td><div class="row-actions"><button class="button-text" type="button" data-action="finish-return"${recordAttribute}>完成登记</button></div></td></tr></tbody>
+    <thead><tr><th>入库记录编号</th><th>退件记录编号</th><th>运单号</th><th>退件来源</th><th>退回去向</th><th>开始退件时间</th><th>状态</th><th>${finished ? "完成时间" : "操作"}</th></tr></thead>
+    <tbody><tr><td class="mono">${record.id}</td><td class="mono">${returnInfo.id}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${returnInfo.source}</td>
+      <td>${returnInfo.destination}</td><td class="mono">${returnInfo.startedAt}</td><td><span class="status-badge ${finished ? "neutral" : "warning"}">${record.status}</span></td>${lastCell}</tr></tbody>
   </table></div>`;
 }
 
 function returnsPage(record, requestedRecordId) {
   if (requestedRecordId) {
-    const canContinue = record?.status === "退件中" && record.returnInfo;
+    const returnInfo = record?.returnInfo;
     const back = `<button class="button button-secondary" type="button" data-route="${record ? `record-detail/${record.id}` : "records"}">${record ? "返回记录详情" : "返回记录查询"}</button>`;
-    return pageHeading(pages.returns, canContinue ? `继续办理入库记录${record.id}的退件。` : "该记录当前没有可继续办理的退件。", back) +
-      (canContinue ? `<section class="list-card"><div class="list-toolbar"><strong>退件中</strong></div>${inReturnList(record)}</section>` : "");
+    return pageHeading(pages.returns, returnInfo ? `入库记录${record.id}的退件办理。` : "该记录当前没有可继续办理的退件。", back) +
+      (returnInfo ? `<section class="list-card"><div class="list-toolbar"><strong>${record.status}</strong>${record.status === "退件中" ? '<span class="list-count">实际交接后登记完成</span>' : ""}</div>${returnProgressList(record)}</section>` : "");
   }
-  return pageHeading(pages.returns, "来源由入口确定：学生拒收须拒收待退件且当前申请有效；人工异常仅适用于待取件包裹，可无拒收申请。") +
+  const sample = findRecord(returnDemo.recordId);
+  const pending = sample.status === "拒收待退件";
+  const hint = pending ? "核对包裹实物和退件原因后开始办理" : sample.status === "退件中" ? "实际交接后登记完成" : "已记录退件完成时间";
+  const list = demoState === "normal" ? (pending ? returnList(sample) : returnProgressList(sample)) : listStateBlock("没有符合条件的退件记录。");
+  return pageHeading(pages.returns, "工作人员办理学生拒收退件，按实际交接情况登记完成。") +
     `<div class="tabs" role="tablist" aria-label="退件发起入口"><button class="tab" role="tab" aria-selected="true" type="button">学生拒收</button><button class="tab" role="tab" aria-selected="false" type="button" data-route="return-manual">人工发起</button></div>
-    <section class="list-card"><div class="list-toolbar"><strong>待退件｜学生拒收</strong><span class="list-count">拒收申请由REQ-003维护，本页只读</span></div>${demoState === "normal" ? returnList() : listStateBlock("没有符合条件的待退件包裹。")}</section>
-    <div style="height:22px"></div>
-    <section class="list-card"><div class="list-toolbar"><strong>退件中</strong><span class="list-count">沿用同一退件记录，可多次返回继续办理</span></div>${inReturnList()}</section>`;
+    <section class="list-card"><div class="list-toolbar"><strong>${sample.status}</strong><span class="list-count">${hint}</span></div>${list}</section>`;
 }
 
 function returnStartPage() {
-  const drawer = `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="return-title">
-    <div class="drawer-header"><div><h2 id="return-title">开始退件</h2><span class="function-tag">入库记录RK20261121006（DATA-002-01）</span></div><button class="icon-button" type="button" data-route="returns" aria-label="关闭">${icon("close")}</button></div>
+  const record = findRecord(returnDemo.recordId);
+  if (record.status !== "拒收待退件") return returnsPage();
+  const drawer = `<div class="overlay"></div><aside class="drawer return-start-drawer" role="dialog" aria-modal="true" aria-labelledby="return-title">
+    <div class="drawer-header"><div><h2 id="return-title">开始退件</h2><span class="function-tag">入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-route="returns" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
-      <dl class="detail-grid"><div><dt>退件来源（DATA-002-29）</dt><dd>学生拒收 · 系统按入口确定</dd></div><div><dt>当前拒收申请（DATA-003-10）</dt><dd class="mono">JS20261121002</dd></div><div><dt>包裹状态（DATA-003-05）</dt><dd>拒收待退件</dd></div><div><dt>运单号</dt><dd class="mono">JD000444555666</dd></div></dl>
+      <dl class="detail-grid"><div><dt>退件来源（DATA-002-29）</dt><dd>学生拒收 · 系统按入口确定</dd></div><div><dt>当前拒收申请（DATA-003-10）</dt><dd class="mono">${returnDemo.refusalId}</dd></div><div><dt>包裹状态（DATA-003-05）</dt><dd>${record.status}</dd></div><div><dt>运单号</dt><dd class="mono">${record.tracking}</dd></div></dl>
       <div class="info-card warning"><p>办理前核对包裹实物、收件信息与退件原因；不一致时先按记录更正办理。开始退件后学生不可撤回。</p></div>
-      <form id="return-form" data-tracking="JD000444555666" novalidate>
+      <form id="return-form" data-record-id="${record.id}" data-tracking="${record.tracking}" novalidate>
         ${field("退件原因", "DATA-002-30 · 学生拒收来源默认学生拒收，可按实际改选", `<select name="reason" id="return-reason"><option>学生拒收</option><option>包装破损</option><option>面单信息不全或污损</option><option>错分错投</option><option>违禁品或无法投递</option><option>其他</option></select>`)}
         ${field("退回去向", "DATA-002-32 · 取值待P002-02评审", `<select name="destination"><option>退回原快递公司</option><option>退回寄件人</option></select>`)}
         <div class="field"><label for="return-note">退件原因说明</label><textarea id="return-note" placeholder="原因为“其他”时必填（DATA-002-31）"></textarea><span class="data-ref">原因为其他时必填</span></div>
@@ -418,7 +424,7 @@ function filteredRecords(filters) {
 
 function recordRows(entries) {
   return entries.map(record => {
-    const statusStyle = isRecordClosed(record) ? " neutral" : record.status === "退件中" ? " warning" : "";
+    const statusStyle = isRecordClosed(record) ? " neutral" : ["拒收待退件", "退件中"].includes(record.status) ? " warning" : "";
     return `<tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${escapeHtml(record.receiver)}</td>
       <td class="mono">${record.phone}</td><td>${record.location}</td><td><span class="status-badge${statusStyle}">${record.status}</span></td>
       <td>${record.account ? "已关联" : "待关联"}</td><td class="mono">${record.arrivedAt}</td>
@@ -604,11 +610,23 @@ function handleLink(form) {
 }
 
 function handleReturn(form) {
-  const reason = form.elements.reason;
+  if (form.querySelector('[type="submit"]').disabled) return;
+  const record = findRecord(form.dataset.recordId);
+  if (form.dataset.recordId && record?.status !== "拒收待退件") return;
+  const { reason, destination } = form.elements;
   const note = form.querySelector("#return-note");
   if (reason.value === "其他" && !note.value.trim()) { setFieldError(note, "退件原因为其他时须填写说明。"); note.focus(); return; }
   setFieldError(note, "");
-  submitWithFeedback(form, () => { window.location.hash = "returns"; showToast(`运单号${form.dataset.tracking}已开始退件，包裹状态：退件中，学生端已暂停取件。`); });
+  const returnInfo = {
+    id: returnDemo.returnId, source: "学生拒收", reason: reason.value, destination: destination.value, startedAt: returnDemo.startedAt
+  };
+  submitWithFeedback(form, () => {
+    if (record) {
+      records[records.indexOf(record)] = { ...record, status: "退件中", returnInfo };
+    }
+    window.location.hash = "returns";
+    showToast(`运单号${form.dataset.tracking}已开始退件，包裹状态：退件中。`);
+  });
 }
 
 function handleCorrection(form) {
@@ -687,9 +705,12 @@ document.addEventListener("click", event => {
   }
   if (action === "open-link") window.location.hash = "linking";
   if (action === "finish-return") {
-    const selected = records.find(record => record.id === actionButton.dataset.recordId);
-    const prefix = selected ? `退件记录${selected.returnInfo.id}（运单号${selected.tracking}）` : "退件";
-    showToast(`${prefix}已完成登记，完成时间：2026-11-22 10:30，办理人：示例工作人员；重复提交不改写完成事实。`);
+    const record = findRecord(actionButton.dataset.recordId);
+    if (record?.status !== "退件中" || !record.returnInfo) return;
+    const returnInfo = { ...record.returnInfo, finishedAt: returnDemo.finishedAt };
+    records[records.indexOf(record)] = { ...record, status: "已退件", returnInfo };
+    render();
+    showToast(`退件记录${returnInfo.id}已完成登记。`);
   }
   if (action === "record-detail") {
     const detailRoute = currentRoute() === "records-admin" ? "records-admin" : "record-detail";
@@ -726,7 +747,7 @@ picker.addEventListener("change", () => { window.location.hash = picker.value; }
 document.getElementById("state-picker").addEventListener("change", event => { demoState = event.target.value; render(); });
 document.getElementById("reset-prototype").addEventListener("click", () => {
   demoState = "normal";
-  records.splice(initialRecords.length);
+  records.splice(0, records.length, ...initialRecords);
   recordSearches.clear();
   intakeDraft = undefined;
   if (window.location.hash === "#intake") render();
