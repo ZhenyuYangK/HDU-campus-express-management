@@ -33,6 +33,8 @@ let selectedCompany = "京东快递";
 let demoState = "normal";
 let toastTimer;
 let studentNeedsPasswordChange = true;
+const demoPassword = "Demo2026";
+let studentDemoPassword = demoPassword;
 const studentAccount = "00120001";
 const accountExamples = {
   [studentAccount]: { name: "示例学生", phone: "13800000001", role: "学生" },
@@ -114,14 +116,14 @@ function loginPage(hasError) {
       </section>
       <section class="login-panel" aria-labelledby="login-title">
         <h2 id="login-title">登录驿站</h2>
-        ${hasError ? `<div class="form-alert" role="alert">${icon("alert")}<span>登录信息有误，请检查后重试。</span></div>` : ""}
+        <div class="form-alert" id="login-alert" role="alert" ${hasError ? "" : "hidden"}>${icon("alert")}<span>账号、绑定手机号或密码有误，请核对后重试。</span></div>
         <form id="login-form" novalidate>
           <div class="field"><label for="login-id">账号或绑定手机号<span class="required" aria-hidden="true">*</span></label>
-            <input id="login-id" name="loginId" autocomplete="username" inputmode="text" value="${hasError ? "Staff001" : ""}" placeholder="8位账号或11位手机号" ${hasError ? 'aria-invalid="true" aria-describedby="login-id-error"' : ""}>
-            ${hasError ? `<p class="field-error" id="login-id-error">${icon("alert")}账号前缀仅接受小写staff或admin，且不能含首尾空白。</p>` : `<p class="field-hint">DATA-001-07 · 保留前导零</p>`}
+            <input id="login-id" name="loginId" autocomplete="username" inputmode="text" value="${hasError ? "Staff001" : ""}" placeholder="8位账号或11位手机号" ${hasError ? 'aria-invalid="true" aria-describedby="login-id-dynamic-error"' : ""}>
+            ${hasError ? `<p class="field-error dynamic-error" id="login-id-dynamic-error">${icon("alert")}账号前缀仅接受小写staff或admin，且不能含首尾空白。</p>` : `<p class="field-hint">DATA-001-07 · 保留前导零</p>`}
           </div>
           <div class="field"><label for="login-password">密码<span class="required" aria-hidden="true">*</span></label>
-            <div class="input-with-action"><input id="login-password" name="password" type="password" autocomplete="current-password" value="${hasError ? "Demo2026" : ""}" placeholder="输入密码"><button class="input-action" type="button" data-toggle-password="login-password" aria-label="显示密码">显示</button></div>
+            <div class="input-with-action"><input id="login-password" name="password" type="password" autocomplete="current-password" value="${hasError ? demoPassword : ""}" placeholder="输入密码"><button class="input-action" type="button" data-toggle-password="login-password" aria-label="显示密码">显示</button></div>
             <p class="field-hint">DATA-001-04 · 8～20位，含字母和数字</p>
           </div>
           <button class="button button-primary login-submit" type="submit">登录${icon("arrow")}</button>
@@ -147,10 +149,10 @@ function accountCreatePage() {
   const content = `${pageHeading(page, "首次登录须修改密码。")}
     <div class="form-layout single"><form class="form-card" id="account-create-form" novalidate>
       ${rolePicker()}<div class="form-grid">
-        <div class="field"><label for="create-account">账号<span class="required" aria-hidden="true">*</span></label><input id="create-account" name="account" value="00120001" maxlength="8" placeholder="00120001" aria-describedby="create-account-hint"><p class="field-hint" id="create-account-hint">DATA-001-01 · 8位数字，保留前导零</p></div>
+        <div class="field"><label for="create-account">账号<span class="required" aria-hidden="true">*</span></label><input id="create-account" name="account" value="00120003" maxlength="8" placeholder="00120001" aria-describedby="create-account-hint"><p class="field-hint" id="create-account-hint">DATA-001-01 · 8位数字，保留前导零</p></div>
         <div class="field"><label for="create-name">账号姓名<span class="required" aria-hidden="true">*</span></label><input id="create-name" name="name" value="示例学生" maxlength="50"><p class="field-hint">DATA-001-02 · 最多50个字符</p></div>
-        <div class="field"><label for="create-phone">绑定手机号<span class="required" aria-hidden="true">*</span></label><input id="create-phone" name="phone" value="13800000001" inputmode="numeric" maxlength="11"><p class="field-hint">DATA-001-03 · 11位数字，不可重复</p></div>
-        <div class="field"><label for="create-password">初始密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="create-password" name="password" type="password" value="Demo2026" minlength="8" maxlength="20" autocomplete="new-password"><button class="input-action" type="button" data-toggle-password="create-password" aria-label="显示初始密码">显示</button></div><p class="field-hint">DATA-001-04 · 8～20位，含字母和数字</p></div>
+        <div class="field"><label for="create-phone">绑定手机号<span class="required" aria-hidden="true">*</span></label><input id="create-phone" name="phone" value="13800000004" inputmode="numeric" maxlength="11"><p class="field-hint">DATA-001-03 · 11位数字，不可重复</p></div>
+        <div class="field"><label for="create-password">初始密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="create-password" name="password" type="password" value="${demoPassword}" minlength="8" maxlength="20" autocomplete="new-password"><button class="input-action" type="button" data-toggle-password="create-password" aria-label="显示初始密码">显示</button></div><p class="field-hint">DATA-001-04 · 8～20位，含字母和数字</p></div>
       </div>
       <div class="form-footer"><button class="button button-primary" type="submit">创建账号${icon("arrow")}</button></div>
     </form></div>`;
@@ -257,7 +259,7 @@ function companyDrawer(mode) {
   const page = pages[add ? "company-add" : "company-edit"];
   const value = add ? "示例物流" : selectedCompany;
   return `<div class="overlay" aria-hidden="true"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="company-drawer-title">
-    <div class="drawer-header"><h2 id="company-drawer-title">${add ? "新增快递公司" : "修改快递公司"}</h2><button class="icon-button" type="button" data-route="company-list" aria-label="关闭">${icon("close")}</button></div>
+    <div class="drawer-header"><h2 id="company-drawer-title">${add ? "新增快递公司" : "修改快递公司"}</h2><button class="icon-button" type="button" data-drawer-close data-route="company-list" aria-label="关闭">${icon("close")}</button></div>
     <form id="${add ? "company-add-form" : "company-edit-form"}" class="drawer-body" novalidate>
       <div class="field"><label for="company-name">${add ? "公司名称" : "新公司名称"}<span class="required" aria-hidden="true">*</span></label><input id="company-name" name="companyName" value="${value}" maxlength="50" data-char-count="company-count" autocomplete="off"><p class="field-hint">DATA-001-11 · 1～50位，清单内唯一</p><div class="char-count" id="company-count">${value.length} / 50</div></div>
       ${add ? "" : '<div class="info-card warning" style="margin-top:22px">更名保留业务关联，历史业务显示当前名称。</div>'}
@@ -291,11 +293,10 @@ function companyPage(mode) {
 
 function locationsPage() {
   const page = pages.locations;
-  const zones = "ABCDEFGHIJKL".split("");
-  const rows = zones.map(zone => `<tr><td>${zone}区</td>${[1,2,3,4,5,6].map(level => `<td><span class="location-cell">${zone}-${level}</span></td>`).join("")}</tr>`).join("");
+  const rows = fixedLocationGroups.map(({ zone, locations }) => `<tr><td>${zone}区</td>${locations.map(location => `<td><span class="location-cell">${location}</span></td>`).join("")}</tr>`).join("");
   const content = `${pageHeading(page, "", '<span class="status-badge neutral">只读</span>')}
-    <div class="location-summary"><div class="location-stat"><strong>12</strong><span>分区 A～L</span></div><div class="location-stat"><strong>6</strong><span>每区层数</span></div><div class="location-stat"><strong>72</strong><span>固定层位 · DATA-001-12</span></div></div>
-    ${demoState !== "normal" ? listStateBlock() : `<section class="location-table-wrap" aria-label="72个固定存放层位"><table class="location-table"><thead><tr><th>分区</th>${[1,2,3,4,5,6].map(n => `<th>第${n}层</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`}`;
+    <div class="location-summary"><div class="location-stat"><strong>${fixedLocationGroups.length}</strong><span>分区 A～L</span></div><div class="location-stat"><strong>${fixedLocationLevels.length}</strong><span>每区层数</span></div><div class="location-stat"><strong>${fixedLocations.length}</strong><span>固定层位 · DATA-001-12</span></div></div>
+    ${demoState !== "normal" ? listStateBlock() : `<section class="location-table-wrap" aria-label="${fixedLocations.length}个固定存放层位"><table class="location-table"><thead><tr><th>分区</th>${fixedLocationLevels.map(level => `<th>第${level}层</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`}`;
   return shell("locations", content);
 }
 
@@ -401,27 +402,42 @@ function submitWithFeedback(form, callback) {
 }
 
 function handleLogin(form) {
+  if (form.querySelector('[type="submit"]').disabled) return;
+  const loginAlert = document.getElementById("login-alert");
+  loginAlert.hidden = true;
   if (!requireFields(form, ["loginId", "password"])) return;
   const idInput = form.elements.loginId;
   const passwordInput = form.elements.password;
   const id = idInput.value;
+  const password = passwordInput.value;
   if (id !== id.trim()) { setFieldError(idInput, "账号或手机号不能含首尾空白，请更正后再登录。"); idInput.focus(); return; }
   const accountValid = /^\d{8}$/.test(id) || /^staff\d{3}$/.test(id) || /^admin\d{3}$/.test(id);
   const phoneValid = /^\d{11}$/.test(id);
   if (!accountValid && !phoneValid) { setFieldError(idInput, "请输入8位账号或11位绑定手机号；staff和admin前缀仅接受小写。"); idInput.focus(); return; }
-  if (!validPassword(passwordInput.value)) { setFieldError(passwordInput, "密码为8～20个字符，至少含字母和数字，且不含空白。"); passwordInput.focus(); return; }
+  if (!validPassword(password)) { setFieldError(passwordInput, "密码为8～20个字符，至少含字母和数字，且不含空白。"); passwordInput.focus(); return; }
+  const matched = Object.entries(accountExamples).find(([account, example]) => id === account || id === example.phone);
   submitWithFeedback(form, () => {
     if (!form.isConnected) return;
-    if (id === studentAccount || id === accountExamples[studentAccount].phone) {
-      window.location.hash = "student";
+    const expectedPassword = matched?.[0] === studentAccount ? studentDemoPassword : demoPassword;
+    if (!matched || password !== expectedPassword) {
+      loginAlert.hidden = false;
+      passwordInput.focus();
       return;
     }
-    const role = /^admin/.test(id) ? "管理员" : /^staff/.test(id) ? "工作人员" : "学生";
-    showToast(`登录核验通过 · ${role}`);
+    const role = matched[1].role;
+    if (role === "工作人员") {
+      const workbench = new URL("../任奕阳_REQ-002/REQ-002_界面原型.html#intake", window.location.href);
+      if (exportMode) workbench.searchParams.set("export", "1");
+      window.location.assign(workbench.href);
+    } else {
+      window.location.hash = role === "管理员" ? "account-create" : "student";
+    }
   });
 }
 
 function handleAccountCreate(form) {
+  if (form.querySelector('[type="submit"]').disabled) return;
+  document.getElementById("toast").hidden = true;
   if (!requireFields(form, ["account", "name", "phone", "password"])) return;
   const account = form.elements.account;
   const name = form.elements.name;
@@ -434,9 +450,15 @@ function handleAccountCreate(form) {
   if (!name.value.trim()) { setFieldError(name, "账号姓名不能仅为空白字符。"); name.focus(); return; }
   if (phone.value !== phone.value.trim() || !/^\d{11}$/.test(phone.value)) { setFieldError(phone, "请输入11位数字手机号，且不能含首尾空白。"); phone.focus(); return; }
   if (!validPassword(password.value)) { setFieldError(password, "初始密码须为8～20位，含字母和数字，不含空白。"); password.focus(); return; }
-  if (["admin001", "staff001"].includes(account.value)) { setFieldError(account, "该账号已存在，请更换账号；重复提交不得形成新账号。"); account.focus(); return; }
-  if (phone.value === "13800000002") { setFieldError(phone, "该手机号已被其他账号绑定，请核对后再提交。"); phone.focus(); return; }
-  submitWithFeedback(form, () => showToast("账号已建立；首次登录须修改密码", `原型反馈：固定角色为${role}，强制改密标记为“是”；未保存真实账号。`));
+  const duplicateAccount = Object.hasOwn(accountExamples, account.value);
+  const duplicatePhone = Object.values(accountExamples).some(example => example.phone === phone.value);
+  if (duplicateAccount) setFieldError(account, "该账号已存在，请更换账号。");
+  if (duplicatePhone) setFieldError(phone, "该手机号已被绑定，请更换手机号。");
+  const firstError = form.querySelector('[aria-invalid="true"]');
+  if (firstError) { firstError.focus(); return; }
+  submitWithFeedback(form, () => {
+    if (form.isConnected) showToast("账号已创建。首次登录须修改密码。");
+  });
 }
 
 function handleNormalPassword(form) {
@@ -451,9 +473,11 @@ function handleNormalPassword(form) {
 function handleForcedPassword(form) {
   if (!requireFields(form, ["newPassword"])) return;
   const input = form.elements.newPassword;
-  if (!validPassword(input.value)) { setFieldError(input, "新密码须为8～20位，含字母和数字，不含空白字符。"); input.focus(); return; }
+  const newPassword = input.value;
+  if (!validPassword(newPassword)) { setFieldError(input, "新密码须为8～20位，含字母和数字，不含空白字符。"); input.focus(); return; }
   submitWithFeedback(form, () => {
     if (!form.isConnected) return;
+    studentDemoPassword = newPassword;
     studentNeedsPasswordChange = false;
     if (currentRoute() === "password-forced") {
       const studentUrl = new URL(window.location.href);
@@ -528,8 +552,9 @@ document.getElementById("reset-prototype").addEventListener("click", () => {
   selectedCompany = "京东快递";
   demoState = "normal";
   studentNeedsPasswordChange = true;
-  window.location.hash = "login";
-  render();
+  studentDemoPassword = demoPassword;
+  if (window.location.hash === "#login") render();
+  else window.location.hash = "login";
   showToast("原型演示已重置", "所有清单与页面已恢复到初始合成示例。");
 });
 
@@ -566,6 +591,7 @@ document.addEventListener("input", event => {
   if (event.target.matches("[data-password-rules]")) updatePasswordRules(event.target);
   if (event.target.matches("[data-char-count]")) document.getElementById(event.target.dataset.charCount).textContent = `${event.target.value.length} / 50`;
   if (event.target.matches("input")) setFieldError(event.target, "");
+  if (event.target.form?.id === "login-form") document.getElementById("login-alert").hidden = true;
 });
 
 document.addEventListener("change", event => {
@@ -599,7 +625,7 @@ document.addEventListener("submit", event => {
 
 document.addEventListener("keydown", event => {
   const route = currentRoute();
-  if (event.key === "Escape" && ["company-add", "company-edit", "company-delete", "company-delete-blocked"].includes(route)) {
+  if (event.key === "Escape" && ["company-delete", "company-delete-blocked"].includes(route)) {
     window.location.hash = "company-list";
     return;
   }
