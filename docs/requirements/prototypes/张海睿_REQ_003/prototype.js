@@ -31,18 +31,20 @@ const statusStyles = {
 };
 
 const exampleId = "IN-DEMO-301";
-const refusedId = "RK20261121006";
-const initialRequests = {
-  pending: { id: "JS20261121002", reason: "商品已申请退款。", time: "2026-11-21 18:20:00", status: "待退件" },
-  complete: { id: "REJ-DEMO-306", reason: "商家已补发。", time: "2026-11-20 15:24:00", status: "已退件" }
+// 入库、拒收和退件开始时间对应REQ-002退件办理的同一组合成记录。
+const refusalDemo = {
+  recordId: "RK20261121006",
+  request: { id: "JS20261121002", reason: "商品已申请退款。", time: "2026-11-21 18:20:00", status: "待退件" },
+  startedAt: "2026-11-22 09:40:00",
+  withdrawnAt: "2026-11-22 09:39:00"
 };
 const samplePackages = [
   { id: exampleId, owner: account, company: "中通快递", waybill: "001234567890", shelf: "C-2", code: "A1B2C3", phoneLast: "0003", arrived: "2026-11-22 09:12:00", status: "待取件" },
-  { id: refusedId, owner: account, company: "京东快递", waybill: "JD000444555666", shelf: "D-4", code: "JD04P8", phoneLast: "0001", arrived: "2026-11-21 14:37:00", status: "拒收待退件", request: initialRequests.pending },
+  { id: refusalDemo.recordId, owner: account, company: "京东快递", waybill: "JD000444555666", shelf: "B-1", code: "JD04P8", phoneLast: "0001", arrived: "2026-11-21 16:02:00", status: "拒收待退件", request: refusalDemo.request },
   { id: "IN-DEMO-302", owner: account, company: "韵达快递", waybill: "001234567890", shelf: "B-5", code: "00B215", phoneLast: "0042", arrived: "2026-11-22 08:46:00", status: "待取件" },
   { id: "IN-DEMO-303", owner: account, company: "顺丰速运", waybill: "SF000940120667", shelf: "H-1", code: "SF6K11", phoneLast: "0001", arrived: "2026-11-21 12:40:00", status: "已取件", pickedUp: "2026-11-21 16:06:00" },
   { id: "IN-DEMO-305", owner: account, company: "圆通速递", waybill: "YT000000576101", shelf: "A-6", code: "Y0A617", phoneLast: "0003", arrived: "2026-11-21 08:16:00", status: "退件中", returnStarted: "2026-11-22 08:35:00" },
-  { id: "IN-DEMO-306", owner: account, company: "申通快递", waybill: "ST000601708215", shelf: "L-6", code: "ST0L67", phoneLast: "0003", arrived: "2026-11-20 10:30:00", status: "已退件", returnStarted: "2026-11-21 08:33:00", returned: "2026-11-21 11:42:00", request: initialRequests.complete },
+  { id: "IN-DEMO-306", owner: account, company: "申通快递", waybill: "ST000601708215", shelf: "L-6", code: "ST0L67", phoneLast: "0003", arrived: "2026-11-20 10:30:00", status: "已退件", returnStarted: "2026-11-21 08:33:00", returned: "2026-11-21 11:42:00", request: { id: "REJ-DEMO-306", reason: "商家已补发。", time: "2026-11-20 15:24:00", status: "已退件" } },
   { id: "IN-DEMO-OTHER", owner: "00120002", code: "OTHER1" },
   { id: "IN-DEMO-UNLINKED", owner: null, code: "UNLINK" }
 ];
@@ -358,25 +360,38 @@ function timeNow() {
   }).format(new Date());
 }
 
-function startReturn(item, time) {
+function applyDemoReturnStart(item) {
   item.status = "退件中";
-  item.returnStarted = time;
+  item.returnStarted = refusalDemo.startedAt;
   item.request.status = "退件中";
 }
 
-function createRefusal(item, reason, time) {
+function createRefusal(item, reason) {
+  const firstDemoRequest = item.id === refusalDemo.recordId && !item.request;
   if (item.request) {
     item.previousRequests ??= [];
     item.previousRequests.push(item.request);
   }
-  item.request = { id: `REJ-DEMO-${++sequence}`, reason, time, status: "待退件" };
+  item.request = firstDemoRequest
+    ? { ...refusalDemo.request, reason }
+    : { id: `REJ-DEMO-${++sequence}`, reason, time: timeNow(), status: "待退件" };
   item.status = "拒收待退件";
 }
 
-function markWithdrawn(item, time) {
-  item.request.withdrawal = "撤回成功，恢复待取件";
-  item.request.withdrawn = time;
-  item.status = "待取件";
+function withdrawRefusal(item) {
+  if (canWithdraw(item)) {
+    item.request.withdrawal = "撤回成功，恢复待取件";
+    item.request.withdrawn = item.request.id === refusalDemo.request.id ? refusalDemo.withdrawnAt : timeNow();
+    item.status = "待取件";
+    page = "withdrawn";
+    result = ["撤回成功", "包裹已恢复待取件，可以重新办理取件。"];
+    return;
+  }
+  const returned = item.status === "已退件";
+  item.request.withdrawal = returned ? "撤回失败，退件已完成" : "撤回失败，退件已开始";
+  page = "return-started";
+  const reason = returned ? "退件已完成，无法恢复取件。" : "工作人员已开始退件，当前不可撤回，也无法取件。";
+  result = ["撤回失败", reason, "warning", true];
 }
 
 function loadPreview(key = "list", scenario = "normal") {
@@ -384,17 +399,15 @@ function loadPreview(key = "list", scenario = "normal") {
   if (scenario === "empty") packages = packages.filter(item => item.owner !== account);
   scene = scenario;
   filter = "";
-  selected = exampleId;
   pickupReturn = null;
   result = null;
   sequence = 310;
   page = Object.hasOwn(screenshots, key) ? key : "list";
   view = "detail";
   statePicker.value = scene;
-  const item = packages.find(entry => entry.id === exampleId);
-  if (["refused", "withdraw", "withdrawn", "return-started"].includes(page)) {
-    createRefusal(item, "已联系商家退货。", "2026-11-22 09:28:16");
-  }
+  const refusalPreview = ["refusal", "refused", "withdraw", "withdrawn", "return-started"].includes(page);
+  selected = refusalPreview ? refusalDemo.recordId : exampleId;
+  const item = owned(selected);
 
   switch (page) {
     case "list": view = "list"; break;
@@ -405,23 +418,25 @@ function loadPreview(key = "list", scenario = "normal") {
       item.pickedUp = "2026-11-22 09:38:31";
       item.status = "已取件";
       break;
+    case "refusal":
+      item.status = "待取件";
+      delete item.request;
+      break;
     case "refused":
       result = ["拒收申请已提交", "包裹已暂停取件。工作人员开始退件前，你可以撤回拒收。"];
       break;
     case "withdrawn":
-      markWithdrawn(item, "2026-11-22 09:42:08");
-      result = ["撤回成功", "包裹已恢复待取件，可以重新办理取件。"];
+      withdrawRefusal(item);
       break;
     case "return-started":
-      startReturn(item, "2026-11-22 09:33:05");
-      item.request.withdrawal = "撤回失败，退件已开始";
-      result = ["撤回失败", "工作人员已开始退件，当前不可撤回，也无法取件。", "warning"];
+      applyDemoReturnStart(item);
+      withdrawRefusal(item);
       break;
   }
   render();
   if (page === "refusal" || page === "withdraw") {
     openDialog(page, app.querySelector(`[data-action="${page}"]`));
-    if (exportMode && page === "refusal") document.querySelector("#refusal-reason").value = "已联系商家退货。";
+    if (exportMode && page === "refusal") document.querySelector("#refusal-reason").value = refusalDemo.request.reason;
   }
 }
 
@@ -519,7 +534,7 @@ function handleOperation(form) {
       } else if (scene === "refusal-failure") {
         feedback(panel, "拒收申请提交失败", "包裹仍可取件。请稍后重试。");
       } else {
-        createRefusal(item, reason, timeNow());
+        createRefusal(item, reason);
         page = "refused";
         result = ["拒收申请已提交", "包裹已暂停取件。工作人员开始退件前，你可以撤回拒收。"];
         render(true);
@@ -530,18 +545,10 @@ function handleOperation(form) {
       feedback(panel, "撤回失败", "该申请已失效，请返回包裹详情核对。");
       return;
     }
-    if (scene === "return-race" && canWithdraw(item)) startReturn(item, timeNow());
-    if (canWithdraw(item)) {
-      markWithdrawn(item, timeNow());
-      page = "withdrawn";
-      result = ["撤回成功", "包裹已恢复待取件，可以重新办理取件。"];
-    } else {
-      item.request.withdrawal = item.status === "已退件" ? "撤回失败，退件已完成" : "撤回失败，退件已开始";
-      page = "return-started";
-      const reason = item.status === "已退件" ? "退件已完成，无法恢复取件。" :
-        "工作人员已开始退件，当前不可撤回，也无法取件。";
-      result = ["撤回失败", reason, "warning", true];
+    if (scene === "return-race" && requestId === refusalDemo.request.id && canWithdraw(item)) {
+      applyDemoReturnStart(item);
     }
+    withdrawRefusal(item);
     render(true);
   });
 }
