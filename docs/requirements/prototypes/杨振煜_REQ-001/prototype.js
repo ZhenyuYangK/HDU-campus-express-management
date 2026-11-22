@@ -259,7 +259,7 @@ function companyDrawer(mode) {
   const page = pages[add ? "company-add" : "company-edit"];
   const value = add ? "示例物流" : selectedCompany;
   return `<div class="overlay" aria-hidden="true"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="company-drawer-title">
-    <div class="drawer-header"><h2 id="company-drawer-title">${add ? "新增快递公司" : "修改快递公司"}</h2><button class="icon-button" type="button" data-route="company-list" aria-label="关闭">${icon("close")}</button></div>
+    <div class="drawer-header"><h2 id="company-drawer-title">${add ? "新增快递公司" : "修改快递公司"}</h2><button class="icon-button" type="button" data-drawer-close data-route="company-list" aria-label="关闭">${icon("close")}</button></div>
     <form id="${add ? "company-add-form" : "company-edit-form"}" class="drawer-body" novalidate>
       <div class="field"><label for="company-name">${add ? "公司名称" : "新公司名称"}<span class="required" aria-hidden="true">*</span></label><input id="company-name" name="companyName" value="${value}" maxlength="50" data-char-count="company-count" autocomplete="off"><p class="field-hint">DATA-001-11 · 1～50位，清单内唯一</p><div class="char-count" id="company-count">${value.length} / 50</div></div>
       ${add ? "" : '<div class="info-card warning" style="margin-top:22px">更名保留业务关联，历史业务显示当前名称。</div>'}
@@ -625,7 +625,7 @@ document.addEventListener("submit", event => {
 
 document.addEventListener("keydown", event => {
   const route = currentRoute();
-  if (event.key === "Escape" && ["company-add", "company-edit", "company-delete", "company-delete-blocked"].includes(route)) {
+  if (event.key === "Escape" && ["company-delete", "company-delete-blocked"].includes(route)) {
     window.location.hash = "company-list";
     return;
   }

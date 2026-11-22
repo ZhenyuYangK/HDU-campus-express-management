@@ -203,9 +203,8 @@ h3 { margin-bottom: 8px; color: var(--ink); font-size: 16px; }
 
 .overlay { position: fixed; inset: 0; z-index: 60; background: rgb(40 51 56 / 32%); }
 .export .overlay { position: absolute; }
-.drawer { position: fixed; z-index: 70; top: 0; right: 0; bottom: 0; width: min(480px, 100vw); display: flex; flex-direction: column; background: var(--surface); border-left: 1px solid var(--line); }
+.drawer { position: fixed; z-index: 90; top: 0; right: 0; bottom: 0; width: min(480px, 100vw); display: flex; flex-direction: column; background: var(--surface); border-left: 1px solid var(--line); }
 .export .drawer { position: absolute; }
-.record-detail-drawer, .return-start-drawer, .link-drawer { z-index: 90; }
 .drawer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 28px 28px 22px; border-bottom: 1px solid var(--line); }
 .drawer-header h2 { margin: 0 0 4px; }
 .drawer-body { padding: 26px 28px; overflow-y: auto; flex: 1; }

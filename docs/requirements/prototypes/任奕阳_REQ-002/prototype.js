@@ -276,8 +276,8 @@ function linkingPage(account, showDrawer = true) {
   const list = demoState === "normal" ? `<div class="table-scroll"><table class="data-table">
       <thead><tr><th>入库记录编号</th><th>公司</th><th>运单号</th><th>收件人</th><th>收件手机号</th><th>位置</th><th>到站时间</th><th>操作</th></tr></thead>
       <tbody><tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${record.tracking}</td><td>${record.receiver}</td><td class="mono">${record.phone}</td><td>${record.location}</td><td class="mono">${record.arrivedAt}</td><td><div class="row-actions"><button class="button-text" type="button" data-route="linking">补关联</button></div></td></tr></tbody></table></div>${pagination(1)}` : listStateBlock("没有符合条件的待关联包裹。");
-  const drawer = showDrawer && demoState === "normal" ? `<div class="overlay"></div><aside class="drawer link-drawer" role="dialog" aria-modal="true" aria-labelledby="link-title">
-    <div class="drawer-header"><div><h2 id="link-title">补关联核对</h2><span class="function-tag">目标入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-route="linking/list" aria-label="关闭">${icon("close")}</button></div>
+  const drawer = showDrawer && demoState === "normal" ? `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="link-title">
+    <div class="drawer-header"><div><h2 id="link-title">补关联核对</h2><span class="function-tag">目标入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-drawer-close data-route="linking/list" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
       <dl class="detail-grid"><div><dt>包裹状态</dt><dd>${record.status}</dd></div><div><dt>账号关联状态（DATA-002-14）</dt><dd>待关联</dd></div><div><dt>收件手机号（DATA-003-03）</dt><dd class="mono">${record.phone}</dd></div><div><dt>取件码</dt><dd class="mono">009876</dd></div></dl>
       <form id="link-form" novalidate>
@@ -337,8 +337,8 @@ function returnsPage(record, requestedRecordId) {
 function returnStartPage() {
   const record = findRecord(returnDemo.recordId);
   if (record.status !== "拒收待退件") return returnsPage();
-  const drawer = `<div class="overlay"></div><aside class="drawer return-start-drawer" role="dialog" aria-modal="true" aria-labelledby="return-title">
-    <div class="drawer-header"><div><h2 id="return-title">开始退件</h2><span class="function-tag">入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-route="returns" aria-label="关闭">${icon("close")}</button></div>
+  const drawer = `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="return-title">
+    <div class="drawer-header"><div><h2 id="return-title">开始退件</h2><span class="function-tag">入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-drawer-close data-route="returns" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
       <dl class="detail-grid"><div><dt>退件来源（DATA-002-29）</dt><dd>学生拒收 · 系统按入口确定</dd></div><div><dt>当前拒收申请（DATA-003-10）</dt><dd class="mono">${returnDemo.refusalId}</dd></div><div><dt>包裹状态（DATA-003-05）</dt><dd>${record.status}</dd></div><div><dt>运单号</dt><dd class="mono">${record.tracking}</dd></div></dl>
       <div class="info-card warning"><p>办理前核对包裹实物、收件信息与退件原因；不一致时先按记录更正办理。开始退件后学生不可撤回。</p></div>
@@ -355,7 +355,7 @@ function returnStartPage() {
 
 function returnManualPage() {
   const drawer = `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="manual-return-title">
-    <div class="drawer-header"><div><h2 id="manual-return-title">人工异常退件</h2><span class="function-tag">入库记录RK20261122001（DATA-002-01）</span></div><button class="icon-button" type="button" data-route="returns" aria-label="关闭">${icon("close")}</button></div>
+    <div class="drawer-header"><div><h2 id="manual-return-title">人工异常退件</h2><span class="function-tag">入库记录RK20261122001（DATA-002-01）</span></div><button class="icon-button" type="button" data-drawer-close data-route="returns" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
       <div class="filter-card"><div class="field"><label for="manual-keyword">运单号或收件手机号</label><input id="manual-keyword" value="SF000123456789" readonly><span class="data-ref">检索待取件包裹后选择，含待关联</span></div></div>
       <dl class="detail-grid"><div><dt>退件来源（DATA-002-29）</dt><dd>人工异常 · 系统按入口确定</dd></div><div><dt>拒收申请</dt><dd>无，允许缺失</dd></div><div><dt>包裹状态（DATA-003-05）</dt><dd>待取件</dd></div><div><dt>账号关联状态</dt><dd>待关联，无须先补关联</dd></div></dl>
@@ -450,8 +450,8 @@ function recordDetail(record, admin) {
       <button class="button ${canContinue ? "button-secondary" : "button-primary"}" type="button" data-route="${closed ? "correction-closed" : "correction"}/${record.id}">${closed ? "追加说明" : "记录更正"}</button>
       ${canContinue ? `<button class="button button-primary" type="button" data-route="returns/${record.id}">继续退件办理</button>` : ""}
     </div>`;
-  return `<div class="overlay"></div><aside class="drawer record-detail-drawer" role="dialog" aria-modal="true" aria-labelledby="record-title">
-    <div class="drawer-header"><div><h2 id="record-title">记录详情</h2><span class="function-tag">${record.id} · ${admin ? "只读" : record.status}</span></div><button class="icon-button" type="button" data-route="${admin ? "records-admin" : "records"}" aria-label="关闭">${icon("close")}</button></div>
+  return `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="record-title">
+    <div class="drawer-header"><div><h2 id="record-title">记录详情</h2><span class="function-tag">${record.id} · ${admin ? "只读" : record.status}</span></div><button class="icon-button" type="button" data-drawer-close data-route="${admin ? "records-admin" : "records"}" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
       <dl class="detail-grid">
         <div><dt>快递公司</dt><dd>${record.company}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div>
