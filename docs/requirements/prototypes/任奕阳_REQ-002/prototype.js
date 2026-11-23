@@ -1,6 +1,6 @@
 "use strict";
 
-const VERSION = "2026-11-22";
+const VERSION = "2026-11-23";
 const exportMode = new URLSearchParams(window.location.search).get("export") === "1";
 const brandLogo = document.querySelector('link[rel="icon"]').href;
 document.body.classList.toggle("export", exportMode);
@@ -64,8 +64,9 @@ function icon(name) {
   return `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 }
 
-function brand() {
-  return `<a class="brand" href="#intake" aria-label="CampusDelivery Station原型首页">
+function brand(route = "intake") {
+  const target = route === "records-admin" ? "records-admin" : "intake";
+  return `<a class="brand" href="#${target}" aria-label="CampusDelivery Station原型首页">
     <img class="brand-mark" src="${brandLogo}" width="34" height="34" alt="">
     <span class="brand-name">CampusDelivery Station</span>
   </a>`;
@@ -125,9 +126,7 @@ function shell(route, content) {
   const displayName = isAdmin ? "示例管理员" : "示例工作人员";
   const account = isAdmin ? "admin001" : "staff001";
   return `<div class="app-shell">
-    <aside class="sidebar" aria-label="功能导航">${brand()}<nav>${nav}</nav>
-      <div class="sidebar-note"><strong>${page.ui}</strong>${page.func}<br>接口与operationId待TASK-003设计</div>
-    </aside>
+    <aside class="sidebar" aria-label="功能导航">${brand(route)}<nav>${nav}</nav></aside>
     <section class="workspace">
       <header class="app-topbar"><div class="breadcrumb"><span>工作台</span>${icon("chevron")}<span>收件与退件</span></div>
         <div class="user-chip"><span class="user-avatar" aria-hidden="true">${isAdmin ? "管" : "员"}</span><div class="user-meta"><strong>${displayName}</strong><span>${account} · ${page.role}</span></div></div>
@@ -220,6 +219,7 @@ function duplicateDialog(record) {
     </dl>
     <div class="info-card warning"><p>同公司同号最多一条未办结记录。核对为同一包裹则结束登记；即使核对为不同包裹也不新增，须先核对或更正已有记录。</p></div>
     <div class="actions-row">
+      <button class="button button-text" type="button" data-action="cancel-duplicate">返回入库</button>
       <button class="button button-secondary" type="button" data-route="correction/${record.id}">转记录更正</button>
       <button class="button button-primary" type="button" data-action="confirm-duplicate">确认为同一包裹</button>
     </div>
@@ -374,8 +374,9 @@ function returnManualPage() {
 function recordCorrectionHistory(record) {
   const correction = record.correction;
   const notes = (record.correctionNotes ?? []).map(note => `<li class="correction-note-entry"><strong>追加说明</strong> · ${escapeHtml(note.reason)}<div>${escapeHtml(note.text)}</div><small class="mono">${note.at} · 示例工作人员</small></li>`).join("");
+  const entries = (record.correctionEntries ?? []).map(entry => `<li><strong>更正字段：${escapeHtml(entry.field)}</strong><div>${escapeHtml(entry.previous)} → ${escapeHtml(entry.value)}</div><div>原因：${escapeHtml(entry.reason)}</div><small class="mono">${entry.at} · ${entry.operator} · DATA-002-44/45</small></li>`).join("");
   const earlier = correction ? `<li>更正字段：${correction.field}；更正人：${correction.operator}<small class="mono">${correction.at} · DATA-002-44/45</small></li>` : "";
-  return notes + earlier || "<li>无更正记录</li>";
+  return notes + entries + earlier || "<li>无更正记录</li>";
 }
 
 function correctionPage(closed, selectedRecord, requestedRecordId) {
@@ -579,6 +580,11 @@ function showIntakeDuplicate(draft, record) {
   window.location.hash = `intake-duplicate/${record.id}`;
 }
 
+function cancelIntakeDuplicate() {
+  window.location.hash = "intake";
+  showToast("已返回入库登记，保留已填内容；未确认重复、未新增记录。");
+}
+
 function handleIntake(form) {
   if (form.querySelector('[type="submit"]').disabled) return;
   const draft = readIntakeForm(form);
@@ -671,20 +677,46 @@ function handleCorrection(form) {
 
   const fieldInput = form.elements.fieldName;
   const value = form.elements.newValue;
-  if (fieldInput && value) {
-    if (!value.value.trim()) { setFieldError(value, "请填写更正后内容。"); value.focus(); return; }
-    if (fieldInput.value === "phone" && !/^1\d{10}$/.test(value.value)) { setFieldError(value, "收件手机号应为11位中国大陆手机号。"); value.focus(); return; }
-    if (fieldInput.value === "tracking") {
-      const tracking = value.value.trim();
-      const duplicate = record
-        ? matchingIntakes({ company: record.company, tracking }).find(item => item.id !== record.id && !isRecordClosed(item))
-        : tracking === records[0].tracking ? records[0] : null;
-      if (duplicate) { setFieldError(value, `更正后运单号与该快递公司已有记录重复（入库记录编号：${duplicate.id}），请先核对。`); value.focus(); return; }
-    }
+  const target = record ?? records[0];
+  if (!target || isRecordClosed(target)) { showToast("该记录已完成，只能追加更正说明。"); return; }
+  const nextValue = value.value.trim();
+  if (!nextValue) { setFieldError(value, "请填写更正后内容。"); value.focus(); return; }
+  if (fieldInput.value === "phone" && !/^1\d{10}$/.test(nextValue)) { setFieldError(value, "收件手机号应为11位中国大陆手机号。"); value.focus(); return; }
+  if (fieldInput.value === "location" && !fixedLocations.includes(nextValue)) {
+    setFieldError(value, "存放位置须为A～L区1～6层的有效层位；A-0等层位不存在。");
+    value.focus();
+    return;
   }
+  if (fieldInput.value === "tracking") {
+    const duplicate = matchingIntakes({ company: target.company, tracking: nextValue }).find(item => item.id !== target.id && !isRecordClosed(item));
+    if (duplicate) { setFieldError(value, `更正后运单号与该快递公司已有记录重复（入库记录编号：${duplicate.id}），请先核对。`); value.focus(); return; }
+  }
+  setFieldError(value, "");
+  const fieldName = fieldInput.value;
   const fieldLabel = fieldInput.selectedOptions[0].textContent;
-  const result = `入库记录${record?.id ?? records[0].id}已更正，更正字段：${fieldLabel}，更正人：示例工作人员。`;
-  submitWithFeedback(form, () => showToast(result));
+  const accountMatches = fieldName === "phone" ? intakeAccounts.filter(account => account.phone === nextValue) : null;
+  const nextAccount = accountMatches ? (accountMatches.length === 1 ? accountMatches[0].account : null) : target.account;
+  const entry = {
+    field: fieldLabel,
+    previous: String(target[fieldName] ?? "待关联"),
+    value: nextValue,
+    reason: reasonText,
+    previousAccount: target.account ?? "待关联",
+    account: nextAccount ?? "待关联",
+    operator: "示例工作人员",
+    at: demoTimestamp()
+  };
+  const result = `入库记录${target.id}已更正，更正字段：${fieldLabel}，更正人：示例工作人员。`;
+  submitWithFeedback(form, () => {
+    records[records.indexOf(target)] = {
+      ...target,
+      [fieldName]: nextValue,
+      account: nextAccount,
+      correctionEntries: [entry, ...(target.correctionEntries ?? [])]
+    };
+    render();
+    showToast(result);
+  });
 }
 
 function handleRecordFilter(form) {
@@ -724,6 +756,7 @@ document.addEventListener("click", event => {
     if (duplicate) showIntakeDuplicate(draft, duplicate);
     else showToast("未命中未办结记录，可继续登记；保存前仍会复核。");
   }
+  if (action === "cancel-duplicate") cancelIntakeDuplicate();
   if (action === "confirm-duplicate") { window.location.hash = "intake"; showToast("已确认为重复包裹，未新增入库记录。"); }
   if (action === "print-label") showToast("标签仅作页面预览与浏览器打印，不设置物理打印设备或专用纸张版式。");
   if (action === "continue-intake") {
@@ -751,6 +784,12 @@ document.addEventListener("click", event => {
   }
   if (action === "search") showToast("已按当前条件刷新待关联清单。");
   if (action === "retry") { demoState = "normal"; render(); }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape" || event.defaultPrevented || currentRoute() !== "intake-duplicate") return;
+  event.preventDefault();
+  cancelIntakeDuplicate();
 });
 
 document.getElementById("app").addEventListener("change", event => {
