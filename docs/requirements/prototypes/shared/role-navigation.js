@@ -3,7 +3,9 @@
 const prototypePages = {
   "001": "../杨振煜_REQ-001/REQ-001_界面原型.html",
   "002": "../任奕阳_REQ-002/REQ-002_界面原型.html",
-  "003": "../张海睿_REQ_003/REQ-003_界面原型.html"
+  "003": "../张海睿_REQ_003/REQ-003_界面原型.html",
+  "004": "../沈翔宇_REQ-004/REQ-004_界面原型.html",
+  "005": "../戴靖桓_REQ-005/REQ-005_界面原型.html"
 };
 
 const roleMenu = {
@@ -11,6 +13,7 @@ const roleMenu = {
     home: ["003", "list", "我的包裹"],
     groups: [
       ["包裹服务", [["003", "list", "我的包裹", "box"], ["003", "pickup", "自助取件", "shield"]]],
+      ["寄件服务", [["004", "01", "寄件申请", "box"], ["004", "02", "我的寄件", "search"]]],
       ["账号安全", [["001", "password", "修改密码", "lock"]]]
     ]
   },
@@ -19,7 +22,10 @@ const roleMenu = {
     groups: [
       ["账号与权限", [["001", "account-create", "创建账号", "users"], ["001", "password-reset", "重置密码", "lock"], ["001", "phone-change", "变更手机号", "phone"]]],
       ["基础信息", [["001", "company-list", "快递公司", "truck"], ["001", "locations", "存放位置", "grid"]]],
-      ["收件与退件", [["002", "records-admin", "记录查询（只读）", "search"]]]
+      ["收件与退件", [["002", "records-admin", "记录查询（只读）", "search"]]],
+      ["寄件服务", [["004", "12", "寄件记录（只读）", "search"]]],
+      ["统计", [["005", "overview", "统计概览", "grid"]]],
+      ["账号安全", [["001", "password-admin", "修改密码", "lock"]]]
     ]
   },
   staff: {
@@ -29,7 +35,9 @@ const roleMenu = {
         ["002", "intake", "收件入库", "box"], ["002", "linking/list", "待关联补关联", "users"],
         ["002", "returns", "退件办理", "return"], ["002", "correction", "记录更正", "edit"],
         ["002", "records", "记录查询", "search"]
-      ]]
+      ]],
+      ["寄件服务", [["004", "04", "寄件办理", "box"]]],
+      ["账号安全", [["001", "password-staff", "修改密码", "lock"]]]
     ]
   }
 };

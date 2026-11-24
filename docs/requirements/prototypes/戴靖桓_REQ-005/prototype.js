@@ -298,23 +298,13 @@ function shell(route, content) {
   const page = pages[route];
   const nav = `
     <div class="nav-group"><p class="sidebar-caption">统计</p>
-      ${navButton("overview", route === "overview", "统计概览", "chart")}
       ${navButton("period", route === "period" || route === "period-error", "统计期间", "calendar")}
       ${navButton("summary", route === "summary", "七项指标", "grid")}
       ${navButton("verification", route === "verification", "结果核对", "check-circle")}
     </div>
-    <div class="nav-group"><p class="sidebar-caption">指标明细</p>
-      ${navButton("inbound", route === "inbound", "期间入库量", "box")}
-      ${navButton("pickup", route === "pickup", "期间取件量", "check")}
-      ${navButton("shipped", route === "shipped", "期间寄出量", "truck")}
-      ${navButton("cancelled", route === "cancelled", "期间寄件取消量", "x")}
-      ${navButton("pending", route === "pending", "当前待取量", "clock")}
-      ${navButton("rejected", route === "rejected", "期间有效拒收量", "alert")}
-      ${navButton("returned", route === "returned", "期间退件完成量", "back")}
-    </div>
     <div class="sidebar-note"><strong>只读统计</strong>数据来自收件、取件、拒收、退件和寄件记录；统计不写回业务。</div>`;
   return `<div class="app-shell">
-    <aside class="sidebar" aria-label="功能导航">${brand()}<nav>${nav}</nav></aside>
+    <aside class="sidebar" aria-label="功能导航">${roleBrand("admin", brandLogo)}${roleNavigation("admin", route, icon)}<nav aria-label="统计功能">${nav}</nav></aside>
     <section class="workspace">
       <header class="app-topbar">
         <div class="breadcrumb"><span>统计</span>${icon("chevron")}<span>${sectionFor(route)}</span></div>

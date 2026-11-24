@@ -22,6 +22,9 @@ const pages = {
   locations: { ui: "UI-001-12", func: "FUNC-001-12", title: "固定存放位置查看", role: "管理员", file: "UI-001-12_固定存放位置查看.png" }
 };
 
+pages["password-admin"] = { ...pages.password, role: "管理员", hidden: true };
+pages["password-staff"] = { ...pages.password, role: "工作人员", hidden: true };
+
 const exportRoutes = Object.keys(pages).filter(key => !pages[key].hidden);
 const initialCompanies = [
   ["顺丰速运", true], ["京东快递", true], ["韵达快递", true], ["中通快递", true],
@@ -66,16 +69,16 @@ function shell(route, content) {
   const page = pages[route];
   const role = page.role;
   const isAdmin = role === "管理员";
-  const menuRole = isAdmin ? "admin" : "student";
+  const menuRole = isAdmin ? "admin" : role === "工作人员" ? "staff" : "student";
   const current = route.startsWith("company-") ? "company-list" : route;
-  const displayName = isAdmin ? "示例管理员" : "示例学生";
-  const account = isAdmin ? "admin001" : studentAccount;
+  const displayName = "示例" + role;
+  const account = isAdmin ? "admin001" : menuRole === "staff" ? "staff001" : studentAccount;
   const section = isAdmin ? (route.startsWith("company-") || route === "locations" ? "基础信息" : "账号与权限") : "学生端";
   return `<div class="app-shell">
     <aside class="sidebar" aria-label="功能导航">${roleBrand(menuRole, brandLogo)}${roleNavigation(menuRole, current, icon)}</aside>
     <section class="workspace">
-      <header class="app-topbar"><div class="breadcrumb"><span>${route === "password" ? "账号安全" : section}</span></div>
-        <div class="user-chip"><span class="user-avatar" aria-hidden="true">${isAdmin ? "管" : "学"}</span><div class="user-meta"><strong>${displayName}</strong><span>${account} · ${role}</span></div></div>
+      <header class="app-topbar"><div class="breadcrumb"><span>${route.startsWith("password") && route !== "password-reset" ? "账号安全" : section}</span></div>
+        <div class="user-chip"><span class="user-avatar" aria-hidden="true">${isAdmin ? "管" : menuRole === "staff" ? "员" : "学"}</span><div class="user-meta"><strong>${displayName}</strong><span>${account} · ${role}</span></div></div>
       </header>
       <main class="main-content" id="main" tabindex="-1">${content}</main>
       ${metaFooter(page)}
@@ -141,18 +144,19 @@ function passwordRules() {
   return `<div class="password-rules" aria-label="新密码格式要求"><span class="password-rule" data-rule="length">${icon("check")}8～20个字符</span><span class="password-rule" data-rule="letter-number">${icon("check")}含字母和数字</span><span class="password-rule" data-rule="space">${icon("check")}不含空白字符</span></div>`;
 }
 
-function normalPasswordPage() {
-  const page = pages.password;
+function normalPasswordPage(route) {
+  const page = pages[route];
+  const account = Object.keys(accountExamples).find(id => accountExamples[id].role === page.role);
   const content = `${pageHeading(page, "")}
     <div class="form-layout single"><form class="form-card" id="normal-password-form" novalidate>
       <div class="form-grid">
-        <div class="field field-full"><label for="password-account">当前账号</label><input id="password-account" value="00120001 · 示例学生 · 学生" readonly><p class="field-hint">DATA-001-01 · 当前身份</p></div>
+        <div class="field field-full"><label for="password-account">当前账号</label><input id="password-account" value="${account} · ${accountExamples[account].name} · ${page.role}" readonly><p class="field-hint">DATA-001-01 · 当前身份</p></div>
         <div class="field field-full"><label for="old-password">原密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="old-password" name="oldPassword" type="password" autocomplete="current-password" placeholder="输入原密码"><button class="input-action" type="button" data-toggle-password="old-password" aria-label="显示原密码">显示</button></div><p class="field-hint">DATA-001-08</p></div>
         <div class="field field-full"><label for="new-password">新密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="new-password" name="newPassword" type="password" autocomplete="new-password" placeholder="设置新密码" data-password-rules><button class="input-action" type="button" data-toggle-password="new-password" aria-label="显示新密码">显示</button></div><p class="field-hint">DATA-001-09</p>${passwordRules()}</div>
       </div>
       <div class="form-footer"><button class="button button-primary" type="submit">确认修改${icon("arrow")}</button></div>
     </form></div>`;
-  return shell("password", content);
+  return shell(route, content);
 }
 
 function forcedPasswordDialog() {
@@ -289,7 +293,7 @@ function render() {
   if (route === "login") html = loginPage(false);
   else if (route === "login-error") html = loginPage(true);
   else if (route === "account-create") html = accountCreatePage();
-  else if (route === "password") html = normalPasswordPage();
+  else if (["password", "password-admin", "password-staff"].includes(route)) html = normalPasswordPage(route);
   else if (route === "student" || route === "password-forced") {
     html = studentPage(route, route === "password-forced" || studentNeedsPasswordChange);
   }

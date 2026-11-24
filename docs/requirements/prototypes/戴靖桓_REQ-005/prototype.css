@@ -567,3 +567,8 @@
   .card, .list-card { overflow-x: auto; }
   .summary-meta { grid-template-columns: minmax(0, 1fr); }
 }
+
+@media (min-width: 901px) {
+  .sidebar .nav-group { margin-bottom: 14px; }
+  .sidebar .nav-item { min-height: 38px; padding-block: 7px; }
+}
