@@ -451,6 +451,24 @@
 
 .trend-bar.current span { background: var(--navy); }
 
+@media (min-width: 1121px) {
+  .export .detail-main:has(.trend-bars) .detail-table td { padding-block: 3px; }
+
+  .export .detail-main .card:has(.trend-bars) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 24px;
+    padding: 12px 20px;
+  }
+
+  .export .detail-main .card:has(.trend-bars) .card-head {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+  }
+}
+
 .trend-bar small {
   color: var(--muted);
   font-family: var(--font-mono);
