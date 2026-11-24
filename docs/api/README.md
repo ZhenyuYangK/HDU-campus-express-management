@@ -2,7 +2,7 @@
 
 ## 当前范围
 
-本文件与`openapi.yaml`共同定义前后端公共协议，是项目工程约定。当前没有已确认的业务端点，OpenAPI的`paths`保持为空；Swagger UI可以查看公共Schema，但还不能联调业务。[项目计划书](../management/plans/project-plan.md)已确认学生、工作人员、管理员三类角色及业务范围，已确认的业务规则见[调研分析报告](../requirements/research/校园快递收发系统调研分析报告.docx)，具体权限映射、路径和数据字段在需求与设计阶段登记。取件采用学生自助核验、系统确认出库，执行[ADR-005](../management/decisions.md#adr-005跨文档分工统一与自助取件确认)。
+本文件与`openapi.yaml`共同定义前后端公共协议，是项目工程约定。当前没有已确认的业务端点，OpenAPI的`paths`保持为空；Swagger UI可以查看公共Schema，但还不能联调业务。[项目计划书](../management/plans/project-plan.md)已确认学生、工作人员、管理员三类角色及业务范围，已确认的业务规则见[业务决策记录](../management/decisions.md)及[共享数据定义](../requirements/data-analysis/shared-data-dictionary.md)，具体权限映射、路径和数据字段在需求与设计阶段登记。取件采用学生自助核验、系统确认出库，执行[ADR-005](../management/decisions.md#adr-005跨文档分工统一与自助取件确认)。
 
 OpenAPI是接口结构的唯一维护入口；本文件解释协作规则。两者发生冲突时必须一起修正，不允许前端、后端各维护一套不同定义。
 
