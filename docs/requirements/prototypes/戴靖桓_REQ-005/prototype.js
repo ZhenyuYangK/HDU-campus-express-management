@@ -165,12 +165,12 @@ const sourceEvents = {
     ["RK20261106005", "圆通速递", "YT000555666778", "2026-11-06 09:00:00", "待关联"],
     ["RK20261107006", "申通快递", "ST000444555666", "2026-11-07 09:00:00", "已关联"],
     ["RK20261108007", "极兔速递", "JT000777888999", "2026-11-08 09:00:00", "已关联"],
-    ["RK20261109008", "德邦快递", "DB000123123123", "2026-11-09 09:00:00", "已关联"],
+    ["RK20261120009", "德邦快递", "DB000123123123", "2026-11-20 09:00:00", "已关联"],
     ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 09:00:00", "已关联"]
   ],
   pickup: [
+    ["RK20261102001", "顺丰速运", "SF000123456789", "2026-11-02 10:00:00", "成功出库"],
     ["RK20261103002", "京东快递", "JD000987654321", "2026-11-03 10:00:00", "成功出库"],
-    ["RK20261104003", "中通快递", "ZT000111222333", "2026-11-04 10:00:00", "成功出库"],
     ["RK20261105004", "韵达快递", "YD000555666777", "2026-11-05 10:00:00", "核验失败"],
     ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 10:00:00", "成功出库"]
   ],
@@ -223,14 +223,14 @@ function metricResult(key) {
       label, value: rows.filter(row => row[3] === label).length, current: label === "待取件"
     }));
   } else {
-    rows = sourceEvents[key].filter(row => {
-      const date = row[eventDateColumn[key]].slice(0, 10);
-      return date >= period.start && date <= period.end;
-    }).map(source => {
+    rows = sourceEvents[key].map(source => {
       const row = [...source];
+      const date = row[eventDateColumn[key]].slice(0, 10);
       if (key === "inbound") row[4] = packageState(row[0]);
-      const excluded = (key === "pickup" && row[4] !== "成功出库") || (key === "rejected" && row[4] !== "未撤回");
-      return [...row, excluded ? "不计" : "计入"];
+      const excluded = date === "—" || (key === "pickup" && row[4] !== "成功出库") || (key === "rejected" && row[4] !== "未撤回");
+      if (excluded) return [...row, "不计"];
+      const inPeriod = date >= period.start && date <= period.end;
+      return [...row, inPeriod ? "计入" : "不计（期间外）"];
     });
   }
   return { ...definition, rows, trend, value: rows.filter(row => row.at(-1) === "计入").length };

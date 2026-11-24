@@ -453,6 +453,7 @@
 
 @media (min-width: 1121px) {
   .export .detail-main:has(.trend-bars) .detail-table td { padding-block: 3px; }
+  .export .card:has(.summary-table) { padding-block: 16px; }
 
   .export .detail-main .card:has(.trend-bars) {
     display: grid;
