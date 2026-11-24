@@ -81,6 +81,7 @@ h3 { margin-bottom: 8px; color: var(--ink); font-size: 16px; }
 .sidebar-caption { margin: 0 12px 10px; color: var(--muted); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; }
 .nav-group { margin-bottom: 26px; }
 .nav-item { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 46px; margin: 3px 0; padding: 10px 13px; border: 0; border-radius: 12px; background: transparent; color: var(--ink); text-align: left; transition: background 180ms var(--ease), color 180ms var(--ease); }
+.nav-item { text-decoration: none; }
 .nav-item:hover { background: var(--card-mint); }
 .nav-item[aria-current="page"] { background: var(--card-mint); color: var(--pine); font-weight: 700; }
 .nav-item .icon { width: 18px; height: 18px; }
@@ -219,6 +220,8 @@ h3 { margin-bottom: 8px; color: var(--ink); font-size: 16px; }
 .dialog h2 { font-size: 28px; }
 .dialog-meta { margin: 22px 0 0; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-family: var(--font-mono); font-size: 10px; }
 .dialog .actions-row { justify-content: flex-end; margin-top: 24px; }
+.duplicate-dialog { width: min(500px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
+.duplicate-dialog::backdrop { background: rgb(40 51 56 / 32%); }
 .password-dialog { width: min(440px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; }
 .password-dialog::backdrop { background: rgb(40 51 56 / 32%); }
 .password-dialog h2 { font-size: 24px; }
@@ -393,6 +396,7 @@ h3 { margin-bottom: 8px; color: var(--ink); font-size: 16px; }
 .prototype-banner.warning { border-left-color: #b88435; background: var(--warning-bg); }
 .state-error { padding: 30px; text-align: center; color: var(--danger); }
 .table-scroll { overflow-x: auto; }
+.data-table .time-cell { white-space: nowrap; }
 .inline-note { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
 
 @media (max-width: 1120px) {

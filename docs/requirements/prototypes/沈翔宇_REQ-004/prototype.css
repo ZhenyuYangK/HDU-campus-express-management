@@ -1,0 +1,73 @@
+.prototype-toolbar select { min-width: 0; }
+.prototype-toolbar .toolbar-button { display: inline-block; }
+.app-topbar .user-chip { margin-left: auto; }
+.shipping-heading { align-items: center; }
+.shipping-heading h1 { margin-bottom: 0; }
+.shipping-heading + .notice { margin-bottom: 20px; }
+.shipping-form { max-width: 960px; }
+.form-section { border: 0; padding: 0; margin: 0; min-width: 0; }
+.form-section + .form-section { margin-top: 24px; }
+.form-section legend { padding: 0; margin-bottom: 12px; color: var(--ink); font-weight: 700; }
+.field textarea { display: block; width: 100%; min-height: 80px; padding: 10px 13px; border: 1px solid #a9b6b5; border-radius: 9px; background: var(--paper-warm); color: var(--soft-black); font: inherit; resize: vertical; }
+.field textarea:focus { border-color: var(--pine); outline: 0; box-shadow: 0 0 0 3px rgb(28 93 95 / 14%); }
+.field :is(textarea, select)[aria-invalid="true"] { border-color: var(--danger); background: var(--danger-bg); }
+.field-error[hidden], .form-alert[hidden] { display: none; }
+.shipping-filters { display: grid; grid-template-columns: .75fr 1fr 1fr 1.35fr auto; gap: 14px; align-items: end; margin-bottom: 20px; }
+.shipping-filters .form-alert { grid-column: 1 / -1; margin: 0; }
+.shipping-filters .actions-row .button { padding-inline: 16px; }
+.shipping-table { min-width: 0; }
+.shipping-table th { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; }
+.shipping-table td { height: 68px; padding-block: 10px; }
+.shipping-table th:nth-child(1) { width: 26%; }
+.shipping-table th:nth-last-child(2) { width: 25%; }
+.shipping-table th:last-child { width: 104px; text-align: right; }
+.shipping-table .cell-label { display: none; }
+.company-glyph .icon { width: 17px; height: 17px; }
+.shipping-detail { display: grid; gap: 18px; max-width: 1040px; }
+.shipping-detail h2 { margin-bottom: 17px; }
+.shipping-detail .form-card { padding-block: 23px; }
+.shipping-detail .form-footer { justify-content: flex-start; margin-top: 20px; padding-top: 16px; }
+.shipping-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 22px; margin: 0; }
+.shipping-facts dt { margin-bottom: 4px; color: var(--muted); font-size: 12px; }
+.shipping-facts dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; white-space: pre-wrap; }
+.shipping-facts .wide { grid-column: 1 / -1; }
+.shipping-contacts .shipping-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.shipping-contacts .wide { grid-column: span 2; }
+.shipping-history { list-style: none; margin: 0; padding: 0; }
+.shipping-history li + li { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.shipping-history p { margin: 5px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notice { border-radius: 0 9px 9px 0; }
+.shipping-dialog { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
+.shipping-drawer { width: min(540px, 100%); height: 100dvh; max-width: none; max-height: none; margin: 0 0 0 auto; padding: 0; border: 0; color: var(--text); }
+.shipping-drawer[open] { display: flex; }
+.shipping-drawer .drawer-header, .shipping-drawer .drawer-footer { flex: none; }
+.shipping-drawer .drawer-header p { margin-bottom: 0; }
+.shipping-drawer .drawer-body > .form-grid { gap: 14px; }
+.shipping-drawer .drawer-body > .notice { margin-bottom: 18px; }
+.shipping-drawer .form-alert, .shipping-dialog .form-alert { margin-top: 14px; margin-bottom: 0; }
+.shipping-dialog::backdrop, .shipping-drawer::backdrop { background: rgb(40 51 56 / 32%); }
+.shipping-dialog .identity-card .shipping-facts, .shipping-drawer .shipping-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.shipping-drawer .drawer-body { overscroll-behavior: contain; }
+.shipping-drawer .drawer-meta { padding-top: 6px; }
+.export dialog :focus { outline: 0; }
+
+@media (max-width: 1250px) {
+  .shipping-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 820px) {
+  .shipping-heading { align-items: flex-start; }
+  .prototype-toolbar__controls select { flex: 1 1 100px; }
+}
+
+@media (max-width: 680px) {
+  .shipping-filters, .shipping-facts, .shipping-contacts .shipping-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shipping-table, .shipping-table tbody { display: block; width: 100%; }
+  .shipping-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .shipping-table tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; padding: 14px 16px; border-top: 1px solid var(--line); }
+  .shipping-table td { display: block; height: auto; padding: 0; border: 0; }
+  .shipping-table td:first-child, .shipping-table td:last-child { grid-column: 1 / -1; }
+  .shipping-table .cell-label { display: block; margin-bottom: 2px; color: var(--muted); font-size: 12px; }
+  .shipping-table .row-actions { justify-content: flex-start; }
+  .shipping-drawer .drawer-header, .shipping-drawer .drawer-body, .shipping-drawer .drawer-footer { padding-inline: 18px; }
+}

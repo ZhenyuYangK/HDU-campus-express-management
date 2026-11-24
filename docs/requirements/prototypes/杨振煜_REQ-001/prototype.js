@@ -1,10 +1,8 @@
 "use strict";
 
-const VERSION = "2026-11-22";
+const VERSION = "2026-11-24";
 const exportMode = new URLSearchParams(window.location.search).get("export") === "1";
 const brandLogo = document.querySelector('link[rel="icon"]').href;
-const intakePrototype = "../任奕阳_REQ-002/REQ-002_界面原型.html";
-const pickupPrototype = "../张海睿_REQ_003/REQ-003_界面原型.html";
 document.body.classList.toggle("export", exportMode);
 
 const pages = {
@@ -23,6 +21,9 @@ const pages = {
   "company-delete": { ui: "UI-001-11", func: "FUNC-001-08", title: "快递公司删除｜确认", role: "管理员", file: "UI-001-11_快递公司删除_确认.png" },
   locations: { ui: "UI-001-12", func: "FUNC-001-12", title: "固定存放位置查看", role: "管理员", file: "UI-001-12_固定存放位置查看.png" }
 };
+
+pages["password-admin"] = { ...pages.password, role: "管理员", hidden: true };
+pages["password-staff"] = { ...pages.password, role: "工作人员", hidden: true };
 
 const exportRoutes = Object.keys(pages).filter(key => !pages[key].hidden);
 const initialCompanies = [
@@ -48,13 +49,6 @@ function icon(name) {
   return `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 }
 
-function brand() {
-  return `<a class="brand" href="#login" aria-label="CampusDelivery Station登录页">
-    <img class="brand-mark" src="${brandLogo}" width="34" height="34" alt="">
-    <span class="brand-name">CampusDelivery Station</span>
-  </a>`;
-}
-
 function currentRoute() {
   const route = window.location.hash.replace(/^#/, "") || "login";
   return Object.hasOwn(pages, route) ? route : "login";
@@ -71,53 +65,20 @@ function pageHeading(page, description, action = "") {
   </div>`;
 }
 
-function navButton(route, active, label, iconName) {
-  return `<button type="button" class="nav-item" data-route="${route}" ${active ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`;
-}
-
-function prototypeUrl(file, route) {
-  const url = new URL(file, window.location.href);
-  url.hash = route;
-  if (exportMode) url.searchParams.set("export", "1");
-  return url.href;
-}
-
-function navLink(file, route, label, iconName) {
-  return `<a class="nav-item" href="${prototypeUrl(file, route)}">${icon(iconName)}<span>${label}</span></a>`;
-}
-
 function shell(route, content) {
   const page = pages[route];
   const role = page.role;
   const isAdmin = role === "管理员";
-  const nav = isAdmin ? `
-    <div class="nav-group"><p class="sidebar-caption">账号与权限</p>
-      ${navButton("account-create", route === "account-create", "创建账号", "users")}
-      ${navButton("password-reset", route === "password-reset", "重置密码", "lock")}
-      ${navButton("phone-change", route === "phone-change", "变更手机号", "phone")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">基础信息</p>
-      ${navButton("company-list", route.startsWith("company-"), "快递公司", "truck")}
-      ${navButton("locations", route === "locations", "存放位置", "grid")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">收件与退件</p>
-      ${navLink(intakePrototype, "records-admin", "记录查询（只读）", "eye")}
-    </div>` : `
-    <div class="nav-group"><p class="sidebar-caption">包裹服务</p>
-      ${navLink(pickupPrototype, "list", "我的包裹", "box")}
-      ${navLink(pickupPrototype, "pickup", "自助取件", "shield")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">账号安全</p>
-      ${navButton("password", route === "password", "修改密码", "lock")}
-    </div>`;
-  const displayName = isAdmin ? "示例管理员" : "示例学生";
-  const account = isAdmin ? "admin001" : studentAccount;
+  const menuRole = isAdmin ? "admin" : role === "工作人员" ? "staff" : "student";
+  const current = route.startsWith("company-") ? "company-list" : route;
+  const displayName = "示例" + role;
+  const account = isAdmin ? "admin001" : menuRole === "staff" ? "staff001" : studentAccount;
   const section = isAdmin ? (route.startsWith("company-") || route === "locations" ? "基础信息" : "账号与权限") : "学生端";
   return `<div class="app-shell">
-    <aside class="sidebar" aria-label="功能导航">${brand()}<nav>${nav}</nav></aside>
+    <aside class="sidebar" aria-label="功能导航">${roleBrand(menuRole, brandLogo)}${roleNavigation(menuRole, current, icon)}</aside>
     <section class="workspace">
-      <header class="app-topbar"><div class="breadcrumb"><span>${route === "password" ? "账号安全" : section}</span></div>
-        <div class="user-chip"><span class="user-avatar" aria-hidden="true">${isAdmin ? "管" : "学"}</span><div class="user-meta"><strong>${displayName}</strong><span>${account} · ${role}</span></div></div>
+      <header class="app-topbar"><div class="breadcrumb"><span>${route.startsWith("password") && route !== "password-reset" ? "账号安全" : section}</span></div>
+        <div class="user-chip"><span class="user-avatar" aria-hidden="true">${isAdmin ? "管" : menuRole === "staff" ? "员" : "学"}</span><div class="user-meta"><strong>${displayName}</strong><span>${account} · ${role}</span></div></div>
       </header>
       <main class="main-content" id="main" tabindex="-1">${content}</main>
       ${metaFooter(page)}
@@ -128,7 +89,7 @@ function shell(route, content) {
 function loginPage(hasError) {
   const page = pages[hasError ? "login-error" : "login"];
   return `<div class="login-page">
-    <header class="login-header">${brand()}</header>
+    <header class="login-header">${roleBrand("login", brandLogo)}</header>
     <main class="login-layout" id="main" tabindex="-1">
       <section class="login-story">
         <h1>让每一件校园包裹<br><em>都有清晰去向。</em></h1>
@@ -183,22 +144,23 @@ function passwordRules() {
   return `<div class="password-rules" aria-label="新密码格式要求"><span class="password-rule" data-rule="length">${icon("check")}8～20个字符</span><span class="password-rule" data-rule="letter-number">${icon("check")}含字母和数字</span><span class="password-rule" data-rule="space">${icon("check")}不含空白字符</span></div>`;
 }
 
-function normalPasswordPage() {
-  const page = pages.password;
+function normalPasswordPage(route) {
+  const page = pages[route];
+  const account = Object.keys(accountExamples).find(id => accountExamples[id].role === page.role);
   const content = `${pageHeading(page, "")}
     <div class="form-layout single"><form class="form-card" id="normal-password-form" novalidate>
       <div class="form-grid">
-        <div class="field field-full"><label for="password-account">当前账号</label><input id="password-account" value="00120001 · 示例学生 · 学生" readonly><p class="field-hint">DATA-001-01 · 当前身份</p></div>
+        <div class="field field-full"><label for="password-account">当前账号</label><input id="password-account" value="${account} · ${accountExamples[account].name} · ${page.role}" readonly><p class="field-hint">DATA-001-01 · 当前身份</p></div>
         <div class="field field-full"><label for="old-password">原密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="old-password" name="oldPassword" type="password" autocomplete="current-password" placeholder="输入原密码"><button class="input-action" type="button" data-toggle-password="old-password" aria-label="显示原密码">显示</button></div><p class="field-hint">DATA-001-08</p></div>
         <div class="field field-full"><label for="new-password">新密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="new-password" name="newPassword" type="password" autocomplete="new-password" placeholder="设置新密码" data-password-rules><button class="input-action" type="button" data-toggle-password="new-password" aria-label="显示新密码">显示</button></div><p class="field-hint">DATA-001-09</p>${passwordRules()}</div>
       </div>
       <div class="form-footer"><button class="button button-primary" type="submit">确认修改${icon("arrow")}</button></div>
     </form></div>`;
-  return shell("password", content);
+  return shell(route, content);
 }
 
 function forcedPasswordDialog() {
-  return `<dialog class="dialog password-dialog" id="forced-password-dialog" aria-labelledby="forced-title" aria-describedby="forced-description">
+  return `<dialog class="dialog password-dialog" id="forced-password-dialog" closedby="none" aria-labelledby="forced-title" aria-describedby="forced-description">
     <h2 id="forced-title">首次登录，请修改密码</h2>
     <p id="forced-description">学生账号${studentAccount}。设置新密码后即可继续使用。</p>
     <form id="forced-password-form" novalidate>
@@ -331,7 +293,7 @@ function render() {
   if (route === "login") html = loginPage(false);
   else if (route === "login-error") html = loginPage(true);
   else if (route === "account-create") html = accountCreatePage();
-  else if (route === "password") html = normalPasswordPage();
+  else if (["password", "password-admin", "password-staff"].includes(route)) html = normalPasswordPage(route);
   else if (route === "student" || route === "password-forced") {
     html = studentPage(route, route === "password-forced" || studentNeedsPasswordChange);
   }
@@ -449,7 +411,7 @@ function handleLogin(form) {
     }
     const role = matched[1].role;
     if (role === "工作人员") {
-      window.location.assign(prototypeUrl(intakePrototype, "intake"));
+      window.location.assign(prototypeHref("002", "intake"));
     } else {
       window.location.hash = role === "管理员" ? "account-create" : "student";
     }

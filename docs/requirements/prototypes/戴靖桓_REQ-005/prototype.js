@@ -4,8 +4,6 @@ const VERSION = "2026-11-23";
 const exportMode = new URLSearchParams(window.location.search).get("export") === "1";
 const brandLogo = document.querySelector('link[rel="icon"]').href;
 const loginPrototype = "../杨振煜_REQ-001/REQ-001_界面原型.html";
-const adminPrototype = "../杨振煜_REQ-001/REQ-001_界面原型.html";
-const intakePrototype = "../任奕阳_REQ-002/REQ-002_界面原型.html";
 document.body.classList.toggle("export", exportMode);
 
 const pages = {
@@ -41,7 +39,6 @@ const indicators = {
     name: "期间入库量",
     dataId: "DATA-005-06",
     type: "期间指标",
-    value: 8,
     unit: "件",
     timeField: "到站时间DATA-003-06",
     source: "REQ-002入库记录DATA-002-01",
@@ -53,30 +50,12 @@ const indicators = {
     note: "包含待关联；不按当前状态排除已取走包裹。",
     pending: ["P005-01 统计期间端点", "P002-08 到站时间端点", "P002-05 重新入库追溯"],
     columns: ["入库记录编号", "快递公司", "运单号", "到站时间", "包裹状态", "计入"],
-    timeIndex: 3,
-    rows: [
-      ["RK20261102001", "顺丰速运", "SF000123456789", "2026-11-02 09:00:00", "已取件", "计入"],
-      ["RK20261103002", "京东快递", "JD000987654321", "2026-11-03 09:00:00", "已取件", "计入"],
-      ["RK20261104003", "中通快递", "ZT000111222333", "2026-11-04 09:00:00", "待取件", "计入"],
-      ["RK20261105004", "韵达快递", "YD000555666777", "2026-11-05 09:00:00", "拒收待退件", "计入"],
-      ["RK20261106005", "圆通速递", "YT000555666778", "2026-11-06 09:00:00", "待关联", "计入"],
-      ["RK20261107006", "申通快递", "ST000444555666", "2026-11-07 09:00:00", "退件中", "计入"],
-      ["RK20261108007", "极兔速递", "JT000777888999", "2026-11-08 09:00:00", "已退件", "计入"],
-      ["RK20261120009", "德邦快递", "DB000123123123", "2026-11-20 09:00:00", "待取件", "计入"],
-      ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 09:00:00", "待取件", "不计（期间外）"]
-    ],
     trendTitle: "每日入库事件",
-    trend: [
-      { label: "11-02", value: 1 }, { label: "11-03", value: 1 }, { label: "11-04", value: 1 },
-      { label: "11-05", value: 1 }, { label: "11-06", value: 1 }, { label: "11-07", value: 1 },
-      { label: "11-08", value: 1 }, { label: "11-09", value: 1 }
-    ]
   },
   pickup: {
     name: "期间取件量",
     dataId: "DATA-005-07",
     type: "期间指标",
-    value: 2,
     unit: "件",
     timeField: "取件时间DATA-003-09",
     source: "REQ-003成功出库事件",
@@ -88,24 +67,12 @@ const indicators = {
     note: "只统计成功出库；失败核验保留在来源模块。",
     pending: ["P005-01 统计期间端点", "P003-08 核验失败与重试策略"],
     columns: ["入库记录编号", "快递公司", "运单号", "取件时间", "取件结果", "计入"],
-    timeIndex: 3,
-    rows: [
-      ["RK20261103002", "京东快递", "JD000987654321", "2026-11-03 10:00:00", "成功出库", "计入"],
-      ["RK20261102001", "顺丰速运", "SF000123456789", "2026-11-02 10:00:00", "成功出库", "计入"],
-      ["FAIL-P", "韵达快递", "YD000555666777", "2026-11-05 10:00:00", "核验失败", "不计"],
-      ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 10:00:00", "成功出库", "不计（期间外）"]
-    ],
     trendTitle: "取件事件",
-    trend: [
-      { label: "11-03", value: 1 }, { label: "11-04", value: 1 }, { label: "11-05", value: 0 },
-      { label: "11-06", value: 0 }, { label: "11-07", value: 0 }, { label: "11-08", value: 0 }
-    ]
   },
   shipped: {
     name: "期间寄出量",
     dataId: "DATA-005-09",
     type: "期间指标",
-    value: 2,
     unit: "件",
     timeField: "寄出完成时间DATA-004-20",
     source: "REQ-004寄件完成事件",
@@ -117,24 +84,12 @@ const indicators = {
     note: "不以提交或受理时间替代寄出完成时间。",
     pending: ["P004-10 寄出统计端点", "P005-01 统计期间端点"],
     columns: ["寄件申请编号", "寄件状态", "寄出完成时间", "快递公司", "运单号", "计入"],
-    timeIndex: 2,
-    rows: [
-      ["SJ20261113001", "已寄出", "2026-11-13 10:00:00", "顺丰速运", "SF000321654987", "计入"],
-      ["SJ20261114002", "已寄出", "2026-11-14 10:00:00", "京东快递", "JD000654987321", "计入"],
-      ["SJ20261115003", "待受理", "—", "中通快递", "ZT000321987654", "不计"],
-      ["S-OUT", "已寄出", "2026-10-31 10:00:00", "韵达快递", "YD000987321654", "不计（期间外）"]
-    ],
     trendTitle: "寄出事件",
-    trend: [
-      { label: "11-13", value: 1 }, { label: "11-14", value: 1 }, { label: "11-15", value: 0 },
-      { label: "11-16", value: 0 }, { label: "11-17", value: 0 }, { label: "11-18", value: 0 }
-    ]
   },
   cancelled: {
     name: "期间寄件取消量",
     dataId: "DATA-005-12",
     type: "期间指标",
-    value: 2,
     unit: "件",
     timeField: "取消时间DATA-004-23",
     source: "REQ-004取消完成事件",
@@ -146,24 +101,12 @@ const indicators = {
     note: "两种取消方式均计入；取消原因必填性待P004-03。",
     pending: ["P004-03 取消原因必填性", "P004-05 状态与取消方式映射", "P004-10 取消统计端点"],
     columns: ["寄件申请编号", "取消方式", "取消时间", "原状态", "操作人", "计入"],
-    timeIndex: 2,
-    rows: [
-      ["SJ20261115003", "学生自主取消", "2026-11-15 10:00:00", "待受理", "示例学生", "计入"],
-      ["SJ20261116004", "工作人员取消", "2026-11-16 10:00:00", "已受理", "示例工作人员", "计入"],
-      ["SJ20261117005", "学生自主取消", "—", "待受理", "示例学生", "不计"],
-      ["C-OUT", "工作人员取消", "2026-10-31 10:00:00", "已受理", "示例工作人员", "不计（期间外）"]
-    ],
     trendTitle: "取消事件",
-    trend: [
-      { label: "11-15", value: 1 }, { label: "11-16", value: 1 }, { label: "11-17", value: 0 },
-      { label: "11-18", value: 0 }, { label: "11-19", value: 0 }, { label: "11-20", value: 0 }
-    ]
   },
   pending: {
     name: "当前待取量",
     dataId: "DATA-005-08",
     type: "当前时点",
-    value: 3,
     unit: "件",
     timeField: "查询时刻DATA-005-05",
     source: "REQ-002在库与REQ-003拒收/撤回状态",
@@ -175,27 +118,12 @@ const indicators = {
     note: "包含待关联；不按统计期间筛选。",
     pending: ["P003-07 包裹状态", "P003-09 当前有效拒收判定", "P005-03 无记录显示"],
     columns: ["入库记录编号", "快递公司", "运单号", "包裹状态", "关联状态", "计入"],
-    timeIndex: null,
-    rows: [
-      ["RK20261104003", "中通快递", "ZT000111222333", "待取件", "已关联", "计入"],
-      ["RK20261106005", "圆通速递", "YT000555666778", "待取件", "待关联", "计入"],
-      ["RK20261120009", "德邦快递", "DB000123123123", "待取件", "已关联", "计入"],
-      ["RK20261102001", "顺丰速运", "SF000123456789", "已取件", "已关联", "不计"],
-      ["RK20261105004", "韵达快递", "YD000555666777", "拒收待退件", "已关联", "不计"],
-      ["RK20261107006", "申通快递", "ST000444555666", "退件中", "已关联", "不计"],
-      ["RK20261109009", "极兔速递", "JT000777888999", "已退件", "已关联", "不计"]
-    ],
     trendTitle: "查询时刻状态分布",
-    trend: [
-      { label: "待取件", value: 3, current: true }, { label: "已取件", value: 2 },
-      { label: "拒收待退", value: 1 }, { label: "退件中", value: 1 }, { label: "已退件", value: 2 }
-    ]
   },
   rejected: {
     name: "期间有效拒收量",
     dataId: "DATA-005-10",
     type: "期间指标",
-    value: 2,
     unit: "件",
     timeField: "拒收时间DATA-003-12",
     source: "REQ-003拒收事实与REQ-002退件交接",
@@ -204,27 +132,15 @@ const indicators = {
     dedupe: "同一包裹按当前有效请求计一次。",
     excluded: "已撤回请求、期间外提交、系统校验失败不计。",
     impact: "撤回可使历史期间结果减少；再次提交按新有效请求时间归属。",
-    note: "已完成退件且未撤回的仍计入；工作人员驳回分支待P002-04。",
-    pending: ["P002-04 工作人员驳回分支", "P003-09 当前有效请求判定", "P005-01 统计期间端点"],
+    note: "已完成退件且未撤回的仍计入；拒收提交成功即暂停取件。",
+    pending: ["P003-09 当前有效请求判定", "P005-01 统计期间端点"],
     columns: ["拒收申请编号", "入库记录", "拒收时间", "拒收处理状态", "撤回结果", "计入"],
-    timeIndex: 2,
-    rows: [
-      ["JS20261106001", "RK20261105004", "2026-11-06 10:00:00", "待退件", "未撤回", "计入"],
-      ["JS20261109002", "RK20261107006", "2026-11-09 10:00:00", "已退件", "未撤回", "计入"],
-      ["JS20261108003", "RK20261108008", "2026-11-08 10:00:00", "待退件", "撤回成功", "不计"],
-      ["JS20261031004", "RK20261031001", "2026-10-31 10:00:00", "待退件", "未撤回", "不计（期间外）"]
-    ],
     trendTitle: "拒收提交事件",
-    trend: [
-      { label: "11-06", value: 1 }, { label: "11-08", value: 1 }, { label: "11-09", value: 1 },
-      { label: "11-10", value: 0 }, { label: "11-11", value: 0 }, { label: "11-12", value: 0 }
-    ]
   },
   returned: {
     name: "期间退件完成量",
     dataId: "DATA-005-11",
     type: "期间指标",
-    value: 2,
     unit: "件",
     timeField: "退件完成时间DATA-002-35",
     source: "REQ-002退件完成事件",
@@ -236,24 +152,100 @@ const indicators = {
     note: "包含学生拒收和人工异常退件；不要求等于有效拒收量。",
     pending: ["P002-08 退件完成时间端点", "P005-01 统计期间端点"],
     columns: ["退件记录编号", "入库记录", "退件来源", "开始时间", "退件完成时间", "计入"],
-    timeIndex: 4,
-    rows: [
-      ["TJ20261110001", "RK20261107006", "学生拒收", "2026-11-10 10:00:00", "2026-11-11 10:00:00", "计入"],
-      ["TJ20261110002", "RK20261108007", "人工异常退件", "2026-11-10 10:00:00", "2026-11-12 10:00:00", "计入"],
-      ["TJ20261113003", "RK20261105004", "学生拒收", "2026-11-13 10:00:00", "—", "不计"],
-      ["RT-OUT", "RK20261030001", "人工异常退件", "2026-10-31 10:00:00", "2026-10-31 11:00:00", "不计（期间外）"]
-    ],
     trendTitle: "退件完成事件",
-    trend: [
-      { label: "11-11", value: 1 }, { label: "11-12", value: 1 }, { label: "11-13", value: 0 },
-      { label: "11-14", value: 0 }, { label: "11-15", value: 0 }, { label: "11-16", value: 0 }
-    ]
   }
 };
 
+const sourceEvents = {
+  inbound: [
+    ["RK20261102001", "顺丰速运", "SF000123456789", "2026-11-02 09:00:00", "已关联"],
+    ["RK20261103002", "京东快递", "JD000987654321", "2026-11-03 09:00:00", "已关联"],
+    ["RK20261104003", "中通快递", "ZT000111222333", "2026-11-04 09:00:00", "已关联"],
+    ["RK20261105004", "韵达快递", "YD000555666777", "2026-11-05 09:00:00", "已关联"],
+    ["RK20261106005", "圆通速递", "YT000555666778", "2026-11-06 09:00:00", "待关联"],
+    ["RK20261107006", "申通快递", "ST000444555666", "2026-11-07 09:00:00", "已关联"],
+    ["RK20261108007", "极兔速递", "JT000777888999", "2026-11-08 09:00:00", "已关联"],
+    ["RK20261120009", "德邦快递", "DB000123123123", "2026-11-20 09:00:00", "已关联"],
+    ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 09:00:00", "已关联"]
+  ],
+  pickup: [
+    ["RK20261102001", "顺丰速运", "SF000123456789", "2026-11-02 10:00:00", "成功出库"],
+    ["RK20261103002", "京东快递", "JD000987654321", "2026-11-03 10:00:00", "成功出库"],
+    ["RK20261105004", "韵达快递", "YD000555666777", "2026-11-05 10:00:00", "核验失败"],
+    ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 10:00:00", "成功出库"]
+  ],
+  shipped: [
+    ["SJ20261113001", "已寄出", "2026-11-13 10:00:00", "顺丰速运", "SF000321654987"],
+    ["SJ20261114002", "已寄出", "2026-11-14 10:00:00", "京东快递", "JD000654987321"],
+    ["SJ20261115003", "待受理", "—", "中通快递", "ZT000321987654"],
+    ["S-OUT", "已寄出", "2026-10-31 10:00:00", "韵达快递", "YD000987321654"]
+  ],
+  cancelled: [
+    ["SJ20261115003", "学生自主取消", "2026-11-15 10:00:00", "待受理", "示例学生"],
+    ["SJ20261116004", "工作人员取消", "2026-11-16 10:00:00", "已受理", "示例工作人员"],
+    ["SJ20261117005", "学生自主取消", "—", "待受理", "示例学生"],
+    ["C-OUT", "工作人员取消", "2026-10-31 10:00:00", "已受理", "示例工作人员"]
+  ],
+  rejected: [
+    ["JS20261106001", "RK20261105004", "2026-11-06 10:00:00", "退件中", "未撤回"],
+    ["JS20261109002", "RK20261107006", "2026-11-09 10:00:00", "已退件", "未撤回"],
+    ["JS20261108003", "RK20261106005", "2026-11-08 10:00:00", "待退件", "撤回成功"],
+    ["JS20261031004", "RK20261031001", "2026-10-31 10:00:00", "待退件", "未撤回"]
+  ],
+  returned: [
+    ["TJ20261110001", "RK20261107006", "学生拒收", "2026-11-10 10:00:00", "2026-11-11 10:00:00"],
+    ["TJ20261110002", "RK20261108007", "人工异常退件", "2026-11-10 10:00:00", "2026-11-12 10:00:00"],
+    ["TJ20261113003", "RK20261105004", "学生拒收", "2026-11-13 10:00:00", "—"],
+    ["RT-OUT", "RK20261030001", "人工异常退件", "2026-10-31 10:00:00", "2026-10-31 11:00:00"]
+  ],
+};
+
+function packageState(id) {
+  const handoff = sourceEvents.returned.find(row => row[1] === id);
+  if (handoff) return handoff[4] === "—" ? "退件中" : "已退件";
+  if (sourceEvents.rejected.some(row => row[1] === id && row[4] === "未撤回")) return "拒收待退件";
+  if (sourceEvents.pickup.some(row => row[0] === id && row[4] === "成功出库")) return "已取件";
+  return "待取件";
+}
+
+const eventDateColumn = { inbound: 3, pickup: 3, shipped: 2, cancelled: 2, rejected: 2, returned: 4 };
+
+function metricResult(key) {
+  const definition = indicators[key];
+  let rows;
+  let trend;
+  if (key === "pending") {
+    rows = sourceEvents.inbound.map(([id, company, waybill, , association]) => {
+      const state = packageState(id);
+      return [id, company, waybill, state, association, state === "待取件" ? "计入" : "不计"];
+    });
+    trend = ["待取件", "已取件", "拒收待退件", "退件中", "已退件"].map(label => ({
+      label, value: rows.filter(row => row[3] === label).length, current: label === "待取件"
+    }));
+  } else {
+    rows = sourceEvents[key].map(source => {
+      const row = [...source];
+      const date = row[eventDateColumn[key]].slice(0, 10);
+      if (key === "inbound") row[4] = packageState(row[0]);
+      const excluded = date === "—" || (key === "pickup" && row[4] !== "成功出库") || (key === "rejected" && row[4] !== "未撤回");
+      if (excluded) return [...row, "不计"];
+      const inPeriod = date >= period.start && date <= period.end;
+      return [...row, inPeriod ? "计入" : "不计（期间外）"];
+    });
+  }
+  return { ...definition, rows, trend, value: rows.filter(row => row.at(-1) === "计入").length };
+}
+
+function comparisonBasis(indicator) {
+  return indicator === indicators.pending.name ? period.queryTime : `${period.start} 至 ${period.end}`;
+}
+
+function escapeText(value) {
+  return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
 let differences = [
   {
-    key: "pickup",
     indicator: "期间取件量",
     basis: "2026-11-01 至 2026-11-30",
     actual: "3",
@@ -262,38 +254,6 @@ let differences = [
     time: "2026-11-30 12:05:00"
   }
 ];
-let actualValues = { pickup: 3 };
-
-function rowDate(row, index) {
-  if (index === null || index === undefined) return null;
-  const value = String(row[index] || "");
-  if (!value || value === "—") return null;
-  return value.slice(0, 10);
-}
-
-function rowStatus(key, row) {
-  const item = indicators[key];
-  const original = row[row.length - 1];
-  if (key === "pending") return original;
-  if (original === "不计") return original;
-  const date = rowDate(row, item.timeIndex);
-  if (!date) return "不计";
-  return date >= period.start && date <= period.end ? "计入" : "不计（期间外）";
-}
-
-function computeValue(key) {
-  return indicators[key].rows.filter(row => rowStatus(key, row) === "计入").length;
-}
-
-function currentValues() {
-  const values = {};
-  indicatorOrder.forEach(key => { values[key] = computeValue(key); });
-  return values;
-}
-
-function actualFor(key) {
-  return Object.hasOwn(actualValues, key) ? actualValues[key] : computeValue(key);
-}
 
 function icon(name) {
   return `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
@@ -326,17 +286,6 @@ function navButton(route, active, label, iconName) {
   return `<button type="button" class="nav-item" data-route="${route}" ${active ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`;
 }
 
-function prototypeUrl(file, route) {
-  const url = new URL(file, window.location.href);
-  url.hash = route;
-  if (exportMode) url.searchParams.set("export", "1");
-  return url.href;
-}
-
-function navLink(file, route, label, iconName) {
-  return `<a class="nav-item" href="${prototypeUrl(file, route)}">${icon(iconName)}<span>${label}</span></a>`;
-}
-
 function sectionFor(route) {
   if (route === "overview") return "统计概览";
   if (route === "period" || route === "period-error") return "统计期间";
@@ -348,36 +297,14 @@ function sectionFor(route) {
 function shell(route, content) {
   const page = pages[route];
   const nav = `
-    <div class="nav-group"><p class="sidebar-caption">账号与权限</p>
-      ${navLink(adminPrototype, "account-create", "创建账号", "users")}
-      ${navLink(adminPrototype, "password-reset", "重置密码", "lock")}
-      ${navLink(adminPrototype, "phone-change", "变更手机号", "phone")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">基础信息</p>
-      ${navLink(adminPrototype, "company-list", "快递公司", "truck")}
-      ${navLink(adminPrototype, "locations", "存放位置", "grid")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">收件与退件</p>
-      ${navLink(intakePrototype, "records-admin", "记录查询（只读）", "eye")}
-    </div>
     <div class="nav-group"><p class="sidebar-caption">统计</p>
-      ${navButton("overview", route === "overview", "统计概览", "chart")}
       ${navButton("period", route === "period" || route === "period-error", "统计期间", "calendar")}
       ${navButton("summary", route === "summary", "七项指标", "grid")}
       ${navButton("verification", route === "verification", "结果核对", "check-circle")}
     </div>
-    <div class="nav-group"><p class="sidebar-caption">指标明细</p>
-      ${navButton("inbound", route === "inbound", "期间入库量", "box")}
-      ${navButton("pickup", route === "pickup", "期间取件量", "check")}
-      ${navButton("shipped", route === "shipped", "期间寄出量", "truck")}
-      ${navButton("cancelled", route === "cancelled", "期间寄件取消量", "x")}
-      ${navButton("pending", route === "pending", "当前待取量", "clock")}
-      ${navButton("rejected", route === "rejected", "期间有效拒收量", "alert")}
-      ${navButton("returned", route === "returned", "期间退件完成量", "back")}
-    </div>
     <div class="sidebar-note"><strong>只读统计</strong>数据来自收件、取件、拒收、退件和寄件记录；统计不写回业务。</div>`;
   return `<div class="app-shell">
-    <aside class="sidebar" aria-label="功能导航">${brand()}<nav>${nav}</nav></aside>
+    <aside class="sidebar" aria-label="功能导航">${roleBrand("admin", brandLogo)}${roleNavigation("admin", route, icon)}<nav aria-label="统计功能">${nav}</nav></aside>
     <section class="workspace">
       <header class="app-topbar">
         <div class="breadcrumb"><span>统计</span>${icon("chevron")}<span>${sectionFor(route)}</span></div>
@@ -390,7 +317,7 @@ function shell(route, content) {
 }
 
 function metricCard(key, valueOverride) {
-  const item = indicators[key];
+  const item = metricResult(key);
   const value = valueOverride === undefined ? item.value : valueOverride;
   const width = Math.max(4, Math.round((Number(value) / 8) * 100));
   return `<a class="metric-card ${item.type === "当前时点" ? "current" : ""}" href="#${key}">
@@ -420,11 +347,10 @@ function cellBadge(value) {
   return value;
 }
 
-function sampleTable(key) {
-  const item = indicators[key];
+function sampleTable(item) {
   const head = item.columns.map(column => `<th>${column}</th>`).join("");
   const rows = item.rows.map(row => `<tr>${row.map((cell, index) => {
-    const content = index === row.length - 1 ? cellBadge(rowStatus(key, row)) : cell;
+    const content = index === row.length - 1 ? cellBadge(cell) : cell;
     const cls = index === 0 ? ' class="mono"' : "";
     return `<td${cls}>${content}</td>`;
   }).join("")}</tr>`).join("");
@@ -539,7 +465,7 @@ function overviewPage() {
       </section>
     </div>
     <div class="section-head"><h2>七项指标</h2><a class="button button-secondary" href="#summary">查看汇总${icon("arrow")}</a></div>
-    ${metricGrid(currentValues())}
+    ${metricGrid()}
     <div class="info-card warning" style="margin-top:18px">统计口径与端点待评审：P005-01、P005-03、P005-04、P005-06。原型图不代表业务运行结果。</div>`;
   return shell("overview", content);
 }
@@ -584,13 +510,13 @@ function periodPage(forceError) {
 
 function indicatorPage(route) {
   const page = pages[route];
-  const item = indicators[route];
+  const item = metricResult(route);
   if (demoState === "forbidden") return noPermissionPage(route);
   const heading = pageHeading(page, item.note, `<span class="status-badge ${item.type === "当前时点" ? "info" : ""}">${item.type}</span>`);
   if (demoState === "loading") return shell(route, heading + loadingBlock());
   if (demoState === "error") return shell(route, heading + errorBlock());
   const empty = demoState === "empty";
-  const value = empty ? 0 : computeValue(route);
+  const value = empty ? 0 : item.value;
   const hero = `<section class="stat-hero">
     <div><span class="eyebrow">${item.dataId} · ${item.type}</span><div class="stat-hero__value">${value}<span class="stat-hero__unit">${item.unit}</span></div><h2>${item.name}</h2><p>${item.type === "当前时点" ? `查询时刻 ${period.queryTime}；不按统计期间筛选。` : `统计期间 ${period.start} 至 ${period.end}；按${item.timeField}筛选。`}</p></div>
     <dl class="stat-hero__meta">
@@ -599,7 +525,7 @@ function indicatorPage(route) {
       <div><dt>结果生成</dt><dd>${period.generatedAt}</dd></div>
     </dl>
   </section>`;
-  const body = empty ? `${emptyBlock()}<div class="info-card warning" style="margin-top:18px">按P005-03待评审：无符合记录时可能显示0、空值或未计算；本原型暂显示0。</div>` : `${sampleTable(route)}${route === "pending" ? trendBlock(item) : ""}`;
+  const body = empty ? `${emptyBlock()}<div class="info-card warning" style="margin-top:18px">按P005-03待评审：无符合记录时可能显示0、空值或未计算；本原型暂显示0。</div>` : `${sampleTable(item)}${route === "pending" ? trendBlock(item) : ""}`;
   return shell(route, `${heading}${hero}<div class="detail-layout"><div class="detail-main">${body}</div><div class="detail-side">${definitionCard(item)}${pendingCard(item)}</div></div>`);
 }
 
@@ -610,9 +536,10 @@ function summaryPage() {
   if (demoState === "loading") return shell("summary", heading + loadingBlock());
   if (demoState === "error") return shell("summary", heading + errorBlock());
   const empty = demoState === "empty";
-  const values = empty ? Object.fromEntries(indicatorOrder.map(key => [key, 0])) : currentValues();
+  const values = {};
+  indicatorOrder.forEach(key => { values[key] = empty ? 0 : metricResult(key).value; });
   const rows = indicatorOrder.map(key => {
-    const item = indicators[key];
+    const item = metricResult(key);
     return `<tr><td><strong>${item.name}</strong> <span class="mono">${item.dataId}</span></td><td>${item.type}</td><td><strong>${values[key]}</strong> ${item.unit}</td><td>${item.timeField}</td><td>${item.sourceShort}</td><td>${item.note}</td></tr>`;
   }).join("");
   const content = `${heading}${periodMeta()}${metricGrid(values)}
@@ -631,14 +558,15 @@ function verificationPage() {
   if (demoState === "error") return shell("verification", heading + errorBlock());
   const empty = demoState === "empty";
   const compareRows = indicatorOrder.map(key => {
-    const item = indicators[key];
-    const system = computeValue(key);
-    const actual = actualFor(key);
+    const item = metricResult(key);
+    const system = item.value;
+    const latest = differences.find(record => record.indicator === item.name && record.basis === comparisonBasis(item.name));
+    const actual = latest ? Number(latest.actual) : system;
     const diff = actual - system;
     const hasDiff = diff !== 0;
     return `<tr><td>${item.name} <span class="mono">${item.dataId}</span></td><td>${system} ${item.unit}</td><td>${actual} ${item.unit}</td><td>${diff > 0 ? "+" + diff : diff} ${item.unit}</td><td>${hasDiff ? '<span class="status-badge danger">差异</span>' : '<span class="status-badge success">一致</span>'}</td><td>${hasDiff ? "待来源模块核对" : "—"}</td></tr>`;
   }).join("");
-  const options = indicatorOrder.map(key => `<option value="${key}" ${key === "pickup" ? "selected" : ""}>${indicators[key].name}</option>`).join("");
+  const options = indicatorOrder.map(key => `<option value="${indicators[key].name}" ${key === "pickup" ? "selected" : ""}>${indicators[key].name}</option>`).join("");
   const form = `<form class="form-card" id="difference-form" novalidate>
     <div class="card-head"><h3>记录差异</h3><button class="button button-primary" type="submit">记录差异</button></div>
     <div class="form-grid">
@@ -647,7 +575,8 @@ function verificationPage() {
     </div>
     <div class="field"><label for="diff-note">差异说明<span class="required" aria-hidden="true">*</span></label><textarea id="diff-note" name="note" rows="2" maxlength="200">核对发现1条取件记录未纳入。</textarea><p class="field-hint">记录指标、期间或查询时刻、实际值；不超过200字符。</p></div>
   </form>`;
-  const records = empty ? `<div class="empty-inline">暂无差异记录；核对一致时保留原统计结果。</div>` : `<table class="data-table"><thead><tr><th>指标</th><th>实际值</th><th>差异说明</th><th>处理说明</th><th>记录时间</th></tr></thead><tbody>${differences.map(item => `<tr><td>${item.indicator}</td><td>${item.actual}</td><td>${item.note}</td><td>${item.handling}</td><td class="mono">${item.time}</td></tr>`).join("")}</tbody></table>`;
+  const currentRecords = differences.filter(record => record.basis === comparisonBasis(record.indicator));
+  const records = empty || !currentRecords.length ? `<div class="empty-inline">暂无差异记录；核对一致时保留原统计结果。</div>` : `<table class="data-table"><thead><tr><th>指标</th><th>实际值</th><th>差异说明</th><th>处理说明</th><th>记录时间</th></tr></thead><tbody>${currentRecords.map(item => `<tr><td>${item.indicator}</td><td>${item.actual}</td><td>${escapeText(item.note)}</td><td>${item.handling}</td><td class="mono">${item.time}</td></tr>`).join("")}</tbody></table>`;
   const content = `${heading}${periodMeta()}
     <section class="card"><div class="card-head"><h3>指标核对</h3><span class="mono">同一统计期间</span></div>
       <table class="data-table compare-table"><thead><tr><th>指标</th><th>系统值</th><th>实际值</th><th>差异</th><th>状态</th><th>处理说明</th></tr></thead><tbody>${compareRows}</tbody></table>
@@ -722,8 +651,7 @@ function handlePeriodSubmit(form) {
 }
 
 function handleDifferenceSubmit(form) {
-  const key = form.elements.indicator.value;
-  const indicator = indicators[key]?.name || key;
+  const indicator = form.elements.indicator.value;
   const actualInput = form.elements.actual;
   const noteInput = form.elements.note;
   const actual = actualInput.value.trim();
@@ -731,35 +659,18 @@ function handleDifferenceSubmit(form) {
   setFieldError(actualInput, "");
   setFieldError(noteInput, "");
   let valid = true;
-  if (!actual || !Number.isFinite(Number(actual)) || Number(actual) < 0) { setFieldError(actualInput, "请输入不小于0的实际值。"); valid = false; }
+  if (!actual || !Number.isSafeInteger(Number(actual)) || Number(actual) < 0) { setFieldError(actualInput, "请输入不小于0的实际值。"); valid = false; }
   if (!note) { setFieldError(noteInput, "请填写差异说明。"); valid = false; }
   if (!valid) return;
-  const value = Number(actual);
-  actualValues[key] = value;
-  if (value === computeValue(key)) {
-    differences = differences.filter(item => item.key !== key);
-    showToast("核对一致", "已移除该指标的差异记录；保留原统计结果。");
-  } else {
-    const existing = differences.find(item => item.key === key);
-    if (existing) {
-      existing.indicator = indicator;
-      existing.basis = `${period.start} 至 ${period.end}`;
-      existing.actual = actual;
-      existing.note = note;
-      existing.time = "2026-11-30 12:05:00";
-    } else {
-      differences.unshift({
-        key,
-        indicator,
-        basis: `${period.start} 至 ${period.end}`,
-        actual,
-        note,
-        handling: "待模块负责人核对；保留原记录与说明，按同一期间重新统计。",
-        time: "2026-11-30 12:05:00"
-      });
-    }
-    showToast("差异已记录", "保留原统计结果；待模块负责人核对后按同一期间重新统计。");
-  }
+  differences.unshift({
+    indicator,
+    basis: comparisonBasis(indicator),
+    actual,
+    note,
+    handling: "待模块负责人核对；保留原记录与说明，按同一期间重新统计。",
+    time: "2026-11-30 12:05:00"
+  });
+  showToast("差异已记录", "保留原统计结果；待模块负责人核对后按同一期间重新统计。");
   render();
 }
 
@@ -773,7 +684,6 @@ document.getElementById("state-picker").addEventListener("change", event => { de
 document.getElementById("reset-prototype").addEventListener("click", () => {
   period = { ...initialPeriod };
   demoState = "normal";
-  actualValues = { pickup: 3 };
   differences = [{
     indicator: "期间取件量",
     basis: "2026-11-01 至 2026-11-30",
