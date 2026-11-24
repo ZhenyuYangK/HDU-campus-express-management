@@ -1,6 +1,6 @@
 "use strict";
 
-const version = "2026-11-22";
+const version = "2026-11-24";
 const account = "00120001";
 const brandLogo = document.querySelector('link[rel="icon"]').href;
 const app = document.querySelector("#app");
@@ -33,14 +33,14 @@ const statusStyles = {
 const exampleId = "IN-DEMO-301";
 // 入库、拒收和退件开始时间对应REQ-002退件办理的同一组合成记录。
 const refusalDemo = {
-  recordId: "RK20261121006",
-  request: { id: "JS20261121002", reason: "商品已申请退款。", time: "2026-11-21 18:20:00", status: "待退件" },
-  startedAt: "2026-11-22 09:40:00",
+  recordId: refusalSample.recordId,
+  request: { id: refusalSample.refusalId, reason: "商品已申请退款。", time: refusalSample.refusedAt, status: "待退件" },
+  startedAt: refusalSample.startedAt,
   withdrawnAt: "2026-11-22 09:39:00"
 };
 const samplePackages = [
   { id: exampleId, owner: account, company: "中通快递", waybill: "001234567890", shelf: "C-2", code: "A1B2C3", phoneLast: "0003", arrived: "2026-11-22 09:12:00", status: "待取件" },
-  { id: refusalDemo.recordId, owner: account, company: "京东快递", waybill: "JD000444555666", shelf: "B-1", code: "JD04P8", phoneLast: "0001", arrived: "2026-11-21 16:02:00", status: "拒收待退件", request: refusalDemo.request },
+  { id: refusalDemo.recordId, owner: account, company: refusalSample.company, waybill: refusalSample.tracking, shelf: refusalSample.location, code: "JD04P8", phoneLast: "0001", arrived: refusalSample.arrivedAt, status: "拒收待退件", request: refusalDemo.request },
   { id: "IN-DEMO-302", owner: account, company: "韵达快递", waybill: "001234567890", shelf: "B-5", code: "00B215", phoneLast: "0042", arrived: "2026-11-22 08:46:00", status: "待取件" },
   { id: "IN-DEMO-303", owner: account, company: "顺丰速运", waybill: "SF000940120667", shelf: "H-1", code: "SF6K11", phoneLast: "0001", arrived: "2026-11-21 12:40:00", status: "已取件", pickedUp: "2026-11-21 16:06:00" },
   { id: "IN-DEMO-305", owner: account, company: "圆通速递", waybill: "YT000000576101", shelf: "A-6", code: "Y0A617", phoneLast: "0003", arrived: "2026-11-21 08:16:00", status: "退件中", returnStarted: "2026-11-22 08:35:00" },
@@ -99,25 +99,14 @@ function heading(title, back = "", action = "") {
     <div class="page-heading package-heading"><h1 tabindex="-1">${title}</h1>${action}</div>`;
 }
 
-function navItem(label, action, glyph, current) {
-  return `<button type="button" class="nav-item" data-action="${action}" ${current ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span></button>`;
-}
-
 function shell(content) {
   const [ui, func] = screenshots[page];
   const allowed = scene !== "forbidden";
   const onPickup = ["pickup", "pickup-success"].includes(view);
-  const nav = allowed ? `<nav class="nav-group" aria-label="学生端功能">
-    <p class="sidebar-caption">包裹服务</p>
-    ${navItem("我的包裹", "list", "box", !onPickup)}
-    ${navItem("自助取件", "pickup", "shield", onPickup)}
-  </nav>` : "";
+  const nav = allowed ? roleNavigation("student", onPickup ? "pickup" : "list", icon, true) : "";
   return `<div class="app-shell">
     <aside class="sidebar" aria-label="功能导航">
-      <a class="brand" href="#list" data-action="list" aria-label="CampusDelivery Station我的包裹">
-        <img class="brand-mark" src="${brandLogo}" width="34" height="34" alt="">
-        <span class="brand-name">CampusDelivery Station</span>
-      </a>
+      ${roleBrand("student", brandLogo, true)}
       ${nav}
     </aside>
     <section class="workspace">
@@ -353,13 +342,6 @@ function navigate(nextPage, nextView, id = null) {
   render(true);
 }
 
-function timeNow() {
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
-  }).format(new Date());
-}
-
 function applyDemoReturnStart(item) {
   item.status = "退件中";
   item.returnStarted = refusalDemo.startedAt;
@@ -374,14 +356,14 @@ function createRefusal(item, reason) {
   }
   item.request = firstDemoRequest
     ? { ...refusalDemo.request, reason }
-    : { id: `REJ-DEMO-${++sequence}`, reason, time: timeNow(), status: "待退件" };
+    : { id: `REJ-DEMO-${++sequence}`, reason, time: demoTimestamp(), status: "待退件" };
   item.status = "拒收待退件";
 }
 
 function withdrawRefusal(item) {
   if (canWithdraw(item)) {
     item.request.withdrawal = "撤回成功，恢复待取件";
-    item.request.withdrawn = item.request.id === refusalDemo.request.id ? refusalDemo.withdrawnAt : timeNow();
+    item.request.withdrawn = item.request.id === refusalDemo.request.id ? refusalDemo.withdrawnAt : demoTimestamp();
     item.status = "待取件";
     page = "withdrawn";
     result = ["撤回成功", "包裹已恢复待取件，可以重新办理取件。"];
@@ -509,7 +491,7 @@ function handlePickup(form) {
       feedback(panel, "当前不可取件", reason[item.status]);
     } else {
       item.status = "已取件";
-      item.pickedUp = timeNow();
+      item.pickedUp = demoTimestamp();
       navigate("pickup-success", "pickup-success", item.id);
     }
   });

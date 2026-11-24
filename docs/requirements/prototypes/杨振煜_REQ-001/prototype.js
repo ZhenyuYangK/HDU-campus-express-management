@@ -1,10 +1,8 @@
 "use strict";
 
-const VERSION = "2026-11-22";
+const VERSION = "2026-11-24";
 const exportMode = new URLSearchParams(window.location.search).get("export") === "1";
 const brandLogo = document.querySelector('link[rel="icon"]').href;
-const intakePrototype = "../任奕阳_REQ-002/REQ-002_界面原型.html";
-const pickupPrototype = "../张海睿_REQ_003/REQ-003_界面原型.html";
 document.body.classList.toggle("export", exportMode);
 
 const pages = {
@@ -48,13 +46,6 @@ function icon(name) {
   return `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 }
 
-function brand() {
-  return `<a class="brand" href="#login" aria-label="CampusDelivery Station登录页">
-    <img class="brand-mark" src="${brandLogo}" width="34" height="34" alt="">
-    <span class="brand-name">CampusDelivery Station</span>
-  </a>`;
-}
-
 function currentRoute() {
   const route = window.location.hash.replace(/^#/, "") || "login";
   return Object.hasOwn(pages, route) ? route : "login";
@@ -71,50 +62,17 @@ function pageHeading(page, description, action = "") {
   </div>`;
 }
 
-function navButton(route, active, label, iconName) {
-  return `<button type="button" class="nav-item" data-route="${route}" ${active ? 'aria-current="page"' : ""}>${icon(iconName)}<span>${label}</span></button>`;
-}
-
-function prototypeUrl(file, route) {
-  const url = new URL(file, window.location.href);
-  url.hash = route;
-  if (exportMode) url.searchParams.set("export", "1");
-  return url.href;
-}
-
-function navLink(file, route, label, iconName) {
-  return `<a class="nav-item" href="${prototypeUrl(file, route)}">${icon(iconName)}<span>${label}</span></a>`;
-}
-
 function shell(route, content) {
   const page = pages[route];
   const role = page.role;
   const isAdmin = role === "管理员";
-  const nav = isAdmin ? `
-    <div class="nav-group"><p class="sidebar-caption">账号与权限</p>
-      ${navButton("account-create", route === "account-create", "创建账号", "users")}
-      ${navButton("password-reset", route === "password-reset", "重置密码", "lock")}
-      ${navButton("phone-change", route === "phone-change", "变更手机号", "phone")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">基础信息</p>
-      ${navButton("company-list", route.startsWith("company-"), "快递公司", "truck")}
-      ${navButton("locations", route === "locations", "存放位置", "grid")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">收件与退件</p>
-      ${navLink(intakePrototype, "records-admin", "记录查询（只读）", "eye")}
-    </div>` : `
-    <div class="nav-group"><p class="sidebar-caption">包裹服务</p>
-      ${navLink(pickupPrototype, "list", "我的包裹", "box")}
-      ${navLink(pickupPrototype, "pickup", "自助取件", "shield")}
-    </div>
-    <div class="nav-group"><p class="sidebar-caption">账号安全</p>
-      ${navButton("password", route === "password", "修改密码", "lock")}
-    </div>`;
+  const menuRole = isAdmin ? "admin" : "student";
+  const current = route.startsWith("company-") ? "company-list" : route;
   const displayName = isAdmin ? "示例管理员" : "示例学生";
   const account = isAdmin ? "admin001" : studentAccount;
   const section = isAdmin ? (route.startsWith("company-") || route === "locations" ? "基础信息" : "账号与权限") : "学生端";
   return `<div class="app-shell">
-    <aside class="sidebar" aria-label="功能导航">${brand()}<nav>${nav}</nav></aside>
+    <aside class="sidebar" aria-label="功能导航">${roleBrand(menuRole, brandLogo)}${roleNavigation(menuRole, current, icon)}</aside>
     <section class="workspace">
       <header class="app-topbar"><div class="breadcrumb"><span>${route === "password" ? "账号安全" : section}</span></div>
         <div class="user-chip"><span class="user-avatar" aria-hidden="true">${isAdmin ? "管" : "学"}</span><div class="user-meta"><strong>${displayName}</strong><span>${account} · ${role}</span></div></div>
@@ -128,7 +86,7 @@ function shell(route, content) {
 function loginPage(hasError) {
   const page = pages[hasError ? "login-error" : "login"];
   return `<div class="login-page">
-    <header class="login-header">${brand()}</header>
+    <header class="login-header">${roleBrand("login", brandLogo)}</header>
     <main class="login-layout" id="main" tabindex="-1">
       <section class="login-story">
         <h1>让每一件校园包裹<br><em>都有清晰去向。</em></h1>
@@ -198,7 +156,7 @@ function normalPasswordPage() {
 }
 
 function forcedPasswordDialog() {
-  return `<dialog class="dialog password-dialog" id="forced-password-dialog" aria-labelledby="forced-title" aria-describedby="forced-description">
+  return `<dialog class="dialog password-dialog" id="forced-password-dialog" closedby="none" aria-labelledby="forced-title" aria-describedby="forced-description">
     <h2 id="forced-title">首次登录，请修改密码</h2>
     <p id="forced-description">学生账号${studentAccount}。设置新密码后即可继续使用。</p>
     <form id="forced-password-form" novalidate>
@@ -449,7 +407,7 @@ function handleLogin(form) {
     }
     const role = matched[1].role;
     if (role === "工作人员") {
-      window.location.assign(prototypeUrl(intakePrototype, "intake"));
+      window.location.assign(prototypeHref("002", "intake"));
     } else {
       window.location.hash = role === "管理员" ? "account-create" : "student";
     }
