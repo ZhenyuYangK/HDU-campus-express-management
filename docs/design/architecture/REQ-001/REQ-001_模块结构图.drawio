@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net">
   <diagram id="account" name="账号与密码">
-    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="545" math="0" shadow="0" background="#ffffff">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="583" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -32,8 +32,8 @@
             <mxPoint x="113.5" y="206.4" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="label-6" value="角色、改密要求" style="text;strokeColor=none;fillColor=none;rotation=-88.970;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=23;" vertex="1" parent="1">
-          <mxGeometry x="8.01" y="302.3" width="173.0" height="30" as="geometry" />
+        <mxCell id="label-6" value="当前账号、固定角色、改密要求" style="text;strokeColor=none;fillColor=none;rotation=-88.970;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="-40" y="301" width="263" height="30" as="geometry" />
         </mxCell>
         <mxCell id="tree-7" source="mod-03" target="func-02" style="strokeColor=#000000;strokeWidth=1.8;endArrow=none;rounded=0;exitX=0.31;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry" />
@@ -53,8 +53,8 @@
             <mxPoint x="415.48" y="200.67" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="label-9" value="建号结果" style="text;strokeColor=none;fillColor=none;rotation=-73.816;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=23;" vertex="1" parent="1">
-          <mxGeometry x="314.89" y="292.13" width="104.0" height="30" as="geometry" />
+        <mxCell id="label-9" value="固定角色、下次登录必须改密" style="text;strokeColor=none;fillColor=none;rotation=-73.816;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="229" y="290" width="262" height="30" as="geometry" />
         </mxCell>
         <mxCell id="tree-10" source="mod-03" target="func-05" style="strokeColor=#000000;strokeWidth=1.8;endArrow=none;rounded=0;exitX=0.69;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry" />
@@ -146,11 +146,29 @@
         <mxCell id="func-04" value="忘记密码与管理员重置&lt;br&gt;&lt;span style=&quot;font-size:21px&quot;&gt;FUNC-001-04&lt;/span&gt;" style="rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=24;" vertex="1" parent="1">
           <mxGeometry x="940.0" y="457" width="256" height="62" as="geometry" />
         </mxCell>
+        <mxCell id="legend-solid" style="strokeColor=#000000;strokeWidth=1.8;rounded=0;startArrow=none;endArrow=none;endSize=7;endFill=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="283" y="560" as="sourcePoint" />
+            <mxPoint x="337" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-solid-label" value="模块包含关系" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=nowrap;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;align=left;fontSize=21;spacing=0;" vertex="1" parent="1">
+          <mxGeometry x="353" y="546" width="300" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-arrow" style="strokeColor=#000000;strokeWidth=1.8;rounded=0;startArrow=none;endArrow=block;endSize=7;endFill=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="602" y="560" as="sourcePoint" />
+            <mxPoint x="656" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-arrow-label" value="标注数据的传递方向" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=nowrap;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;align=left;fontSize=21;spacing=0;" vertex="1" parent="1">
+          <mxGeometry x="672" y="546" width="260" height="28" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="foundation" name="基础信息">
-    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="545" math="0" shadow="0" background="#ffffff">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="583" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -256,6 +274,24 @@
         <mxCell id="func-12" value="固定存放位置查看&lt;br&gt;&lt;span style=&quot;font-size:21px&quot;&gt;FUNC-001-12&lt;/span&gt;" style="rounded=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=24;" vertex="1" parent="1">
           <mxGeometry x="907.0" y="457" width="236" height="62" as="geometry" />
         </mxCell>
+        <mxCell id="legend-solid" style="strokeColor=#000000;strokeWidth=1.8;rounded=0;startArrow=none;endArrow=none;endSize=7;endFill=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="283" y="560" as="sourcePoint" />
+            <mxPoint x="337" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-solid-label" value="模块包含关系" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=nowrap;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;align=left;fontSize=21;spacing=0;" vertex="1" parent="1">
+          <mxGeometry x="353" y="546" width="300" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-arrow" style="strokeColor=#000000;strokeWidth=1.8;rounded=0;startArrow=none;endArrow=block;endSize=7;endFill=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="602" y="560" as="sourcePoint" />
+            <mxPoint x="656" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-arrow-label" value="标注数据的传递方向" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=nowrap;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;align=left;fontSize=21;spacing=0;" vertex="1" parent="1">
+          <mxGeometry x="672" y="546" width="260" height="28" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -282,8 +318,8 @@
             <mxPoint x="204.39" y="400.1" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="label-1" value="账号资料、角色、公司、层位" style="text;strokeColor=none;fillColor=none;rotation=-47.565;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=23;" vertex="1" parent="1">
-          <mxGeometry x="181.6" y="265.14" width="311.0" height="30" as="geometry" />
+        <mxCell id="label-1" value="当前账号、角色、公司、层位&lt;br&gt;匹配结果（归属账号／未唯一匹配）" style="text;strokeColor=none;fillColor=none;rotation=-47.565;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="185" y="256" width="348" height="55" as="geometry" />
         </mxCell>
         <mxCell id="data-2" style="strokeColor=#000000;strokeWidth=1.8;rounded=0;startArrow=oval;startSize=6;startFill=0;endArrow=block;endSize=7;endFill=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
@@ -291,8 +327,8 @@
             <mxPoint x="413.71" y="108.9" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="label-2" value="收件侧公司引用情况" style="text;strokeColor=none;fillColor=none;rotation=-47.565;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=23;" vertex="1" parent="1">
-          <mxGeometry x="171.5" y="213.86" width="219.0" height="30" as="geometry" />
+        <mxCell id="label-2" value="完整收件手机号&lt;br&gt;收件侧公司引用情况" style="text;strokeColor=none;fillColor=none;rotation=-47.565;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="146.5" y="192" width="225" height="55" as="geometry" />
         </mxCell>
         <mxCell id="data-3" style="strokeColor=#000000;strokeWidth=1.8;rounded=0;startArrow=oval;startSize=6;startFill=0;endArrow=block;endSize=7;endFill=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
@@ -300,8 +336,8 @@
             <mxPoint x="476.21" y="392.53" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="label-3" value="账号、角色、公司名称、层位" style="text;strokeColor=none;fillColor=none;rotation=-71.677;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=23;" vertex="1" parent="1">
-          <mxGeometry x="380.37" y="251.45" width="311.0" height="30" as="geometry" />
+        <mxCell id="label-3" value="当前账号、角色、公司、层位" style="text;strokeColor=none;fillColor=none;rotation=-71.677;html=1;whiteSpace=nowrap;align=center;verticalAlign=middle;fontColor=#000000;fontFamily=Microsoft YaHei;fontSize=22;" vertex="1" parent="1">
+          <mxGeometry x="380.37" y="251.45" width="311" height="30" as="geometry" />
         </mxCell>
         <mxCell id="data-4" style="strokeColor=#000000;strokeWidth=1.8;rounded=0;startArrow=oval;startSize=6;startFill=0;endArrow=block;endSize=7;endFill=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
