@@ -40,7 +40,6 @@ let filter;
 let selected;
 let pickupReturn;
 let result;
-let sequence;
 let dialogTrigger;
 
 function icon(name) {
@@ -158,19 +157,18 @@ function canWithdraw(item) {
   return item.status === "拒收待退件" && item.request?.status === "待退件" && !item.returnStarted;
 }
 
-function requestCard(item) {
-  const request = item.request;
+function requestCard(request, title = "拒收申请") {
   if (!request) return "";
   const fields = [["拒收申请编号", request.id], ["拒收时间", request.time]];
   if (!request.withdrawn) fields.push(["拒收处理状态", request.status]);
   if (request.withdrawal) fields.push(["撤回结果", request.withdrawal]);
   if (request.withdrawn) fields.push(["撤回时间", request.withdrawn]);
   if (request.reason) fields.push(["拒收原因", request.reason, "wide reason"]);
-  return `<section class="form-card"><h2>拒收申请</h2>${fieldList(fields)}</section>`;
+  return `<section class="form-card"><h2>${title}</h2>${fieldList(fields)}</section>`;
 }
 
 function detailPage(item) {
-  const fields = [["快递公司", demoCompanyName(item.company)], ["运单号", item.waybill], ["到站时间", item.arrived]];
+  const fields = [["快递公司", demoCompanyName(item.company)], ["运单号", item.waybill], ["入库记录编号", item.id], ["到站时间", item.arrived]];
   if (item.status === "待取件") {
     fields.push(["存放位置", item.shelf], ["取件码", item.code], ["包裹定位", `${item.shelf}-${item.code}`]);
   }
@@ -195,7 +193,8 @@ function detailPage(item) {
       <section class="form-card detail-card"><header><h2>包裹信息</h2>${badge(item.status)}</header>
         ${fieldList(fields)}${actions ? `<div class="form-footer">${actions}</div>` : ""}
       </section>
-      ${requestCard(item)}
+      ${requestCard(item.request)}
+      ${item.previousRequests.map(request => requestCard(request, "历史拒收申请")).join("")}
     </div>`;
 }
 
@@ -332,29 +331,13 @@ function applyDemoReturnStart(item) {
   item.request.status = "退件中";
 }
 
-function createRefusal(item, reason) {
-  const firstDemoRequest = item.id === refusalDemo.recordId && !item.request;
-  if (item.request) {
-    item.previousRequests ??= [];
-    item.previousRequests.push(item.request);
-  }
-  item.request = firstDemoRequest
-    ? { ...refusalDemo.request, reason }
-    : { id: `REJ-DEMO-${++sequence}`, reason, time: demoTimestamp(), status: "待退件" };
-  item.status = "拒收待退件";
-}
-
-function withdrawRefusal(item) {
-  if (canWithdraw(item)) {
-    item.request.withdrawal = "撤回成功，恢复待取件";
-    item.request.withdrawn = item.request.id === refusalDemo.request.id ? refusalDemo.withdrawnAt : demoTimestamp();
-    item.status = "待取件";
+function showWithdrawalResult(outcome) {
+  if (outcome === "withdrawn") {
     page = "withdrawn";
     result = ["撤回成功", "包裹已恢复待取件，可以重新办理取件。"];
     return;
   }
-  const returned = item.status === "已退件";
-  item.request.withdrawal = returned ? "撤回失败，退件已完成" : "撤回失败，退件已开始";
+  const returned = outcome === "已退件";
   page = "return-started";
   const reason = returned ? "退件已完成，无法恢复取件。" : "工作人员已开始退件，当前不可撤回，也无法取件。";
   result = ["撤回失败", reason, "warning", true];
@@ -367,12 +350,11 @@ function loadPreview(key = "list", scenario = "normal") {
   filter = "";
   pickupReturn = null;
   result = null;
-  sequence = 310;
   page = Object.hasOwn(screenshots, key) ? key : "list";
   view = "detail";
   statePicker.value = scene;
   const refusalPreview = ["refusal", "refused", "withdraw", "withdrawn", "return-started"].includes(page);
-  selected = refusalPreview ? refusalDemo.recordId : exampleId;
+  selected = refusalPreview && (page !== "refusal" || exportMode) ? refusalDemo.recordId : exampleId;
   const item = owned(selected);
 
   if (!item && page !== "list" && !page.startsWith("pickup")) {
@@ -392,18 +374,28 @@ function loadPreview(key = "list", scenario = "normal") {
       }
       break;
     case "refusal":
-      item.status = "待取件";
-      delete item.request;
+      if (exportMode) {
+        item.status = "待取件";
+        delete item.request;
+      }
       break;
     case "refused":
       result = ["拒收申请已提交", "包裹已暂停取件。工作人员开始退件前，你可以撤回拒收。"];
       break;
     case "withdrawn":
-      withdrawRefusal(item);
+      if (canWithdraw(item)) {
+        item.request.withdrawal = "撤回成功，恢复待取件";
+        item.request.withdrawn = refusalDemo.withdrawnAt;
+        item.status = "待取件";
+        showWithdrawalResult("withdrawn");
+      }
       break;
     case "return-started":
-      applyDemoReturnStart(item);
-      withdrawRefusal(item);
+      if (canWithdraw(item)) {
+        applyDemoReturnStart(item);
+        item.request.withdrawal = "撤回失败，退件已开始";
+        showWithdrawalResult("退件中");
+      }
       break;
   }
   render();
@@ -461,38 +453,28 @@ function handlePickup(form) {
       feedback(panel, "未能确认出库", "请稍后重新核验。");
       return;
     }
-    const item = packages.find(entry => entry.code === codeValue);
-    if (!item && demoPickupDenialCodes.some(entry => entry.code === codeValue)) {
-      feedback(panel, "无办理权限", "本次未出库。");
-      return;
-    }
-    if (!item) {
+    const { id, error } = demoCompletePickup(codeValue, phoneValue);
+    packages = demoStudentPackages();
+    if (error === "code") {
       fieldError(code, "code-error", "取件码有误，请核对后重新输入。");
       feedback(panel, "核验失败，本次未出库");
       code.focus();
-    } else if (!owned(item.id)) {
+    } else if (error === "forbidden") {
       feedback(panel, "无办理权限", "本次未出库。");
-    } else if (item.phoneLast !== phoneValue) {
+    } else if (error === "phone") {
       fieldError(phone, "phone-error", "收件手机号后四位不符，请核对后重新输入。");
       feedback(panel, "核验失败，本次未出库");
       phone.focus();
-    } else if (item.status !== "待取件") {
+    } else if (error) {
       const reason = {
         "已取件": "该包裹已取件，请勿重复办理。",
         "拒收待退件": "该包裹已暂停取件。撤回拒收并恢复待取后可重新办理。",
         "退件中": "工作人员已开始退件。",
         "已退件": "该包裹已完成退件。"
       };
-      feedback(panel, "当前不可取件", reason[item.status]);
+      feedback(panel, "当前不可取件", reason[error] ?? "该包裹状态已更新，请返回包裹列表核对。");
     } else {
-      const pickedUp = demoCompletePickup(item);
-      if (!pickedUp) {
-        feedback(panel, "当前不可取件", "该包裹状态已更新，请返回包裹列表核对。");
-        return;
-      }
-      item.status = "已取件";
-      item.pickedUp = pickedUp;
-      navigate("pickup-success", "pickup-success", item.id);
+      navigate("pickup-success", "pickup-success", id);
     }
   });
 }
@@ -505,33 +487,42 @@ function handleOperation(form) {
   const panel = document.querySelector("#operation-feedback");
   panel.hidden = true;
   submitDemo(form, "正在提交…", () => {
-    const item = owned(itemId);
-    if (!item) {
-      feedback(panel, "无办理权限");
-      return;
-    }
     if (type === "refusal") {
-      if (item.status !== "待取件") {
-        feedback(panel, "拒收申请提交失败", "只有待取件的包裹可以申请拒收。");
-      } else if (scene === "refusal-failure") {
+      if (scene === "refusal-failure") {
         feedback(panel, "拒收申请提交失败", "包裹仍可取件。请稍后重试。");
-      } else {
-        createRefusal(item, reason);
+        return;
+      }
+      const outcome = demoCreateRefusal(itemId, reason);
+      packages = demoStudentPackages();
+      if (outcome === "submitted") {
         page = "refused";
         result = ["拒收申请已提交", "包裹已暂停取件。工作人员开始退件前，你可以撤回拒收。"];
         render(true);
+      } else if (outcome === "forbidden") {
+        feedback(panel, "无办理权限");
+      } else {
+        feedback(panel, "拒收申请提交失败", "只有待取件的包裹可以申请拒收。");
       }
       return;
     }
-    if (!item.request || item.request.id !== requestId || item.request.withdrawn) {
-      feedback(panel, "撤回失败", "该申请已失效，请返回包裹详情核对。");
+    const preview = scene === "return-race" ? owned(itemId) : null;
+    if (preview && requestId === refusalDemo.request.id && canWithdraw(preview)) {
+      applyDemoReturnStart(preview);
+      preview.request.withdrawal = "撤回失败，退件已开始";
+      showWithdrawalResult("退件中");
+      render(true);
       return;
     }
-    if (scene === "return-race" && requestId === refusalDemo.request.id && canWithdraw(item)) {
-      applyDemoReturnStart(item);
+    const outcome = demoWithdrawRefusal(itemId, requestId);
+    packages = demoStudentPackages();
+    if (outcome === "forbidden") {
+      feedback(panel, "无办理权限");
+    } else if (["withdrawn", "退件中", "已退件"].includes(outcome)) {
+      showWithdrawalResult(outcome);
+      render(true);
+    } else {
+      feedback(panel, "撤回失败", "该申请已失效，请返回包裹详情核对。");
     }
-    withdrawRefusal(item);
-    render(true);
   });
 }
 

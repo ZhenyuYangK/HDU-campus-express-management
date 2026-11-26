@@ -34,6 +34,12 @@ const demoReturn = {
   ...refusalSample,
   returnId: "TJ20261122002", finishedAt: "2026-11-22 10:30:00"
 };
+const demoRefusal = {
+  recordId: refusalSample.recordId,
+  request: { id: refusalSample.refusalId, reason: "商品已申请退款。", time: refusalSample.refusedAt, status: "待退件" },
+  startedAt: refusalSample.startedAt,
+  withdrawnAt: "2026-11-22 09:39:00"
+};
 const demoIntakeExample = {
   id: "RK20261122003", company: "yt", tracking: "YT000555666777", receiver: demoIntakeStudent.name,
   phone: demoIntakeStudent.phone, location: "B-2", status: "待取件", account: demoIntakeStudent.account,
@@ -48,7 +54,8 @@ const demoInitialIntakes = [
   },
   {
     id: demoReturn.recordId, company: demoReturn.company, tracking: demoReturn.tracking, receiver: demoIntakeStudent.name,
-    phone: demoIntakeStudent.phone, location: demoReturn.location, status: "拒收待退件", account: demoIntakeStudent.account, arrivedAt: demoReturn.arrivedAt
+    phone: demoIntakeStudent.phone, location: demoReturn.location, status: "拒收待退件", account: demoIntakeStudent.account,
+    arrivedAt: demoReturn.arrivedAt, pickupCode: "JD04P8", refusals: [demoRefusal.request]
   },
   {
     id: "RK20261122002", company: "jd", tracking: "JD000987654321", receiver: demoIntakeStudent.name,
@@ -59,21 +66,21 @@ const demoInitialIntakes = [
 ];
 
 const demoPackageExampleId = "IN-DEMO-301";
-// 入库、拒收和退件开始时间对应REQ-002退件办理的同一组合成记录。
-const demoRefusal = {
-  recordId: refusalSample.recordId,
-  request: { id: refusalSample.refusalId, reason: "商品已申请退款。", time: refusalSample.refusedAt, status: "待退件" },
-  startedAt: refusalSample.startedAt,
-  withdrawnAt: "2026-11-22 09:39:00"
-};
 const demoSamplePackages = [
   { id: demoPackageExampleId, owner: demoDefaultIds["学生"], company: "zt", waybill: "001234567890", shelf: "C-2", code: "A1B2C3", phoneLast: "0003", arrived: "2026-11-22 09:12:00", status: "待取件" },
-  { id: demoRefusal.recordId, owner: demoDefaultIds["学生"], company: refusalSample.company, waybill: refusalSample.tracking, shelf: refusalSample.location, code: "JD04P8", phoneLast: "0001", arrived: refusalSample.arrivedAt, status: "拒收待退件", request: demoRefusal.request },
   { id: "IN-DEMO-302", owner: demoDefaultIds["学生"], company: "yd", waybill: "001234567890", shelf: "B-5", code: "00B215", phoneLast: "0042", arrived: "2026-11-22 08:46:00", status: "待取件" },
   { id: "IN-DEMO-303", owner: demoDefaultIds["学生"], company: "sf", waybill: "SF000940120667", shelf: "H-1", code: "SF6K11", phoneLast: "0001", arrived: "2026-11-21 12:40:00", status: "已取件", pickedUp: "2026-11-21 16:06:00" },
   { id: "IN-DEMO-305", owner: demoDefaultIds["学生"], company: "yt", waybill: "YT000000576101", shelf: "A-6", code: "Y0A617", phoneLast: "0003", arrived: "2026-11-21 08:16:00", status: "退件中", returnStarted: "2026-11-22 08:35:00" },
   { id: "IN-DEMO-306", owner: demoDefaultIds["学生"], company: "st", waybill: "ST000601708215", shelf: "L-6", code: "ST0L67", phoneLast: "0003", arrived: "2026-11-20 10:30:00", status: "已退件", returnStarted: "2026-11-21 08:33:00", returned: "2026-11-21 11:42:00", request: { id: "REJ-DEMO-306", reason: "商家已补发。", time: "2026-11-20 15:24:00", status: "已退件" } }
 ];
+// 预置学生包裹只含收件手机号后四位。成功操作后，同一记录也可由工作人员查询和办理。
+const demoSampleRecords = demoSamplePackages.map(item => ({
+  id: item.id, account: item.owner, receiver: demoDefaultAccounts[item.owner].name, company: item.company,
+  tracking: item.waybill, location: item.shelf, pickupCode: item.code, phoneLast: item.phoneLast,
+  arrivedAt: item.arrived, status: item.status, pickedAt: item.pickedUp,
+  refusals: item.request ? [item.request] : [],
+  returnInfo: item.returnStarted ? { startedAt: item.returnStarted, finishedAt: item.returned } : undefined
+}));
 // 核验拒绝场景使用的输入，不生成包裹列表或详情。
 const demoPickupDenialCodes = [
   { id: "IN-DEMO-OTHER", owner: "00120002", code: "OTHER1" },
@@ -110,12 +117,26 @@ const demoCompanyStats = {
 
 function readDemoData() {
   const saved = demoExport ? null : JSON.parse(sessionStorage.getItem(demoStorageKey));
+  const intakes = saved?.intakes ?? structuredClone(demoInitialIntakes);
+  const sample = intakes.find(record => record.id === demoRefusal.recordId);
+  if (sample && !sample.refusals) {
+    // 旧版只在入库记录中保存退件事实，京东的原申请来自固定样例。
+    const status = { "拒收待退件": "待退件", "退件中": "退件中", "已退件": "已退件" }[sample.status];
+    sample.refusals = status ? [{ ...demoRefusal.request, status }] : [];
+    sample.pickupCode ??= "JD04P8";
+    if (sample.returnInfo) sample.returnInfo.refusalId ??= demoRefusal.request.id;
+  }
+  const sampleRecords = saved?.sampleRecords ?? {};
+  for (const record of demoSampleRecords) {
+    const pickedAt = saved?.samplePickups?.[record.id];
+    if (pickedAt) sampleRecords[record.id] ??= { ...record, status: "已取件", pickedAt };
+  }
   return {
     accounts: { ...structuredClone(demoDefaultAccounts), ...saved?.accounts, ...structuredClone(demoHistoricalAccounts) },
     currentId: saved?.currentId === demoHistoricalOperatorId ? null : saved?.currentId ?? null,
     companies: saved?.companies ?? structuredClone(demoInitialCompanies),
-    intakes: saved?.intakes ?? structuredClone(demoInitialIntakes),
-    samplePickups: saved?.samplePickups ?? {},
+    intakes,
+    sampleRecords,
     shipments: saved?.shipments ?? {}
   };
 }
@@ -126,13 +147,17 @@ function saveDemoData() {
   if (!demoExport) sessionStorage.setItem(demoStorageKey, JSON.stringify(demoData));
 }
 
+function refreshDemoData() {
+  if (!demoExport) demoData = readDemoData();
+}
+
 function resetDemoData() {
   if (!demoExport) sessionStorage.removeItem(demoStorageKey);
   demoData = readDemoData();
 }
 
 window.addEventListener("pageshow", event => {
-  if (event.persisted && !demoExport) demoData = readDemoData();
+  if (event.persisted) refreshDemoData();
 });
 
 function demoAccountId(role) {
@@ -140,37 +165,133 @@ function demoAccountId(role) {
   return accounts[currentId]?.role === role ? currentId : demoDefaultIds[role];
 }
 
-function demoStudentPackages() {
-  const packages = new Map(structuredClone(demoSamplePackages).map(item => [item.id, item]));
-  for (const [id, pickedUp] of Object.entries(demoData.samplePickups)) {
-    const item = packages.get(id);
-    if (item) Object.assign(item, { status: "已取件", pickedUp });
-  }
-  for (const record of demoData.intakes) {
-    const sample = packages.get(record.id);
-    const request = sample?.request && record.returnInfo ? { ...sample.request, status: record.status } : sample?.request;
-    packages.set(record.id, {
-      id: record.id, owner: record.account, company: record.company, waybill: record.tracking,
-      shelf: record.location, code: record.pickupCode ?? sample?.code, phoneLast: record.phone.slice(-4),
-      arrived: record.arrivedAt, status: record.status, pickedUp: record.pickedAt,
-      returnStarted: record.returnInfo?.startedAt, returned: record.returnInfo?.finishedAt, request
-    });
-  }
-  return [...packages.values()];
+function demoCanOperateAs(role) {
+  // 直接打开仍可使用独立原型。已有登录时，按实际登录角色校验写入。
+  return !demoData.currentId || demoData.accounts[demoData.currentId]?.role === role;
 }
 
-function demoCompletePickup(item) {
-  const intake = demoData.intakes.find(record => record.id === item.id);
-  const pickedAt = demoTimestamp();
-  if (intake) {
-    if (intake.account !== item.owner || intake.status === "已取件") return null;
-    Object.assign(intake, { status: "已取件", pickedAt });
-  } else {
-    if (demoData.samplePickups[item.id]) return null;
-    demoData.samplePickups[item.id] = pickedAt;
-  }
+function demoRecords() {
+  return [...demoData.intakes, ...Object.values(demoData.sampleRecords)];
+}
+
+function demoPackageRecord(id) {
+  return demoRecords().find(record => record.id === id) ?? demoSampleRecords.find(record => record.id === id);
+}
+
+function demoSavePackage(record, changes) {
+  const stored = demoData.intakes.find(entry => entry.id === record.id);
+  if (stored) Object.assign(stored, changes);
+  else demoData.sampleRecords[record.id] = { ...record, ...changes };
   saveDemoData();
-  return pickedAt;
+}
+
+function demoStudentPackages() {
+  const sample = demoPackageRecord(demoRefusal.recordId);
+  const [first, ...rest] = demoSampleRecords;
+  const records = new Map([first, sample, ...rest].filter(Boolean).map(record => [record.id, record]));
+  for (const record of demoRecords()) records.set(record.id, record);
+  return [...records.values()].map(record => {
+    const refusals = structuredClone(record.refusals ?? []);
+    return {
+      id: record.id, owner: record.account, company: record.company, waybill: record.tracking,
+      shelf: record.location, code: record.pickupCode, phoneLast: record.phone?.slice(-4) ?? record.phoneLast,
+      arrived: record.arrivedAt, status: record.status, pickedUp: record.pickedAt,
+      returnStarted: record.returnInfo?.startedAt, returned: record.returnInfo?.finishedAt,
+      request: refusals.at(-1), previousRequests: refusals.slice(0, -1)
+    };
+  });
+}
+
+function demoActiveRefusal(record) {
+  return record?.refusals?.findLast(request => !request.withdrawn);
+}
+
+function demoPendingRefusal(record) {
+  const request = demoActiveRefusal(record);
+  return record?.status === "拒收待退件" && !record.returnInfo?.startedAt && request?.status === "待退件" ? request : null;
+}
+
+function demoNextDatedId(prefix, time, ids) {
+  const datePrefix = prefix + time.slice(0, 10).replaceAll("-", "");
+  const sequence = Math.max(0, ...ids.filter(id => id.startsWith(datePrefix)).map(id => Number(id.slice(datePrefix.length))));
+  return `${datePrefix}${String(sequence + 1).padStart(3, "0")}`;
+}
+
+function demoStudentOwns(record) {
+  return demoCanOperateAs("学生") && record?.account === demoAccountId("学生");
+}
+
+function demoCreateRefusal(recordId, reason) {
+  refreshDemoData();
+  const record = demoPackageRecord(recordId);
+  if (!demoStudentOwns(record)) return "forbidden";
+  if (record.status !== "待取件" || demoActiveRefusal(record) || record.returnInfo?.startedAt) return "unavailable";
+  const time = demoTimestamp();
+  const ids = [demoRefusal.request.id, ...demoRecords().flatMap(entry => (entry.refusals ?? []).map(request => request.id))];
+  const request = { id: demoNextDatedId("JS", time, ids), reason, time, status: "待退件" };
+  demoSavePackage(record, { refusals: [...(record.refusals ?? []), request], status: "拒收待退件" });
+  return "submitted";
+}
+
+function demoWithdrawRefusal(recordId, requestId) {
+  refreshDemoData();
+  const record = demoPackageRecord(recordId);
+  if (!demoStudentOwns(record)) return "forbidden";
+  const request = demoActiveRefusal(record);
+  if (!request || request.id !== requestId) return "unavailable";
+  if (demoPendingRefusal(record)) {
+    request.withdrawal = "撤回成功，恢复待取件";
+    request.withdrawn = demoTimestamp();
+    demoSavePackage(record, { status: "待取件" });
+    return "withdrawn";
+  }
+  if (record.status === "退件中" || record.status === "已退件") {
+    request.withdrawal = record.status === "已退件" ? "撤回失败，退件已完成" : "撤回失败，退件已开始";
+    demoSavePackage(record, {});
+  }
+  return record.status;
+}
+
+function demoCompletePickup(code, phoneLast) {
+  refreshDemoData();
+  const item = demoStudentPackages().find(entry => entry.code === code);
+  if (!item) return { error: demoPickupDenialCodes.some(entry => entry.code === code) ? "forbidden" : "code" };
+  const record = demoPackageRecord(item.id);
+  if (!demoStudentOwns(record)) return { error: "forbidden" };
+  if (item.phoneLast !== phoneLast) return { error: "phone" };
+  if (record.status !== "待取件") return { error: record.status };
+  if (record.pickedAt || record.returnInfo?.startedAt || demoActiveRefusal(record)) return { error: "unavailable" };
+  demoSavePackage(record, { status: "已取件", pickedAt: demoTimestamp() });
+  return { id: record.id };
+}
+
+function demoStartStudentReturn(recordId, requestId, details) {
+  refreshDemoData();
+  const record = demoRecords().find(entry => entry.id === recordId);
+  const request = demoPendingRefusal(record);
+  if (!demoCanOperateAs("工作人员") || !request || request.id !== requestId) return null;
+  const startedAt = demoTimestamp();
+  const ids = [demoReturn.returnId, ...demoRecords().map(entry => entry.returnInfo?.id).filter(Boolean)];
+  const returnInfo = {
+    ...details, id: demoNextDatedId("TJ", startedAt, ids), source: "学生拒收", startedAt, refusalId: request.id
+  };
+  request.status = "退件中";
+  demoSavePackage(record, { status: "退件中", returnInfo });
+  return record.tracking;
+}
+
+function demoFinishReturn(recordId, returnId) {
+  refreshDemoData();
+  const record = demoRecords().find(entry => entry.id === recordId);
+  const info = record?.returnInfo;
+  if (!demoCanOperateAs("工作人员") || record?.status !== "退件中" || !info?.startedAt || info.id !== returnId || info.finishedAt) return false;
+  const request = demoActiveRefusal(record);
+  if (info.refusalId) {
+    if (!request || request.id !== info.refusalId || request.status !== "退件中") return false;
+    request.status = "已退件";
+  }
+  demoSavePackage(record, { status: "已退件", returnInfo: { ...info, finishedAt: demoTimestamp() } });
+  return true;
 }
 
 function demoStudentAccounts() {
