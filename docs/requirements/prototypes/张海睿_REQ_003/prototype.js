@@ -173,6 +173,7 @@ function detailPage(item) {
     fields.push(["存放位置", item.shelf], ["取件码", item.code], ["包裹定位", `${item.shelf}-${item.code}`]);
   }
   if (item.pickedUp) fields.push(["取件时间", item.pickedUp]);
+  if (item.returnId) fields.push(["退件记录编号", item.returnId]);
   if (item.returnStarted) fields.push(["开始退件时间", item.returnStarted]);
   if (item.returned) fields.push(["退件完成时间", item.returned]);
   let notice = result;
@@ -327,6 +328,7 @@ function navigate(nextPage, nextView, id = null) {
 
 function applyDemoReturnStart(item) {
   item.status = "退件中";
+  item.returnId = demoReturn.returnId;
   item.returnStarted = refusalDemo.startedAt;
   item.request.status = "退件中";
 }

@@ -70,16 +70,20 @@ const demoSamplePackages = [
   { id: demoPackageExampleId, owner: demoDefaultIds["学生"], company: "zt", waybill: "001234567890", shelf: "C-2", code: "A1B2C3", phoneLast: "0003", arrived: "2026-11-22 09:12:00", status: "待取件" },
   { id: "IN-DEMO-302", owner: demoDefaultIds["学生"], company: "yd", waybill: "001234567890", shelf: "B-5", code: "00B215", phoneLast: "0042", arrived: "2026-11-22 08:46:00", status: "待取件" },
   { id: "IN-DEMO-303", owner: demoDefaultIds["学生"], company: "sf", waybill: "SF000940120667", shelf: "H-1", code: "SF6K11", phoneLast: "0001", arrived: "2026-11-21 12:40:00", status: "已取件", pickedUp: "2026-11-21 16:06:00" },
-  { id: "IN-DEMO-305", owner: demoDefaultIds["学生"], company: "yt", waybill: "YT000000576101", shelf: "A-6", code: "Y0A617", phoneLast: "0003", arrived: "2026-11-21 08:16:00", status: "退件中", returnStarted: "2026-11-22 08:35:00" },
+  {
+    id: "IN-DEMO-305", owner: demoDefaultIds["学生"], company: "yt", waybill: "YT000000576101", shelf: "A-6",
+    code: "Y0A617", phoneLast: "0003", arrived: "2026-11-21 08:16:00", status: "退件中",
+    returnInfo: { id: "TJ20261122001", source: "人工异常", reason: "包装破损", destination: "退回原快递公司", startedAt: "2026-11-22 08:35:00" }
+  },
   { id: "IN-DEMO-306", owner: demoDefaultIds["学生"], company: "st", waybill: "ST000601708215", shelf: "L-6", code: "ST0L67", phoneLast: "0003", arrived: "2026-11-20 10:30:00", status: "已退件", returnStarted: "2026-11-21 08:33:00", returned: "2026-11-21 11:42:00", request: { id: "REJ-DEMO-306", reason: "商家已补发。", time: "2026-11-20 15:24:00", status: "已退件" } }
 ];
-// 预置学生包裹只含收件手机号后四位。成功操作后，同一记录也可由工作人员查询和办理。
+// 预置包裹仅保存收件手机号尾号，两端共用同一入库记录。
 const demoSampleRecords = demoSamplePackages.map(item => ({
   id: item.id, account: item.owner, receiver: demoDefaultAccounts[item.owner].name, company: item.company,
   tracking: item.waybill, location: item.shelf, pickupCode: item.code, phoneLast: item.phoneLast,
   arrivedAt: item.arrived, status: item.status, pickedAt: item.pickedUp,
   refusals: item.request ? [item.request] : [],
-  returnInfo: item.returnStarted ? { startedAt: item.returnStarted, finishedAt: item.returned } : undefined
+  returnInfo: item.returnInfo ?? (item.returnStarted ? { startedAt: item.returnStarted, finishedAt: item.returned } : undefined)
 }));
 // 核验拒绝场景使用的输入，不生成包裹列表或详情。
 const demoPickupDenialCodes = [
@@ -171,32 +175,33 @@ function demoCanOperateAs(role) {
 }
 
 function demoRecords() {
-  return [...demoData.intakes, ...Object.values(demoData.sampleRecords)];
+  const [first, ...remainingSamples] = demoSampleRecords;
+  const refusal = demoData.intakes.find(record => record.id === demoRefusal.recordId);
+  const records = new Map([first, refusal, ...remainingSamples].filter(Boolean).map(record => [record.id, record]));
+  for (const record of [...demoData.intakes, ...Object.values(demoData.sampleRecords)]) {
+    records.set(record.id, record);
+  }
+  return [...records.values()];
 }
 
 function demoPackageRecord(id) {
-  return demoRecords().find(record => record.id === id) ?? demoSampleRecords.find(record => record.id === id);
+  return demoRecords().find(record => record.id === id);
 }
 
 function demoSavePackage(record, changes) {
-  const stored = demoData.intakes.find(entry => entry.id === record.id);
-  if (stored) Object.assign(stored, changes);
+  if (demoData.intakes.includes(record)) Object.assign(record, changes);
   else demoData.sampleRecords[record.id] = { ...record, ...changes };
   saveDemoData();
 }
 
 function demoStudentPackages() {
-  const sample = demoPackageRecord(demoRefusal.recordId);
-  const [first, ...rest] = demoSampleRecords;
-  const records = new Map([first, sample, ...rest].filter(Boolean).map(record => [record.id, record]));
-  for (const record of demoRecords()) records.set(record.id, record);
-  return [...records.values()].map(record => {
+  return demoRecords().map(record => {
     const refusals = structuredClone(record.refusals ?? []);
     return {
       id: record.id, owner: record.account, company: record.company, waybill: record.tracking,
       shelf: record.location, code: record.pickupCode, phoneLast: record.phone?.slice(-4) ?? record.phoneLast,
       arrived: record.arrivedAt, status: record.status, pickedUp: record.pickedAt,
-      returnStarted: record.returnInfo?.startedAt, returned: record.returnInfo?.finishedAt,
+      returnId: record.returnInfo?.id, returnStarted: record.returnInfo?.startedAt, returned: record.returnInfo?.finishedAt,
       request: refusals.at(-1), previousRequests: refusals.slice(0, -1)
     };
   });
@@ -267,7 +272,7 @@ function demoCompletePickup(code, phoneLast) {
 
 function demoStartStudentReturn(recordId, requestId, details) {
   refreshDemoData();
-  const record = demoRecords().find(entry => entry.id === recordId);
+  const record = demoPackageRecord(recordId);
   const request = demoPendingRefusal(record);
   if (!demoCanOperateAs("工作人员") || !request || request.id !== requestId) return null;
   const startedAt = demoTimestamp();
@@ -282,7 +287,7 @@ function demoStartStudentReturn(recordId, requestId, details) {
 
 function demoFinishReturn(recordId, returnId) {
   refreshDemoData();
-  const record = demoRecords().find(entry => entry.id === recordId);
+  const record = demoPackageRecord(recordId);
   const info = record?.returnInfo;
   if (!demoCanOperateAs("工作人员") || record?.status !== "退件中" || !info?.startedAt || info.id !== returnId || info.finishedAt) return false;
   const request = demoActiveRefusal(record);
@@ -314,8 +319,7 @@ function demoHasCompany(id) {
 }
 
 function demoCompanyReferenced(id) {
-  return demoData.intakes.some(record => record.company === id)
-    || demoSamplePackages.some(record => record.company === id)
+  return demoRecords().some(record => record.company === id)
     || demoShippedEvent.company === id
     || Object.values(demoData.shipments).some(record => record.shipped?.company === id)
     || demoCompanyStats.inbound.some(row => row[1] === id)
