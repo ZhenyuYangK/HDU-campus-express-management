@@ -3,7 +3,7 @@
 const refusalSample = {
   recordId: "RK20261121006",
   refusalId: "JS20261121002",
-  company: "京东快递",
+  company: "jd",
   tracking: "JD000444555666",
   location: "B-1",
   arrivedAt: "2026-11-21 16:02:00",

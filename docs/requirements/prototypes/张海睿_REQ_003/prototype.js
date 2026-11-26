@@ -1,7 +1,6 @@
 "use strict";
 
 const version = "2026-11-24";
-const account = "00120001";
 const brandLogo = document.querySelector('link[rel="icon"]').href;
 const app = document.querySelector("#app");
 const pagePicker = document.querySelector("#page-picker");
@@ -30,24 +29,8 @@ const statusStyles = {
   "已退件": "neutral"
 };
 
-const exampleId = "IN-DEMO-301";
-// 入库、拒收和退件开始时间对应REQ-002退件办理的同一组合成记录。
-const refusalDemo = {
-  recordId: refusalSample.recordId,
-  request: { id: refusalSample.refusalId, reason: "商品已申请退款。", time: refusalSample.refusedAt, status: "待退件" },
-  startedAt: refusalSample.startedAt,
-  withdrawnAt: "2026-11-22 09:39:00"
-};
-const samplePackages = [
-  { id: exampleId, owner: account, company: "中通快递", waybill: "001234567890", shelf: "C-2", code: "A1B2C3", phoneLast: "0003", arrived: "2026-11-22 09:12:00", status: "待取件" },
-  { id: refusalDemo.recordId, owner: account, company: refusalSample.company, waybill: refusalSample.tracking, shelf: refusalSample.location, code: "JD04P8", phoneLast: "0001", arrived: refusalSample.arrivedAt, status: "拒收待退件", request: refusalDemo.request },
-  { id: "IN-DEMO-302", owner: account, company: "韵达快递", waybill: "001234567890", shelf: "B-5", code: "00B215", phoneLast: "0042", arrived: "2026-11-22 08:46:00", status: "待取件" },
-  { id: "IN-DEMO-303", owner: account, company: "顺丰速运", waybill: "SF000940120667", shelf: "H-1", code: "SF6K11", phoneLast: "0001", arrived: "2026-11-21 12:40:00", status: "已取件", pickedUp: "2026-11-21 16:06:00" },
-  { id: "IN-DEMO-305", owner: account, company: "圆通速递", waybill: "YT000000576101", shelf: "A-6", code: "Y0A617", phoneLast: "0003", arrived: "2026-11-21 08:16:00", status: "退件中", returnStarted: "2026-11-22 08:35:00" },
-  { id: "IN-DEMO-306", owner: account, company: "申通快递", waybill: "ST000601708215", shelf: "L-6", code: "ST0L67", phoneLast: "0003", arrived: "2026-11-20 10:30:00", status: "已退件", returnStarted: "2026-11-21 08:33:00", returned: "2026-11-21 11:42:00", request: { id: "REJ-DEMO-306", reason: "商家已补发。", time: "2026-11-20 15:24:00", status: "已退件" } },
-  { id: "IN-DEMO-OTHER", owner: "00120002", code: "OTHER1" },
-  { id: "IN-DEMO-UNLINKED", owner: null, code: "UNLINK" }
-];
+const exampleId = demoPackageExampleId;
+const refusalDemo = demoRefusal;
 
 let packages;
 let page;
@@ -75,7 +58,7 @@ function button(label, action, style = "secondary", extra = "") {
 
 function owned(id) {
   if (scene === "forbidden") return undefined;
-  return packages.find(item => item.id === id && item.owner === account);
+  return packages.find(item => item.id === id && item.owner === demoAccountId("学生"));
 }
 
 function badge(status) {
@@ -100,6 +83,7 @@ function heading(title, back = "", action = "") {
 }
 
 function shell(content) {
+  const account = demoAccountId("学生");
   const [ui, func] = screenshots[page];
   const allowed = scene !== "forbidden";
   const onPickup = ["pickup", "pickup-success"].includes(view);
@@ -113,7 +97,7 @@ function shell(content) {
       <header class="app-topbar">
         <div class="breadcrumb"><span>学生端</span>${icon("chevron")}<span>${onPickup ? "自助取件" : "我的包裹"}</span></div>
         ${allowed ? `<div class="user-chip"><span class="user-avatar" aria-hidden="true">学</span>
-          <div class="user-meta"><strong>示例学生</strong><span>${account} · 学生</span></div></div>` : ""}
+          <div class="user-meta"><strong>${escapeHtml(demoData.accounts[account].name)}</strong><span>${account} · 学生</span></div></div>` : ""}
       </header>
       <main class="main-content" id="main" tabindex="-1">${content}</main>
       <footer class="prototype-meta"><span>UI-003-${ui} · FUNC-003-${func} · 学生</span><span>版本${version} · 接口待设计 · 合成数据</span></footer>
@@ -134,18 +118,18 @@ function packageRows(items) {
     <thead><tr><th scope="col">快递公司</th><th scope="col">运单号</th><th scope="col">包裹状态</th>
       <th scope="col">包裹定位</th><th scope="col">到站时间</th><th scope="col">操作</th></tr></thead>
     <tbody>${items.map(item => `<tr>
-      <td><div class="row-title"><span class="company-glyph">${icon("box")}</span>${item.company}</div></td>
-      <td><span class="cell-label" aria-hidden="true">运单号</span>${item.waybill}</td>
+      <td><div class="row-title"><span class="company-glyph">${icon("box")}</span>${escapeHtml(demoCompanyName(item.company))}</div></td>
+      <td><span class="cell-label" aria-hidden="true">运单号</span>${escapeHtml(item.waybill)}</td>
       <td><span class="cell-label" aria-hidden="true">包裹状态</span>${badge(item.status)}</td>
       <td><span class="cell-label" aria-hidden="true">包裹定位</span>${item.status === "待取件" ? `<span class="pickup-location">${item.shelf}-${item.code}</span>` : "—"}</td>
       <td><span class="cell-label" aria-hidden="true">到站时间</span>${item.arrived}</td>
-      <td><div class="row-actions">${button("查看详情", "detail", "text", `data-id="${item.id}" aria-label="查看${item.company}${item.waybill}详情"`)}</div></td>
+      <td><div class="row-actions">${button("查看详情", "detail", "text", `data-id="${item.id}" aria-label="查看${escapeHtml(demoCompanyName(item.company))}${escapeHtml(item.waybill)}详情"`)}</div></td>
     </tr>`).join("")}</tbody>
   </table>`;
 }
 
 function listPage() {
-  const items = packages.filter(item => item.owner === account);
+  const items = packages.filter(item => item.owner === demoAccountId("学生"));
   const shown = filter ? items.filter(item => item.status === filter) : items;
   const ready = !["error", "loading"].includes(scene);
   const states = Object.keys(statusStyles).map(status => `<option${filter === status ? " selected" : ""}>${status}</option>`).join("");
@@ -186,7 +170,7 @@ function requestCard(item) {
 }
 
 function detailPage(item) {
-  const fields = [["快递公司", item.company], ["运单号", item.waybill], ["到站时间", item.arrived]];
+  const fields = [["快递公司", demoCompanyName(item.company)], ["运单号", item.waybill], ["到站时间", item.arrived]];
   if (item.status === "待取件") {
     fields.push(["存放位置", item.shelf], ["取件码", item.code], ["包裹定位", `${item.shelf}-${item.code}`]);
   }
@@ -253,7 +237,7 @@ function pickupSuccess(item) {
     <section class="form-card pickup-form pickup-result">
       <div class="dialog-icon result-icon">${icon("check")}</div>
       <h2>取件完成</h2><p class="muted">核验通过，包裹已出库。</p>
-      ${fieldList([["快递公司", item.company], ["运单号", item.waybill], ["取件时间", item.pickedUp]])}
+      ${fieldList([["快递公司", demoCompanyName(item.company)], ["运单号", item.waybill], ["取件时间", item.pickedUp]])}
       <div class="form-footer">
         ${button("继续自助取件", "pickup")}
         ${button("返回我的包裹", "list", "primary")}
@@ -269,7 +253,7 @@ function dialogMarkup(type, item) {
     <h2 id="dialog-title">${title}</h2>
     <p id="dialog-summary" class="muted">${refusal ? "提交后包裹将暂停取件。" : "撤回后包裹恢复待取件。"}</p>
     <div class="identity-card"><dl class="identity-grid">
-      <div><dt>快递公司</dt><dd>${item.company}</dd></div><div><dt>运单号</dt><dd>${item.waybill}</dd></div>
+      <div><dt>快递公司</dt><dd>${escapeHtml(demoCompanyName(item.company))}</dd></div><div><dt>运单号</dt><dd>${escapeHtml(item.waybill)}</dd></div>
       ${refusal ? "" : `<div><dt>拒收申请编号</dt><dd>${item.request.id}</dd></div>
         <div><dt>拒收时间</dt><dd>${item.request.time}</dd></div>`}
     </dl></div>
@@ -377,8 +361,22 @@ function withdrawRefusal(item) {
 }
 
 function loadPreview(key = "list", scenario = "normal") {
-  packages = structuredClone(samplePackages);
-  if (scenario === "empty") packages = packages.filter(item => item.owner !== account);
+  packages = structuredClone(demoSamplePackages);
+  if (!exportMode) {
+    for (const record of demoData.intakes) {
+      const sample = packages.find(item => item.id === record.id);
+      const data = {
+        id: record.id, owner: record.account, company: record.company, waybill: record.tracking,
+        shelf: record.location, code: record.pickupCode ?? sample?.code, phoneLast: record.phone.slice(-4),
+        arrived: record.arrivedAt, status: record.status,
+        pickedUp: record.pickedAt, returnStarted: record.returnInfo?.startedAt, returned: record.returnInfo?.finishedAt
+      };
+      if (sample?.request && record.returnInfo) data.request = { ...sample.request, status: record.status };
+      if (sample) Object.assign(sample, data);
+      else packages.push(data);
+    }
+  }
+  if (scenario === "empty") packages = packages.filter(item => item.owner !== demoAccountId("学生"));
   scene = scenario;
   filter = "";
   pickupReturn = null;
@@ -391,14 +389,21 @@ function loadPreview(key = "list", scenario = "normal") {
   selected = refusalPreview ? refusalDemo.recordId : exampleId;
   const item = owned(selected);
 
+  if (!item && page !== "list" && !page.startsWith("pickup")) {
+    render();
+    return;
+  }
+
   switch (page) {
     case "list": view = "list"; break;
     case "pickup":
     case "pickup-error": view = "pickup"; break;
     case "pickup-success":
       view = "pickup-success";
-      item.pickedUp = "2026-11-22 09:38:31";
-      item.status = "已取件";
+      if (item) {
+        item.pickedUp = "2026-11-22 09:38:31";
+        item.status = "已取件";
+      }
       break;
     case "refusal":
       item.status = "待取件";
@@ -594,3 +599,5 @@ window.addEventListener("hashchange", () => {
   if (location.hash !== "#main") loadPreview(location.hash.slice(1));
 });
 loadPreview(location.hash.slice(1));
+
+window.addEventListener("pageshow", event => { if (event.persisted) loadPreview(page, scene); });

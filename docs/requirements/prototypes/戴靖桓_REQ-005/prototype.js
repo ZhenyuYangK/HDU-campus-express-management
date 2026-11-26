@@ -157,29 +157,7 @@ const indicators = {
 };
 
 const sourceEvents = {
-  inbound: [
-    ["RK20261102001", "顺丰速运", "SF000123456789", "2026-11-02 09:00:00", "已关联"],
-    ["RK20261103002", "京东快递", "JD000987654321", "2026-11-03 09:00:00", "已关联"],
-    ["RK20261104003", "中通快递", "ZT000111222333", "2026-11-04 09:00:00", "已关联"],
-    ["RK20261105004", "韵达快递", "YD000555666777", "2026-11-05 09:00:00", "已关联"],
-    ["RK20261106005", "圆通速递", "YT000555666778", "2026-11-06 09:00:00", "待关联"],
-    ["RK20261107006", "申通快递", "ST000444555666", "2026-11-07 09:00:00", "已关联"],
-    ["RK20261108007", "极兔速递", "JT000777888999", "2026-11-08 09:00:00", "已关联"],
-    ["RK20261120009", "德邦快递", "DB000123123123", "2026-11-20 09:00:00", "已关联"],
-    ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 09:00:00", "已关联"]
-  ],
-  pickup: [
-    ["RK20261102001", "顺丰速运", "SF000123456789", "2026-11-02 10:00:00", "成功出库"],
-    ["RK20261103002", "京东快递", "JD000987654321", "2026-11-03 10:00:00", "成功出库"],
-    ["RK20261105004", "韵达快递", "YD000555666777", "2026-11-05 10:00:00", "核验失败"],
-    ["IN-OUT", "顺丰速运", "SF000999888777", "2026-10-31 10:00:00", "成功出库"]
-  ],
-  shipped: [
-    ["SJ20261113001", "已寄出", "2026-11-13 10:00:00", "顺丰速运", "SF000321654987"],
-    ["SJ20261114002", "已寄出", "2026-11-14 10:00:00", "京东快递", "JD000654987321"],
-    ["SJ20261115003", "待受理", "—", "中通快递", "ZT000321987654"],
-    ["S-OUT", "已寄出", "2026-10-31 10:00:00", "韵达快递", "YD000987321654"]
-  ],
+  ...demoCompanyStats,
   cancelled: [
     ["SJ20261115003", "学生自主取消", "2026-11-15 10:00:00", "待受理", "示例学生"],
     ["SJ20261116004", "工作人员取消", "2026-11-16 10:00:00", "已受理", "示例工作人员"],
@@ -217,7 +195,7 @@ function metricResult(key) {
   if (key === "pending") {
     rows = sourceEvents.inbound.map(([id, company, waybill, , association]) => {
       const state = packageState(id);
-      return [id, company, waybill, state, association, state === "待取件" ? "计入" : "不计"];
+      return [id, demoCompanyName(company), waybill, state, association, state === "待取件" ? "计入" : "不计"];
     });
     trend = ["待取件", "已取件", "拒收待退件", "退件中", "已退件"].map(label => ({
       label, value: rows.filter(row => row[3] === label).length, current: label === "待取件"
@@ -226,6 +204,8 @@ function metricResult(key) {
     rows = sourceEvents[key].map(source => {
       const row = [...source];
       const date = row[eventDateColumn[key]].slice(0, 10);
+      if (["inbound", "pickup"].includes(key)) row[1] = demoCompanyName(row[1]);
+      if (key === "shipped") row[3] = demoCompanyName(row[3]);
       if (key === "inbound") row[4] = packageState(row[0]);
       const excluded = date === "—" || (key === "pickup" && row[4] !== "成功出库") || (key === "rejected" && row[4] !== "未撤回");
       if (excluded) return [...row, "不计"];
@@ -295,6 +275,8 @@ function sectionFor(route) {
 }
 
 function shell(route, content) {
+  const account = demoAccountId("管理员");
+  const displayName = escapeText(demoData.accounts[account].name);
   const page = pages[route];
   const nav = `
     <div class="nav-group"><p class="sidebar-caption">统计</p>
@@ -308,7 +290,7 @@ function shell(route, content) {
     <section class="workspace">
       <header class="app-topbar">
         <div class="breadcrumb"><span>统计</span>${icon("chevron")}<span>${sectionFor(route)}</span></div>
-        <div class="user-chip"><span class="user-avatar" aria-hidden="true">管</span><div class="user-meta"><strong>示例管理员</strong><span>admin001 · 管理员</span></div></div>
+        <div class="user-chip"><span class="user-avatar" aria-hidden="true">管</span><div class="user-meta"><strong>${displayName}</strong><span>${account} · 管理员</span></div></div>
       </header>
       <main class="main-content" id="main" tabindex="-1">${content}</main>
       ${metaFooter(page)}
@@ -445,7 +427,7 @@ function overviewPage() {
       <section class="card">
         <div class="card-head"><h3>统计访问</h3><span class="mono">DATA-005-19</span></div>
         <dl class="access-list">
-          <div><dt>当前账号 · DATA-001-01</dt><dd>admin001</dd></div>
+          <div><dt>当前账号 · DATA-001-01</dt><dd>${demoAccountId("管理员")}</dd></div>
           <div><dt>角色 · DATA-001-05</dt><dd>管理员</dd></div>
           <div><dt>允许范围</dt><dd>全部业务统计（只读）</dd></div>
           <div><dt>数据范围</dt><dd>入库、取件、拒收、退件、寄件记录</dd></div>
@@ -725,5 +707,6 @@ document.addEventListener("reset", event => {
 
 populatePicker();
 if (!window.location.hash) window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#overview`);
+window.addEventListener("pageshow", event => { if (event.persisted) render(); });
 render();
 window.__REQ005__ = { pages, exportRoutes, version: VERSION };
