@@ -361,21 +361,7 @@ function withdrawRefusal(item) {
 }
 
 function loadPreview(key = "list", scenario = "normal") {
-  packages = structuredClone(demoSamplePackages);
-  if (!exportMode) {
-    for (const record of demoData.intakes) {
-      const sample = packages.find(item => item.id === record.id);
-      const data = {
-        id: record.id, owner: record.account, company: record.company, waybill: record.tracking,
-        shelf: record.location, code: record.pickupCode ?? sample?.code, phoneLast: record.phone.slice(-4),
-        arrived: record.arrivedAt, status: record.status,
-        pickedUp: record.pickedAt, returnStarted: record.returnInfo?.startedAt, returned: record.returnInfo?.finishedAt
-      };
-      if (sample?.request && record.returnInfo) data.request = { ...sample.request, status: record.status };
-      if (sample) Object.assign(sample, data);
-      else packages.push(data);
-    }
-  }
+  packages = demoStudentPackages();
   if (scenario === "empty") packages = packages.filter(item => item.owner !== demoAccountId("学生"));
   scene = scenario;
   filter = "";
@@ -476,6 +462,10 @@ function handlePickup(form) {
       return;
     }
     const item = packages.find(entry => entry.code === codeValue);
+    if (!item && demoPickupDenialCodes.some(entry => entry.code === codeValue)) {
+      feedback(panel, "无办理权限", "本次未出库。");
+      return;
+    }
     if (!item) {
       fieldError(code, "code-error", "取件码有误，请核对后重新输入。");
       feedback(panel, "核验失败，本次未出库");
@@ -495,8 +485,13 @@ function handlePickup(form) {
       };
       feedback(panel, "当前不可取件", reason[item.status]);
     } else {
+      const pickedUp = demoCompletePickup(item);
+      if (!pickedUp) {
+        feedback(panel, "当前不可取件", "该包裹状态已更新，请返回包裹列表核对。");
+        return;
+      }
       item.status = "已取件";
-      item.pickedUp = demoTimestamp();
+      item.pickedUp = pickedUp;
       navigate("pickup-success", "pickup-success", item.id);
     }
   });
@@ -600,4 +595,9 @@ window.addEventListener("hashchange", () => {
 });
 loadPreview(location.hash.slice(1));
 
-window.addEventListener("pageshow", event => { if (event.persisted) loadPreview(page, scene); });
+window.addEventListener("pageshow", event => {
+  if (!event.persisted || exportMode) return;
+  packages = demoStudentPackages();
+  if (scene === "empty") packages = packages.filter(item => item.owner !== demoAccountId("学生"));
+  render();
+});

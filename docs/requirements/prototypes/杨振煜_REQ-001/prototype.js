@@ -184,7 +184,9 @@ function studentPage(route) {
 }
 
 function accountOptions(selected = "00120001") {
-  return Object.entries(demoData.accounts).map(([account, item]) => `<option value="${account}" ${account === selected ? "selected" : ""}>${account} · ${escapeHtml(item.name)} · ${item.role}</option>`).join("");
+  return Object.entries(demoData.accounts)
+    .filter(([, item]) => !item.historicalOnly)
+    .map(([account, item]) => `<option value="${account}" ${account === selected ? "selected" : ""}>${account} · ${escapeHtml(item.name)} · ${item.role}</option>`).join("");
 }
 
 function identityCard(prefix, account = "00120001") {
@@ -435,7 +437,7 @@ function handleLogin(form) {
   const phoneValid = /^\d{11}$/.test(id);
   if (!accountValid && !phoneValid) { setFieldError(idInput, "请输入8位账号或11位绑定手机号；staff和admin前缀仅接受小写。"); idInput.focus(); return; }
   if (!validPassword(password)) { setFieldError(passwordInput, "密码为8～20个字符，至少含字母和数字，且不含空白。"); passwordInput.focus(); return; }
-  const matched = Object.entries(demoData.accounts).find(([account, example]) => id === account || id === example.phone);
+  const matched = Object.entries(demoData.accounts).find(([account, example]) => !example.historicalOnly && (id === account || id === example.phone));
   submitWithFeedback(form, async () => {
     const digest = await demoDigest(password);
     if (!form.isConnected) return;

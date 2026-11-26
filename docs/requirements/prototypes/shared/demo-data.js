@@ -9,6 +9,10 @@ const demoDefaultAccounts = {
   staff001: { name: "示例工作人员", phone: "13800000002", role: "工作人员" },
   admin001: { name: "示例管理员", phone: "13800000003", role: "管理员" }
 };
+const demoHistoricalOperatorId = "staff002";
+const demoHistoricalAccounts = {
+  [demoHistoricalOperatorId]: { role: "工作人员", historicalOnly: true }
+};
 
 const demoInitialCompanies = [
   ["sf", "顺丰速运"],
@@ -68,12 +72,15 @@ const demoSamplePackages = [
   { id: "IN-DEMO-302", owner: demoDefaultIds["学生"], company: "yd", waybill: "001234567890", shelf: "B-5", code: "00B215", phoneLast: "0042", arrived: "2026-11-22 08:46:00", status: "待取件" },
   { id: "IN-DEMO-303", owner: demoDefaultIds["学生"], company: "sf", waybill: "SF000940120667", shelf: "H-1", code: "SF6K11", phoneLast: "0001", arrived: "2026-11-21 12:40:00", status: "已取件", pickedUp: "2026-11-21 16:06:00" },
   { id: "IN-DEMO-305", owner: demoDefaultIds["学生"], company: "yt", waybill: "YT000000576101", shelf: "A-6", code: "Y0A617", phoneLast: "0003", arrived: "2026-11-21 08:16:00", status: "退件中", returnStarted: "2026-11-22 08:35:00" },
-  { id: "IN-DEMO-306", owner: demoDefaultIds["学生"], company: "st", waybill: "ST000601708215", shelf: "L-6", code: "ST0L67", phoneLast: "0003", arrived: "2026-11-20 10:30:00", status: "已退件", returnStarted: "2026-11-21 08:33:00", returned: "2026-11-21 11:42:00", request: { id: "REJ-DEMO-306", reason: "商家已补发。", time: "2026-11-20 15:24:00", status: "已退件" } },
+  { id: "IN-DEMO-306", owner: demoDefaultIds["学生"], company: "st", waybill: "ST000601708215", shelf: "L-6", code: "ST0L67", phoneLast: "0003", arrived: "2026-11-20 10:30:00", status: "已退件", returnStarted: "2026-11-21 08:33:00", returned: "2026-11-21 11:42:00", request: { id: "REJ-DEMO-306", reason: "商家已补发。", time: "2026-11-20 15:24:00", status: "已退件" } }
+];
+// 核验拒绝场景使用的输入，不生成包裹列表或详情。
+const demoPickupDenialCodes = [
   { id: "IN-DEMO-OTHER", owner: "00120002", code: "OTHER1" },
   { id: "IN-DEMO-UNLINKED", owner: null, code: "UNLINK" }
 ];
 
-const demoShippedEvent = { by: "staff002", at: "2026-11-23 10:00:00", company: "jd", tracking: "001234567890" };
+const demoShippedEvent = { by: demoHistoricalOperatorId, at: "2026-11-23 10:00:00", company: "jd", tracking: "001234567890" };
 
 const demoCompanyStats = {
   inbound: [
@@ -104,10 +111,11 @@ const demoCompanyStats = {
 function readDemoData() {
   const saved = demoExport ? null : JSON.parse(sessionStorage.getItem(demoStorageKey));
   return {
-    accounts: { ...structuredClone(demoDefaultAccounts), ...saved?.accounts },
-    currentId: saved?.currentId ?? null,
+    accounts: { ...structuredClone(demoDefaultAccounts), ...saved?.accounts, ...structuredClone(demoHistoricalAccounts) },
+    currentId: saved?.currentId === demoHistoricalOperatorId ? null : saved?.currentId ?? null,
     companies: saved?.companies ?? structuredClone(demoInitialCompanies),
     intakes: saved?.intakes ?? structuredClone(demoInitialIntakes),
+    samplePickups: saved?.samplePickups ?? {},
     shipments: saved?.shipments ?? {}
   };
 }
@@ -130,6 +138,39 @@ window.addEventListener("pageshow", event => {
 function demoAccountId(role) {
   const { accounts, currentId } = demoData;
   return accounts[currentId]?.role === role ? currentId : demoDefaultIds[role];
+}
+
+function demoStudentPackages() {
+  const packages = new Map(structuredClone(demoSamplePackages).map(item => [item.id, item]));
+  for (const [id, pickedUp] of Object.entries(demoData.samplePickups)) {
+    const item = packages.get(id);
+    if (item) Object.assign(item, { status: "已取件", pickedUp });
+  }
+  for (const record of demoData.intakes) {
+    const sample = packages.get(record.id);
+    const request = sample?.request && record.returnInfo ? { ...sample.request, status: record.status } : sample?.request;
+    packages.set(record.id, {
+      id: record.id, owner: record.account, company: record.company, waybill: record.tracking,
+      shelf: record.location, code: record.pickupCode ?? sample?.code, phoneLast: record.phone.slice(-4),
+      arrived: record.arrivedAt, status: record.status, pickedUp: record.pickedAt,
+      returnStarted: record.returnInfo?.startedAt, returned: record.returnInfo?.finishedAt, request
+    });
+  }
+  return [...packages.values()];
+}
+
+function demoCompletePickup(item) {
+  const intake = demoData.intakes.find(record => record.id === item.id);
+  const pickedAt = demoTimestamp();
+  if (intake) {
+    if (intake.account !== item.owner || intake.status === "已取件") return null;
+    Object.assign(intake, { status: "已取件", pickedAt });
+  } else {
+    if (demoData.samplePickups[item.id]) return null;
+    demoData.samplePickups[item.id] = pickedAt;
+  }
+  saveDemoData();
+  return pickedAt;
 }
 
 function demoStudentAccounts() {
@@ -155,7 +196,7 @@ function demoCompanyReferenced(id) {
   return demoData.intakes.some(record => record.company === id)
     || demoSamplePackages.some(record => record.company === id)
     || demoShippedEvent.company === id
-    || Object.values(demoData.shipments).some(record => record.shipped.company === id)
+    || Object.values(demoData.shipments).some(record => record.shipped?.company === id)
     || demoCompanyStats.inbound.some(row => row[1] === id)
     || demoCompanyStats.pickup.some(row => row[1] === id)
     || demoCompanyStats.shipped.some(row => row[3] === id);
