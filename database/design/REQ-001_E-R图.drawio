@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram id="req001" name="E-R图">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1480" pageHeight="783" math="0" shadow="0" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="canvas" value="" style="strokeColor=none;fillColor=#ffffff;movable=0;resizable=0;selectable=0;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="1480" height="783" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-20" source="stored" target="inbound" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;entryX=1;entryY=0.3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-19" source="location" target="stored" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-18" source="carried" target="inbound" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;entryX=0.55;entryY=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-17" source="company" target="carried" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-16" source="owned" target="inbound" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;entryX=0;entryY=0.3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-15" source="account" target="owned" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-14" source="ships-with" target="company" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-13" source="shipment" target="ships-with" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-12" source="submitted" target="shipment" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-11" source="account" target="submitted" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-10" source="location" target="code" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-9" source="company" target="company-name" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-8" source="company" target="company-id" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-7" source="account" target="force" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-6" source="account" target="role" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-5" source="account" target="hash" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-4" source="account" target="phone" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-3" source="account" target="name" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-2" source="account" target="account-no" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-1" source="account" target="account-id" style="strokeColor=#333333;strokeWidth=1.6;endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="account" value="&lt;b&gt;账号&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;account&lt;/span&gt;" style="rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=24;fillColor=#e9e9e9;" vertex="1" parent="1">
+          <mxGeometry x="218" y="287" width="174" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="inbound" value="&lt;b&gt;入库记录&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;REQ-002&lt;/span&gt;" style="rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=24;fillColor=#ffffff;dashed=1;dashPattern=6 4;" vertex="1" parent="1">
+          <mxGeometry x="735" y="641" width="230" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="shipment" value="&lt;b&gt;寄件申请&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;REQ-004&lt;/span&gt;" style="rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=24;fillColor=#ffffff;dashed=1;dashPattern=6 4;" vertex="1" parent="1">
+          <mxGeometry x="566" y="287" width="164" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="company" value="&lt;b&gt;快递公司&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;courier_company&lt;/span&gt;" style="rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=24;fillColor=#e9e9e9;" vertex="1" parent="1">
+          <mxGeometry x="905" y="287" width="190" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="location" value="&lt;b&gt;固定存放位置&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:19px&quot;&gt;storage_location&lt;/span&gt;" style="rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=24;fillColor=#e9e9e9;" vertex="1" parent="1">
+          <mxGeometry x="1258" y="287" width="186" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="account-id" value="&lt;u&gt;账号ID&lt;/u&gt;" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="39.0" y="200" width="128" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="account-no" value="账号" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="56.0" y="118" width="116" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="name" value="账号姓名" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="118.5" y="50" width="143" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="phone" value="绑定手机号" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="252.5" y="27" width="157" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hash" value="密码哈希" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="405.5" y="52" width="143" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="role" value="固定角色" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="463.0" y="126" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="force" value="强制改密标记" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="446.5" y="200" width="193" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="company-id" value="&lt;u&gt;公司ID&lt;/u&gt;" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="827.5" y="118" width="151" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="company-name" value="公司名称" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="1004.0" y="118" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="code" value="&lt;u&gt;位置名称&lt;/u&gt;" style="ellipse;perimeter=ellipsePerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=23;" vertex="1" parent="1">
+          <mxGeometry x="1268.0" y="118" width="166" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="submitted" value="提交" style="rhombus;perimeter=rhombusPerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="419" y="287" width="116" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="ships-with" value="寄出使用" style="rhombus;perimeter=rhombusPerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="761" y="287" width="116" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="owned" value="归属" style="rhombus;perimeter=rhombusPerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="377" y="482" width="116" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="carried" value="承运" style="rhombus;perimeter=rhombusPerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="878" y="482" width="116" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="stored" value="存放于" style="rhombus;perimeter=rhombusPerimeter;rounded=0;fillColor=#ffffff;strokeColor=#222222;strokeWidth=1.6;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="1161" y="482" width="116" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-0" value="1" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="392" y="287" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-1" value="0..N" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="520" y="287" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-2" value="0..N" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="725" y="287" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-3" value="0..1" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="859" y="287" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-4" value="0..1" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="306" y="376" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-5" value="0..N" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="664" y="602" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-6" value="1" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="962" y="368" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-7" value="0..N" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="902" y="606" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-8" value="1" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="370" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cardinality-9" value="0..N" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=21;" vertex="1" parent="1">
+          <mxGeometry x="998" y="580" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="实线矩形为REQ-001实体　｜　虚线矩形为外部业务实体　｜　椭圆为属性　｜　菱形为联系　｜　下划线为主键" style="text;strokeColor=none;fillColor=none;verticalAlign=middle;fontFamily=Microsoft YaHei;fontColor=#000000;html=1;whiteSpace=wrap;fontSize=22;align=left;" vertex="1" parent="1">
+          <mxGeometry x="30" y="731" width="1420" height="37" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
