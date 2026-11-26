@@ -7,9 +7,6 @@ const roles = {
   admin: { label: "管理员", account: "admin001", avatar: "管" },
 };
 const statuses = { "待受理": "warning", "已受理": "", "已寄出": "", "已取消": "neutral" };
-// 合成快照取自REQ-004数据列表中转引的REQ-001公司清单。
-const companies = ["顺丰速运", "京东快递", "韵达快递", "中通快递", "圆通速递", "申通快递",
-  "极兔速递", "德邦快递", "中国邮政", "邮政EMS", "菜鸟速递", "跨越速运"];
 const sample = {
   sender: "示例寄件人", senderPhone: "13800000002", receiver: "示例收件人",
   receiverPhone: "13900000003", address: "示例校区示例楼101室", item: "示例书籍",
@@ -20,7 +17,7 @@ const fields = {
 };
 const id = number => `APP-DEMO-${String(number).padStart(3, "0")}`;
 const acceptedEvent = { by: "staff001", at: "2026-11-23 09:20:00" };
-const shippedEvent = { by: "staff002", at: "2026-11-23 10:00:00", company: "京东快递", tracking: "001234567890" };
+const shippedEvent = demoShippedEvent;
 const initialRecords = [
   { number: 1, status: "待受理", submitted: "2026-11-23 09:00:00" },
   { number: 2, status: "已受理", submitted: "2026-11-23 08:50:00", accepted: acceptedEvent, item: "示例文具" },
@@ -54,7 +51,7 @@ const scenePicker = document.querySelector("#state-picker");
 const emptyFilters = { status: "", from: "", to: "", keyword: "" };
 const pageSize = 20;
 let records, role, page, view, scene, selected, filters, filterError, feedback, dialogTrigger;
-let applicationDraft, eventMinute, submittedCount, listNumber;
+let applicationDraft, listNumber;
 
 function escapeHtml(value) {
   const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -117,6 +114,8 @@ function listName() {
 function shell(content) {
   const allowed = scene !== "forbidden";
   const identity = roles[role];
+  const account = demoAccountId(identity.label);
+  const displayName = escapeHtml(demoData.accounts[account].name);
   const current = view === "apply" ? "01" : listPreview();
   const nav = allowed ? roleNavigation(role, current, icon) : "";
   const brand = allowed ? roleBrand(role, logo) : '<span class="brand">CampusDelivery Station</span>';
@@ -125,7 +124,7 @@ function shell(content) {
       <header class="app-topbar"><div class="breadcrumb"><span>${role === "student" ? "学生端" : "工作台"}</span>
         ${icon("chevron")}<span>${view === "apply" ? "寄件申请" : listName()}</span></div>
         ${allowed ? `<div class="user-chip"><span class="user-avatar" aria-hidden="true">${identity.avatar}</span>
-          <div class="user-meta"><strong>示例${identity.label}</strong><span>${identity.account} · ${identity.label}</span></div></div>` : ""}
+          <div class="user-meta"><strong>${displayName}</strong><span>${account} · ${identity.label}</span></div></div>` : ""}
       </header>
       <main class="main-content" id="main" tabindex="-1">${content}</main>
       <footer class="prototype-meta"><span>UI-004-${page} · FUNC-004-${previews[page][1]} · ${identity.label}</span>
@@ -155,7 +154,7 @@ function applicationPage() {
 }
 
 function canView(record) {
-  return role !== "student" || record.owner === roles.student.account;
+  return role !== "student" || record.owner === demoAccountId("学生");
 }
 
 function accessible(idValue) {
@@ -173,7 +172,7 @@ function listRows(items) {
     ${cell("申请编号", `<span class="row-title"><span class="company-glyph">${icon("box")}</span><span class="mono">${record.id}</span></span>`)}
     ${role === "student" ? "" : cell("申请人账号", `<span class="mono">${record.owner}</span>`)}
     ${cell("寄件状态", badge(record.status))}
-    ${cell("快递公司", record.shipped?.company ?? "—")}
+    ${cell("快递公司", demoCompanyName(record.shipped?.company))}
     ${cell("提交时间", `<time class="mono">${record.submitted}</time>`)}
     <td><div class="row-actions">${button("查看详情", "detail", "text",
       `data-id="${record.id}" aria-label="查看${record.id}详情"`)}</div></td>
@@ -248,7 +247,7 @@ function eventFacts(record) {
     if (role !== "student") events.push(["受理人", record.accepted.by]);
   }
   if (record.shipped) {
-    events.push(["快递公司", record.shipped.company], ["运单号", record.shipped.tracking], ["寄出完成时间", record.shipped.at]);
+    events.push(["快递公司", demoCompanyName(record.shipped.company)], ["运单号", record.shipped.tracking], ["寄出完成时间", record.shipped.at]);
     if (role !== "student") events.push(["寄出办理人", record.shipped.by]);
   }
   if (record.cancelled) {
@@ -323,7 +322,7 @@ function operationContent(action, record) {
     title: "寄出登记", submit: "确认寄出",
     body: `${notice("包裹交给快递公司后登记寄出", "", "warning")}
       <div class="form-grid">
-      ${field("company", "快递公司", "", { choices: [["", "请选择快递公司"], ...companies.map(company => [company, company])], required: true, wide: true })}
+      ${field("company", "快递公司", "", { choices: [["", "请选择快递公司"], ...demoData.companies.map(({ id, name }) => [id, name])], required: true, wide: true })}
       ${field("tracking", "运单号", "", { required: true, wide: true, placeholder: "填写快递公司出具的运单号" })}
       </div>${checkField("已确认包裹实际寄出")}`,
   };
@@ -415,10 +414,21 @@ function listPreview() {
   return { student: "02", staff: "04", admin: "12" }[role];
 }
 
+function shipmentRecords() {
+  const byId = new Map(initialRecords.map(record => [record.id, record]));
+  for (const record of Object.values(demoData.shipments)) byId.set(record.id, record);
+  return structuredClone([...byId.values()]);
+}
+
+function saveShipment(record) {
+  demoData.shipments[record.id] = structuredClone(record);
+  saveDemoData();
+}
+
 function loadPreview(key, nextScene = "normal") {
   page = previews[key] ? key : "01";
   const [, , nextRole, nextView, number, action] = previews[page];
-  records = structuredClone(initialRecords);
+  records = shipmentRecords();
   filters = { ...emptyFilters };
   filterError = "";
   feedback = null;
@@ -426,8 +436,6 @@ function loadPreview(key, nextScene = "normal") {
   view = nextView;
   selected = number ? id(number) : null;
   scene = nextScene;
-  eventMinute = 0;
-  submittedCount = 0;
   listNumber = 1;
   applicationDraft = exportMode ? { ...sample } : {};
   pagePicker.value = page;
@@ -435,11 +443,6 @@ function loadPreview(key, nextScene = "normal") {
   scenePicker.value = scene;
   render();
   if (action) openOperation(action, app.querySelector(`[data-action="${action}"]`));
-}
-
-function eventTime() {
-  const time = new Date(Date.UTC(2026, 10, 23, 11, eventMinute++));
-  return time.toISOString().slice(0, 19).replace("T", " ");
 }
 
 function read(form) {
@@ -482,7 +485,7 @@ async function pending(form) {
   form.removeAttribute("aria-busy");
   submit.innerHTML = label;
   if (dialog) delete dialog.dataset.pending;
-  return true;
+  return form.isConnected;
 }
 
 async function submitApplication(form) {
@@ -501,8 +504,11 @@ async function submitApplication(form) {
     formAlert(form, "申请保存失败。已保留填写内容，请重试。");
     return;
   }
-  const record = { ...data, id: id(6 + submittedCount++), submitted: eventTime(),
-    status: "待受理", owner: roles.student.account, history: [] };
+  records = shipmentRecords();
+  const nextNumber = 1 + Math.max(...records.map(record => Number(record.id.split("-").at(-1))));
+  const record = { ...data, id: id(nextNumber), submitted: demoTimestamp(),
+    status: "待受理", owner: demoAccountId("学生"), history: [] };
+  saveShipment(record);
   records.push(record);
   applicationDraft = {};
   page = "01";
@@ -536,7 +542,7 @@ function operationErrors(action, record, data) {
     errors.checked = "请先完成现场核对。";
   }
   if (action === "ship") {
-    if (!companies.includes(data.company)) errors.company = "请选择快递公司。";
+    if (!demoHasCompany(data.company)) errors.company = "请选择快递公司。";
     if (!data.tracking) errors.tracking = "请填写运单号。";
   }
   if (action === "edit") {
@@ -555,26 +561,26 @@ function simulateConcurrentChange(action, record) {
   if (record.status === "已受理") {
     if (action === "ship") {
       record.status = "已取消";
-      record.cancelled = { by: "staff002", at: eventTime(), method: "工作人员取消", reason: "现场核对后取消" };
+      record.cancelled = { by: demoHistoricalOperatorId, at: demoTimestamp(), method: "工作人员取消", reason: "现场核对后取消" };
     } else {
       record.status = "已寄出";
-      record.shipped = { ...shippedEvent, at: eventTime(), tracking: "009876543210" };
+      record.shipped = { ...shippedEvent, at: demoTimestamp(), tracking: "009876543210" };
     }
   } else if (action === "accept") {
     record.status = "已取消";
-    record.cancelled = { by: record.owner, at: eventTime(), method: "学生自主取消" };
+    record.cancelled = { by: record.owner, at: demoTimestamp(), method: "学生自主取消" };
   } else {
     record.status = "已受理";
-    record.accepted = { by: "staff002", at: eventTime() };
+    record.accepted = { by: demoHistoricalOperatorId, at: demoTimestamp() };
     if (action === "edit") {
       record.status = "已寄出";
-      record.shipped = { ...shippedEvent, at: eventTime(), tracking: "009876543210" };
+      record.shipped = { ...shippedEvent, at: demoTimestamp(), tracking: "009876543210" };
     }
   }
 }
 
 function completeOperation(action, record, data) {
-  const event = { by: roles[role].account, at: eventTime() };
+  const event = { by: demoAccountId(roles[role].label), at: demoTimestamp() };
   if (action === "accept") {
     record.status = "已受理";
     record.accepted = event;
@@ -617,9 +623,12 @@ async function submitOperation(form) {
     formAlert(form, "保存失败。已保留填写内容，请重试。");
     return;
   }
-  const current = accessible(selected);
+  records = shipmentRecords();
+  const current = accessible(before.id);
+  if (!current) { render(true); return; }
   if (scene === "race") {
     simulateConcurrentChange(action, current);
+    saveShipment(current);
     scene = "normal";
     scenePicker.value = scene;
   }
@@ -628,6 +637,7 @@ async function submitOperation(form) {
     feedback = ["申请状态已更新", `当前状态为「${current.status}」。${next}`, "warning", true];
   } else {
     const title = completeOperation(action, current, data);
+    saveShipment(current);
     feedback = [title];
   }
   render(true);
@@ -713,6 +723,16 @@ scenePicker.addEventListener("change", () => {
   if (["loading", "empty", "error", "forbidden"].includes(scene)) show(listPreview(), "list");
   else render();
 });
-document.querySelector("#reset-prototype").addEventListener("click", () => loadPreview("01"));
+document.querySelector("#reset-prototype").addEventListener("click", () => {
+  demoData.shipments = {};
+  saveDemoData();
+  loadPreview("01");
+});
 document.body.classList.toggle("export", exportMode);
 loadPreview(location.hash.slice(1));
+
+window.addEventListener("pageshow", event => {
+  if (!event.persisted || exportMode) return;
+  records = shipmentRecords();
+  render();
+});

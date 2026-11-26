@@ -397,6 +397,8 @@ h3 { margin-bottom: 8px; color: var(--ink); font-size: 16px; }
 .state-error { padding: 30px; text-align: center; color: var(--danger); }
 .table-scroll { overflow-x: auto; }
 .data-table .time-cell { white-space: nowrap; }
+.return-table { table-layout: auto; }
+.return-table .return-id, .return-table .status-badge, .return-table .button-text { white-space: nowrap; }
 .inline-note { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
 
 @media (max-width: 1120px) {

@@ -22,38 +22,9 @@ const pages = {
 };
 
 const exportRoutes = Object.keys(pages).filter(key => !pages[key].hidden);
-const companies = ["顺丰速运", "京东快递", "韵达快递", "中通快递", "圆通速递", "申通快递", "极兔速递", "德邦快递", "中国邮政", "邮政EMS", "菜鸟速递", "跨越速运"];
-const student = { account: "00120001", name: "示例学生", phone: "13800000001" };
-const otherStudent = { account: "00120002", name: "示例学生乙", phone: "13900000009" };
-const intakeAccounts = [student, otherStudent];
-const returnDemo = {
-  ...refusalSample,
-  returnId: "TJ20261122002", finishedAt: "2026-11-22 10:30:00"
-};
-const intakeExample = {
-  id: "RK20261122003", company: "圆通速递", tracking: "YT000555666777", receiver: student.name,
-  phone: student.phone, location: "B-2", status: "待取件", account: student.account,
-  arrivedAt: "2026-11-22 10:12:00", pickupCode: "001234"
-};
-const initialRecords = [
-  {
-    id: "RK20261122001", company: "顺丰速运", tracking: "SF000123456789", receiver: student.name,
-    phone: student.phone, location: "A-3", status: "待取件", account: null, arrivedAt: "2026-11-22 09:05:00",
-    pickupCode: "009876",
-    correction: { field: "存放位置名称", operator: "示例工作人员", at: "2026-11-22 09:30:00" }
-  },
-  {
-    id: returnDemo.recordId, company: returnDemo.company, tracking: returnDemo.tracking, receiver: student.name,
-    phone: student.phone, location: returnDemo.location, status: "拒收待退件", account: student.account, arrivedAt: returnDemo.arrivedAt
-  },
-  {
-    id: "RK20261122002", company: "京东快递", tracking: "JD000987654321", receiver: student.name,
-    phone: student.phone, location: "A-1", status: "已取件", account: student.account,
-    arrivedAt: "2026-11-21 16:40:00", pickedAt: "2026-11-21 17:05:00"
-  },
-  intakeExample
-];
-const records = [...initialRecords];
+const initialRecords = demoInitialIntakes;
+const intakeExample = demoIntakeExample;
+const returnDemo = demoReturn;
 const recordSearches = new Map();
 const emptyRecordFilters = { status: "", association: "", from: "", to: "", keyword: "" };
 const pageSize = 20;
@@ -82,7 +53,7 @@ function escapeHtml(value) {
 }
 
 function findRecord(id) {
-  return records.find(record => record.id === id);
+  return demoPackageRecord(id);
 }
 
 function metaFooter(page) {
@@ -103,8 +74,8 @@ function shell(route, content) {
   const current = isAdmin ? route : route.startsWith("linking") ? "linking/list"
     : route.startsWith("return") ? "returns" : route.startsWith("correction") ? "correction"
     : route.startsWith("intake") ? "intake" : "records";
-  const displayName = isAdmin ? "示例管理员" : "示例工作人员";
-  const account = isAdmin ? "admin001" : "staff001";
+  const account = demoAccountId(isAdmin ? "管理员" : "工作人员");
+  const displayName = escapeHtml(demoData.accounts[account].name);
   return `<div class="app-shell">
     <aside class="sidebar" aria-label="功能导航">${roleBrand(role, brandLogo)}${roleNavigation(role, current, icon)}</aside>
     <section class="workspace">
@@ -117,8 +88,9 @@ function shell(route, content) {
   </div>`;
 }
 
-function companyOptions(selected = "顺丰速运") {
-  return companies.map(name => `<option ${name === selected ? "selected" : ""}>${name}</option>`).join("");
+function companyOptions(selected) {
+  return demoData.companies.map(({ id, name }) =>
+    `<option value="${id}"${id === selected ? " selected" : ""}>${escapeHtml(name)}</option>`).join("");
 }
 
 function locationOptions(selected) {
@@ -167,7 +139,7 @@ function intakeForm() {
 }
 
 function recentIntakeList() {
-  const recent = [...records.slice(initialRecords.length).reverse(), intakeExample, initialRecords[0], initialRecords[2]]
+  const recent = demoRecords()
     .sort((a, b) => b.arrivedAt.localeCompare(a.arrivedAt))
     .slice(0, 3);
   const rows = recent.map(record => `<tr><td class="mono">${record.id}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${record.location}</td>
@@ -223,7 +195,7 @@ function intakeSuccessPage(record) {
           <span class="eyebrow">CampusDelivery Station</span>
           <div class="label-preview__code">${record.pickupCode}</div>
           <dl>
-            <dt>快递公司</dt><dd>${record.company}</dd>
+            <dt>快递公司</dt><dd>${escapeHtml(demoCompanyName(record.company))}</dd>
             <dt>运单号</dt><dd class="mono">${tracking}</dd>
             <dt>存放位置</dt><dd>${record.location}</dd>
             <dt>收件人</dt><dd>${escapeHtml(record.receiver)}</dd>
@@ -245,7 +217,7 @@ function linkReview(account, matching) {
   const feedback = matching ? `<p class="inline-note">确认后建立账号归属，该包裹可在学生查询中显示。</p>` :
     `<div class="form-alert" role="alert">${icon("alert")}<div><strong>不能确认补关联</strong><p>收件手机号与账号的绑定手机号不一致。请核对账号，包裹信息有误时先更正记录。</p></div></div>`;
   return `<div class="identity-card"><div class="identity-card__title"><strong>账号核对结果</strong><span class="status-badge${matching ? "" : " warning"}">${matching ? "手机号一致" : "手机号不一致"}</span></div>
-    <dl class="identity-grid"><div><dt>账号姓名</dt><dd>${account.name}</dd></div><div><dt>绑定手机号</dt><dd class="mono">${account.phone}</dd></div><div><dt>关联方式（DATA-002-15）</dt><dd>人工补关联</dd></div></dl>
+    <dl class="identity-grid"><div><dt>账号姓名</dt><dd>${escapeHtml(account.name)}</dd></div><div><dt>绑定手机号</dt><dd class="mono">${account.phone}</dd></div><div><dt>关联方式（DATA-002-15）</dt><dd>人工补关联</dd></div></dl>
   </div>${feedback}`;
 }
 
@@ -255,7 +227,7 @@ function canLinkRecord(record) {
 
 function linkDrawer(record, account) {
   const matching = account.phone === record.phone;
-  const accounts = intakeAccounts.map(option => `<option value="${option.account}"${option === account ? " selected" : ""}>${option.account} · ${option.name}</option>`).join("");
+  const accounts = demoStudentAccounts().map(option => `<option value="${option.account}"${option.account === account.account ? " selected" : ""}>${option.account} · ${escapeHtml(option.name)}</option>`).join("");
   return `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="link-title">
     <div class="drawer-header"><div><h2 id="link-title">补关联核对</h2><span class="function-tag">目标入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-drawer-close data-route="linking/list" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
@@ -280,7 +252,7 @@ function linkingPage(record, account) {
   const resultPage = Math.min(search?.page ?? 1, Math.max(1, Math.ceil(candidates.length / pageSize)));
   const offset = (resultPage - 1) * pageSize;
   const rows = candidates.slice(offset, offset + pageSize).map(item => `<tr>
-    <td class="mono">${item.id}</td><td>${item.company}</td><td class="mono">${escapeHtml(item.tracking)}</td>
+    <td class="mono">${item.id}</td><td>${escapeHtml(demoCompanyName(item.company))}</td><td class="mono">${escapeHtml(item.tracking)}</td>
     <td>${escapeHtml(item.receiver)}</td><td class="mono">${item.phone}</td><td>${item.location}</td><td class="mono time-cell">${item.arrivedAt}</td>
     <td><div class="row-actions"><button class="button-text" type="button" data-route="linking/${item.id}">补关联</button></div></td>
   </tr>`).join("");
@@ -300,54 +272,69 @@ function linkingPage(record, account) {
 }
 
 /* FUNC-002-03 退件 */
-function returnList(record) {
-  return `<div class="table-scroll"><table class="data-table">
+function returnList(records) {
+  return `<div class="table-scroll"><table class="data-table return-table">
     <thead><tr><th>入库记录编号</th><th>拒收申请编号</th><th>运单号</th><th>拒收原因</th><th>拒收时间</th><th>状态</th><th>操作</th></tr></thead>
-    <tbody><tr><td class="mono">${record.id}</td><td class="mono">${returnDemo.refusalId}</td><td class="mono">${record.tracking}</td><td>学生拒收</td><td class="mono time-cell">${returnDemo.refusedAt}</td><td><span class="status-badge warning">${record.status}</span></td><td><div class="row-actions"><button class="button-text" type="button" data-route="return-start">开始退件</button></div></td></tr></tbody>
-  </table></div>${pagination(1)}`;
+    <tbody>${records.map(record => {
+      const request = demoPendingRefusal(record);
+      return `<tr><td class="mono return-id">${record.id}</td><td class="mono return-id">${request.id}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${escapeHtml(request.reason || "—")}</td><td class="mono time-cell">${request.time}</td><td><span class="status-badge warning">${record.status}</span></td><td><div class="row-actions"><button class="button-text" type="button" data-route="return-start/${record.id}/${request.id}">开始退件</button></div></td></tr>`;
+    }).join("")}</tbody>
+  </table></div>`;
 }
 
-function returnProgressList(record) {
-  const { returnInfo } = record;
-  const finished = record.status === "已退件";
-  const lastCell = finished ? `<td class="mono time-cell">${returnInfo.finishedAt}</td>` :
-    `<td><div class="row-actions"><button class="button-text" type="button" data-action="finish-return" data-record-id="${record.id}">完成登记</button></div></td>`;
-  return `<div class="table-scroll"><table class="data-table">
-    <thead><tr><th>入库记录编号</th><th>退件记录编号</th><th>运单号</th><th>退件来源</th><th>退回去向</th><th>开始退件时间</th><th>状态</th><th>${finished ? "完成时间" : "操作"}</th></tr></thead>
-    <tbody><tr><td class="mono">${record.id}</td><td class="mono">${returnInfo.id}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${returnInfo.source}</td>
-      <td>${returnInfo.destination}</td><td class="mono time-cell">${returnInfo.startedAt}</td><td><span class="status-badge ${finished ? "neutral" : "warning"}">${record.status}</span></td>${lastCell}</tr></tbody>
+function returnProgressList(records, finished) {
+  return `<div class="table-scroll"><table class="data-table return-table">
+    <thead><tr><th>入库记录编号</th><th>退件记录编号</th><th>拒收申请编号</th><th>运单号</th><th>退件来源</th><th>退回去向</th><th>开始退件时间</th><th>状态</th><th>${finished ? "完成时间" : "操作"}</th></tr></thead>
+    <tbody>${records.map(record => {
+      const { returnInfo } = record;
+      const lastCell = finished ? `<td class="mono time-cell">${returnInfo.finishedAt}</td>` :
+        `<td><div class="row-actions"><button class="button-text" type="button" data-action="finish-return" data-record-id="${record.id}" data-return-id="${returnInfo.id}">完成登记</button></div></td>`;
+      return `<tr><td class="mono return-id">${record.id}</td><td class="mono return-id">${returnInfo.id}</td><td class="mono return-id">${returnInfo.refusalId ?? "—"}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${returnInfo.source}</td>
+        <td>${returnInfo.destination}</td><td class="mono time-cell">${returnInfo.startedAt}</td><td><span class="status-badge ${finished ? "neutral" : "warning"}">${record.status}</span></td>${lastCell}</tr>`;
+    }).join("")}</tbody>
   </table></div>`;
+}
+
+function returnSection(title, hint, list) {
+  return `<section class="list-card"><div class="list-toolbar"><strong>${title}</strong>${hint ? `<span class="list-count">${hint}</span>` : ""}</div>${list}</section>`;
 }
 
 function returnsPage(record, requestedRecordId) {
   if (requestedRecordId) {
-    const returnInfo = record?.returnInfo;
+    const returnInfo = record?.returnInfo?.id && (record.status === "退件中" || record.status === "已退件");
     const back = `<button class="button button-secondary" type="button" data-route="${record ? `record-detail/${record.id}` : "records"}">${record ? "返回记录详情" : "返回记录查询"}</button>`;
     return pageHeading(pages.returns, returnInfo ? `入库记录${record.id}的退件办理。` : "该记录当前没有可继续办理的退件。", back) +
-      (returnInfo ? `<section class="list-card"><div class="list-toolbar"><strong>${record.status}</strong>${record.status === "退件中" ? '<span class="list-count">实际交接后登记完成</span>' : ""}</div>${returnProgressList(record)}</section>` : "");
+      (returnInfo ? returnSection(record.status, record.status === "退件中" ? "实际交接后登记完成" : "", returnProgressList([record], record.status === "已退件")) : "");
   }
-  const sample = findRecord(returnDemo.recordId);
-  const pending = sample.status === "拒收待退件";
-  const hint = pending ? "核对包裹实物和退件原因后开始办理" : sample.status === "退件中" ? "实际交接后登记完成" : "已记录退件完成时间";
-  const list = demoState === "normal" ? (pending ? returnList(sample) : returnProgressList(sample)) : listStateBlock("没有符合条件的退件记录。");
+  const records = demoRecords();
+  const pending = records.filter(record => demoPendingRefusal(record));
+  const inProgress = records.filter(record => record.status === "退件中" && record.returnInfo?.id);
+  const finished = records.filter(record => record.status === "已退件" && record.returnInfo?.id);
+  let sections = "";
+  if (demoState !== "normal" || !pending.length && !inProgress.length && !finished.length) {
+    sections = returnSection("拒收待退件", "", listStateBlock("没有符合条件的退件记录。", demoState === "normal" ? "empty" : demoState));
+  } else {
+    if (pending.length) sections += returnSection("拒收待退件", "核对包裹实物和退件原因后开始办理", returnList(pending));
+    if (inProgress.length) sections += returnSection("退件中", "实际交接后登记完成", returnProgressList(inProgress, false));
+    if (finished.length) sections += returnSection("已退件", "已记录退件完成时间", returnProgressList(finished, true));
+  }
   return pageHeading(pages.returns, "工作人员办理学生拒收退件，按实际交接情况登记完成。") +
-    `<div class="tabs" role="tablist" aria-label="退件发起入口"><button class="tab" role="tab" aria-selected="true" type="button">学生拒收</button><button class="tab" role="tab" aria-selected="false" type="button" data-route="return-manual">人工发起</button></div>
-    <section class="list-card"><div class="list-toolbar"><strong>${sample.status}</strong><span class="list-count">${hint}</span></div>${list}</section>`;
+    `<div class="tabs" role="tablist" aria-label="退件发起入口"><button class="tab" role="tab" aria-selected="true" type="button">学生拒收</button><button class="tab" role="tab" aria-selected="false" type="button" data-route="return-manual">人工发起</button></div>${sections}`;
 }
 
-function returnStartPage() {
-  const record = findRecord(returnDemo.recordId);
-  if (record.status !== "拒收待退件") return returnsPage();
+function returnStartPage(record, requestedRefusalId, backRoute) {
+  const request = demoPendingRefusal(record);
+  if (!request || request.id !== requestedRefusalId) return returnsPage() + `<p class="form-alert" role="alert">该申请已更新，请从退件清单重新选择。</p>`;
   const drawer = `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="return-title">
-    <div class="drawer-header"><div><h2 id="return-title">开始退件</h2><span class="function-tag">入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-drawer-close data-route="returns" aria-label="关闭">${icon("close")}</button></div>
+    <div class="drawer-header"><div><h2 id="return-title">开始退件</h2><span class="function-tag">入库记录${record.id}（DATA-002-01）</span></div><button class="icon-button" type="button" data-drawer-close data-route="${backRoute}" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
-      <dl class="detail-grid"><div><dt>退件来源（DATA-002-29）</dt><dd>学生拒收 · 系统按入口确定</dd></div><div><dt>当前拒收申请（DATA-003-10）</dt><dd class="mono">${returnDemo.refusalId}</dd></div><div><dt>包裹状态（DATA-003-05）</dt><dd>${record.status}</dd></div><div><dt>运单号</dt><dd class="mono">${record.tracking}</dd></div></dl>
+      <dl class="detail-grid"><div><dt>退件来源（DATA-002-29）</dt><dd>学生拒收 · 系统按入口确定</dd></div><div><dt>当前拒收申请（DATA-003-10）</dt><dd class="mono">${request.id}</dd></div><div><dt>包裹状态（DATA-003-05）</dt><dd>${record.status}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div><div><dt>拒收原因</dt><dd>${escapeHtml(request.reason || "—")}</dd></div><div><dt>拒收时间</dt><dd class="mono">${request.time}</dd></div></dl>
       <div class="info-card warning"><p>办理前核对包裹实物、收件信息与退件原因；不一致时先按记录更正办理。开始退件后学生不可撤回。</p></div>
-      <form id="return-form" data-record-id="${record.id}" data-tracking="${record.tracking}" novalidate>
+      <form id="return-form" data-record-id="${record.id}" data-refusal-id="${request.id}" novalidate>
         ${field("退件原因", "DATA-002-30 · 学生拒收来源默认学生拒收，可按实际改选", `<select name="reason" id="return-reason"><option>学生拒收</option><option>包装破损</option><option>面单信息不全或污损</option><option>错分错投</option><option>违禁品或无法投递</option><option>其他</option></select>`)}
         ${field("退回去向", "DATA-002-32 · 取值待P002-02评审", `<select name="destination"><option>退回原快递公司</option><option>退回寄件人</option></select>`)}
         <div class="field"><label for="return-note">退件原因说明</label><textarea id="return-note" placeholder="原因为“其他”时必填（DATA-002-31）"></textarea><span class="data-ref">原因为其他时必填</span></div>
-        <div class="drawer-footer"><button class="button button-secondary" type="button" data-route="returns">取消</button><button class="button button-primary" type="submit">确认开始退件</button></div>
+        <div class="drawer-footer"><button class="button button-secondary" type="button" data-route="${backRoute}">取消</button><button class="button button-primary" type="submit">确认开始退件</button></div>
       </form>
     </div>
   </aside>`;
@@ -380,15 +367,21 @@ function recordCorrectionHistory(record) {
   return notes + entries + earlier || "<li>无更正记录</li>";
 }
 
+function correctionPhone(record) {
+  if (record.phone) return record.phone;
+  return record.phoneLast ? `仅有尾号${record.phoneLast}` : "—";
+}
+
 function correctionPage(closed, selectedRecord, requestedRecordId, source) {
   const page = pages[closed ? "correction-closed" : "correction"];
   if (requestedRecordId && !selectedRecord) return pageHeading(page, "未找到该记录。", `<button class="button button-secondary" type="button" data-route="records">返回记录查询</button>`);
-  const record = selectedRecord ?? records[closed ? 2 : 0];
+  const record = selectedRecord ?? demoData.intakes[closed ? 2 : 0];
   const formAttributes = closed || selectedRecord ? ` data-record-id="${record.id}"` : "";
   const backTarget = source === "linking" ? (canLinkRecord(record) ? `linking/${record.id}` : "linking/list") : `record-detail/${record.id}`;
   const back = selectedRecord ? `<button class="button button-secondary" type="button" data-route="${backTarget}">${source === "linking" ? "返回补关联" : "返回记录详情"}</button>` : "";
   const showExampleText = !selectedRecord && !record.correctionNotes?.length;
   const completionTime = record.status === "已退件" ? record.returnInfo?.finishedAt : record.pickedAt;
+  const otherStudent = demoStudentAccounts().find(account => account.account === "00120002");
   const form = closed ? `<form class="form-card" id="correction-form"${formAttributes} novalidate>
       <div class="info-card warning"><div class="info-card__title">${icon("info")}该记录已完成</div><p>已取件、已退件记录保留原内容，只能追加更正说明；不提供字段修改入口，不转移归属。</p></div>
       <dl class="detail-grid" style="margin-top:20px"><div><dt>入库记录编号</dt><dd class="mono">${record.id}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div><div><dt>更正方式（DATA-002-39）</dt><dd>追加更正说明</dd></div><div><dt>记录是否已完成（DATA-002-38）</dt><dd>是 · ${record.status}</dd></div><div><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联"}</dd></div><div><dt>${record.status === "已退件" ? "退件完成时间（DATA-002-35）" : "取件时间（DATA-003-09）"}</dt><dd class="mono">${completionTime ?? "—"}</dd></div></dl>
@@ -404,8 +397,8 @@ function correctionPage(closed, selectedRecord, requestedRecordId, source) {
         ${field("更正原因", "DATA-002-42", `<input name="reason" value="${selectedRecord ? "" : "入库时收件手机号录错"}" autocomplete="off">`, true)}
       </div>
       <div class="snapshot-compare">
-        <section class="snapshot-box"><h4>更正前内容快照（DATA-002-41）</h4><dl><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联（允许缺失）"}</dd><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd><dt>收件手机号</dt><dd class="mono">${record.phone}</dd><dt>存放位置</dt><dd>${record.location}</dd></dl></section>
-        ${selectedRecord ? "" : `<section class="snapshot-box new"><h4>按新号码重新匹配</h4><dl><dt>匹配结果</dt><dd class="mono">${otherStudent.account} · ${otherStudent.name}</dd><dt>归属变化</dt><dd>待关联 → ${otherStudent.account}</dd><dt>学生可见性</dt><dd>入库后对${otherStudent.name}可见</dd></dl></section>`}
+        <section class="snapshot-box"><h4>更正前内容快照（DATA-002-41）</h4><dl><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联（允许缺失）"}</dd><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd><dt>收件手机号</dt><dd class="mono">${escapeHtml(correctionPhone(record))}</dd><dt>存放位置</dt><dd>${record.location}</dd></dl></section>
+        ${selectedRecord ? "" : `<section class="snapshot-box new"><h4>按新号码重新匹配</h4><dl><dt>匹配结果</dt><dd class="mono">${otherStudent.account} · ${escapeHtml(otherStudent.name)}</dd><dt>归属变化</dt><dd>待关联 → ${otherStudent.account}</dd><dt>学生可见性</dt><dd>入库后对${escapeHtml(otherStudent.name)}可见</dd></dl></section>`}
       </div>
       <p class="inline-note">快照字段为P002-09建议最小范围，具体结构待数据库设计确认；更正运单号时须重新查重，命中其他未办结记录则阻止保存。</p>
       <div class="form-footer"><button class="button button-primary" type="submit">保存更正</button></div>
@@ -426,21 +419,21 @@ function filterOptions(values, selected) {
 
 function filteredRecords(filters) {
   const keyword = filters.keyword.toLowerCase();
-  return records.filter(record => {
+  return demoRecords().filter(record => {
     const association = record.account ? "已关联" : "待关联";
     const date = record.arrivedAt.slice(0, 10);
     return (!filters.status || record.status === filters.status) &&
       (!filters.association || association === filters.association) &&
       (!filters.from || date >= filters.from) && (!filters.to || date <= filters.to) &&
-      (!keyword || [record.tracking, record.receiver, record.phone].some(value => value.toLowerCase().includes(keyword)));
+      (!keyword || [record.tracking, record.receiver, record.phone].some(value => value?.toLowerCase().includes(keyword)));
   }).sort((a, b) => b.arrivedAt.localeCompare(a.arrivedAt) || b.id.localeCompare(a.id));
 }
 
 function recordRows(entries) {
   return entries.map(record => {
     const statusStyle = isRecordClosed(record) ? " neutral" : ["拒收待退件", "退件中"].includes(record.status) ? " warning" : "";
-    return `<tr><td class="mono">${record.id}</td><td>${record.company}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${escapeHtml(record.receiver)}</td>
-      <td class="mono">${record.phone}</td><td>${record.location}</td><td><span class="status-badge${statusStyle}">${record.status}</span></td>
+    return `<tr><td class="mono">${record.id}</td><td>${escapeHtml(demoCompanyName(record.company))}</td><td class="mono">${escapeHtml(record.tracking)}</td><td>${escapeHtml(record.receiver)}</td>
+      <td class="mono">${record.phone ?? "—"}</td><td>${record.location}</td><td><span class="status-badge${statusStyle}">${record.status}</span></td>
       <td>${record.account ? "已关联" : "待关联"}</td><td class="mono time-cell">${record.arrivedAt}</td>
       <td><div class="row-actions"><button class="button-text" type="button" data-action="record-detail" data-record-id="${record.id}">详情</button></div></td></tr>`;
   }).join("");
@@ -449,16 +442,19 @@ function recordRows(entries) {
 function recordDetail(record, admin) {
   const closed = isRecordClosed(record);
   const returnInfo = record.returnInfo;
-  const canContinue = record.status === "退件中" && returnInfo;
+  const canContinue = record.status === "退件中" && returnInfo?.id;
+  const pending = demoPendingRefusal(record);
+  const active = demoActiveRefusal(record);
   const actions = admin ? "" : `<div class="drawer-footer">
-      <button class="button ${canContinue ? "button-secondary" : "button-primary"}" type="button" data-route="${closed ? "correction-closed" : "correction"}/${record.id}">${closed ? "追加说明" : "记录更正"}</button>
+      <button class="button ${canContinue || pending ? "button-secondary" : "button-primary"}" type="button" data-route="${closed ? "correction-closed" : "correction"}/${record.id}">${closed ? "追加说明" : "记录更正"}</button>
       ${canContinue ? `<button class="button button-primary" type="button" data-route="returns/${record.id}">继续退件办理</button>` : ""}
+      ${pending ? `<button class="button button-primary" type="button" data-route="return-start/${record.id}/${pending.id}/records">开始退件</button>` : ""}
     </div>`;
   return `<div class="overlay"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="record-title">
     <div class="drawer-header"><div><h2 id="record-title">记录详情</h2><span class="function-tag">${record.id} · ${admin ? "只读" : record.status}</span></div><button class="icon-button" type="button" data-drawer-close data-route="${admin ? "records-admin" : "records"}" aria-label="关闭">${icon("close")}</button></div>
     <div class="drawer-body">
       <dl class="detail-grid">
-        <div><dt>快递公司</dt><dd>${record.company}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div>
+        <div><dt>快递公司</dt><dd>${escapeHtml(demoCompanyName(record.company))}</dd></div><div><dt>运单号</dt><dd class="mono">${escapeHtml(record.tracking)}</dd></div>
         <div><dt>归属账号</dt><dd class="mono">${record.account ?? "待关联"}</dd></div><div><dt>包裹状态</dt><dd>${record.status}</dd></div>
         <div><dt>存放位置</dt><dd>${record.location}</dd></div><div><dt>到站时间</dt><dd class="mono">${record.arrivedAt}</dd></div>
         ${record.pickedAt ? `<div><dt>取件时间</dt><dd class="mono">${record.pickedAt}</dd></div>` : ""}
@@ -466,10 +462,17 @@ function recordDetail(record, admin) {
       ${record.manualLinks?.length ? `<section class="detail-section"><h3>补关联留痕</h3><ul class="history-list">
         ${record.manualLinks.map(link => `<li>确认关联至 <strong class="mono">${link.account}</strong><small class="mono">${link.at} · ${link.operator}</small></li>`).join("")}
       </ul></section>` : ""}
+      ${record.refusals?.length ? `<section class="detail-section"><h3>拒收申请</h3><ul class="history-list">
+        ${[...record.refusals].reverse().map(request => `<li>${request.id === active?.id ? "当前有效申请" : "历史申请"} <strong class="mono">${request.id}</strong>
+          <small class="mono">${request.time} · ${request.withdrawn ? "已撤回" : request.status}</small>
+          ${request.reason ? `<div>${escapeHtml(request.reason)}</div>` : ""}
+          ${request.withdrawal ? `<small>${request.withdrawal}${request.withdrawn ? ` · ${request.withdrawn}` : ""}</small>` : ""}</li>`).join("")}
+      </ul></section>` : ""}
       <section class="detail-section"><h3>退件办理情况</h3>
         ${returnInfo ? `<dl class="detail-grid">
-          <div><dt>退件记录编号</dt><dd class="mono">${returnInfo.id}</dd></div><div><dt>退件来源</dt><dd>${returnInfo.source}</dd></div>
-          <div><dt>退件原因</dt><dd>${returnInfo.reason}</dd></div><div><dt>退回去向</dt><dd>${returnInfo.destination}</dd></div>
+          <div><dt>退件记录编号</dt><dd class="mono">${returnInfo.id ?? "—"}</dd></div><div><dt>退件来源</dt><dd>${returnInfo.source ?? "—"}</dd></div>
+          <div><dt>退件原因</dt><dd>${returnInfo.reason ?? "—"}</dd></div><div><dt>退回去向</dt><dd>${returnInfo.destination ?? "—"}</dd></div>
+          ${returnInfo.note ? `<div><dt>退件原因说明</dt><dd>${escapeHtml(returnInfo.note)}</dd></div>` : ""}
           <div><dt>开始退件时间</dt><dd class="mono">${returnInfo.startedAt}</dd></div><div><dt>退件完成时间</dt><dd>${returnInfo.finishedAt ?? "未完成"}</dd></div>
         </dl>` : "<p>暂无退件记录。</p>"}
       </section>
@@ -506,7 +509,7 @@ function recordsPage(route, record, unavailable) {
 
 function render() {
   let route = currentRoute();
-  const [, recordId, source] = window.location.hash.split("/");
+  const [, recordId, source, returnFrom] = window.location.hash.split("/");
   const record = findRecord(recordId);
   if (route.startsWith("correction") && record) route = isRecordClosed(record) ? "correction-closed" : "correction";
   const listRoute = ["linking", "linking-mismatch", "returns", "records", "record-detail", "records-admin"].includes(route);
@@ -515,13 +518,15 @@ function render() {
   if (route === "intake") html = intakePage();
   else if (route === "intake-duplicate") html = intakePage() + duplicateDialog(recordId ? record : findRecord(initialRecords[0].id));
   else if (route === "intake-success") html = intakeSuccessPage(recordId ? record : intakeExample);
-  else if (route.startsWith("linking")) html = linkingPage(recordId ? record : findRecord(initialRecords[0].id), route === "linking-mismatch" ? otherStudent : student);
+  else if (route.startsWith("linking")) html = linkingPage(recordId ? record : findRecord(initialRecords[0].id), demoStudentAccounts().find(account => account.account === (route === "linking-mismatch" ? "00120002" : "00120001")));
   else if (route === "returns") html = returnsPage(record, recordId);
-  else if (route === "return-start") html = returnStartPage();
+  else if (route === "return-start") html = recordId
+    ? returnStartPage(record, source, returnFrom === "records" && record ? `record-detail/${record.id}` : "returns")
+    : returnStartPage(findRecord(returnDemo.recordId), demoActiveRefusal(findRecord(returnDemo.recordId))?.id, "returns");
   else if (route === "return-manual") html = returnManualPage();
   else if (route.startsWith("correction")) html = correctionPage(route === "correction-closed", record, recordId, source);
   else if (route === "records") html = recordsPage(route);
-  else html = recordsPage(route, route === "record-detail" && !recordId ? records[1] : record, Boolean(recordId && !record));
+  else html = recordsPage(route, route === "record-detail" && !recordId ? demoData.intakes[1] : record, Boolean(recordId && !record));
   document.getElementById("app").innerHTML = shell(route, html);
   document.title = `${pages[route].ui} ${pages[route].title}｜REQ-002原型`;
   const picker = document.getElementById("page-picker");
@@ -596,7 +601,11 @@ function readIntakeForm(form) {
 }
 
 function matchingIntakes({ company, tracking }) {
-  return records.filter(record => record.company === company && record.tracking === tracking);
+  return demoRecords().filter(record => record.company === company && record.tracking === tracking);
+}
+
+function findOpenIntake(matches, excludedId) {
+  return matches.find(record => record.id !== excludedId && !isRecordClosed(record));
 }
 
 function showIntakeDuplicate(draft, record, trigger) {
@@ -619,7 +628,7 @@ function handleIntake(form) {
   if (form.querySelector('[type="submit"]').disabled) return;
   const draft = readIntakeForm(form);
   const errors = [
-    [form.elements.company, companies.includes(draft.company) ? "" : "请选择有效的快递公司。"],
+    [form.elements.company, demoHasCompany(draft.company) ? "" : "请选择有效的快递公司。"],
     [form.elements.tracking, draft.tracking ? "" : "请填写运单号。"],
     [form.elements.receiver, draft.receiver ? "" : "请填写收件人姓名。"],
     [form.elements.phone, /^1\d{10}$/.test(draft.phone) ? "" : draft.phone ? "收件手机号应为11位中国大陆手机号。" : "请填写收件手机号。"],
@@ -630,23 +639,23 @@ function handleIntake(form) {
   if (firstError) { firstError.focus(); return; }
 
   const matches = matchingIntakes(draft);
-  const duplicate = matches.find(record => !isRecordClosed(record));
+  const duplicate = findOpenIntake(matches);
   if (duplicate) { showIntakeDuplicate(draft, duplicate, '#intake-form [type="submit"]'); return; }
 
   submitWithFeedback(form, () => {
-    const accountMatches = intakeAccounts.filter(account => account.phone === draft.phone);
-    const sequence = records.length - initialRecords.length;
+    const sequence = demoData.intakes.length - initialRecords.length;
     const arrivedAt = demoTimestamp();
     const record = {
       ...draft,
       id: `RK${arrivedAt.slice(0, 10).replaceAll("-", "")}${String(sequence + 4).padStart(3, "0")}`,
       pickupCode: String(sequence + 1235).padStart(6, "0"),
       status: "待取件",
-      account: accountMatches.length === 1 ? accountMatches[0].account : null,
+      account: demoStudentForPhone(draft.phone),
       arrivedAt,
       previousIntakeId: matches.at(-1)?.id
     };
-    records.push(record);
+    demoData.intakes.push(record);
+    saveDemoData();
     window.location.hash = `intake-success/${record.id}`;
   });
 }
@@ -654,16 +663,15 @@ function handleIntake(form) {
 function handleLink(form) {
   const record = findRecord(form.dataset.recordId);
   const input = form.elements.account;
-  const account = intakeAccounts.find(option => option.account === input.value);
+  const account = demoStudentAccounts().find(option => option.account === input.value);
   if (input.disabled || !canLinkRecord(record) || account?.phone !== record.phone) return;
   input.disabled = true;
   submitWithFeedback(form, () => {
     const entry = { account: account.account, at: demoTimestamp(), operator: "示例工作人员" };
-    records[records.indexOf(record)] = {
-      ...record,
+    demoSavePackage(record, {
       account: account.account,
       manualLinks: [entry, ...(record.manualLinks ?? [])]
-    };
+    });
     window.location.hash = "linking/list";
     showToast(`补关联成功。运单号${record.tracking}已关联账号${account.account}，该账号可查询此包裹。`);
   });
@@ -671,21 +679,25 @@ function handleLink(form) {
 
 function handleReturn(form) {
   if (form.querySelector('[type="submit"]').disabled) return;
-  const record = findRecord(form.dataset.recordId);
-  if (form.dataset.recordId && record?.status !== "拒收待退件") return;
   const { reason, destination } = form.elements;
   const note = form.querySelector("#return-note");
   if (reason.value === "其他" && !note.value.trim()) { setFieldError(note, "退件原因为其他时须填写说明。"); note.focus(); return; }
   setFieldError(note, "");
-  const returnInfo = {
-    id: returnDemo.returnId, source: "学生拒收", reason: reason.value, destination: destination.value, startedAt: returnDemo.startedAt
-  };
+  const details = { reason: reason.value, destination: destination.value, note: note.value.trim() };
   submitWithFeedback(form, () => {
-    if (record) {
-      records[records.indexOf(record)] = { ...record, status: "退件中", returnInfo };
+    if (!form.dataset.recordId) {
+      window.location.hash = "returns";
+      showToast("人工异常退件表单预览结束。");
+      return;
+    }
+    const tracking = demoStartStudentReturn(form.dataset.recordId, form.dataset.refusalId, details);
+    if (!tracking) {
+      render();
+      showToast("未开始退件。请核对当前包裹状态和拒收申请。");
+      return;
     }
     window.location.hash = "returns";
-    showToast(`运单号${form.dataset.tracking}已开始退件，包裹状态：退件中。`);
+    showToast(`运单号${tracking}已开始退件，包裹状态：退件中。`);
   });
 }
 
@@ -704,7 +716,7 @@ function handleCorrection(form) {
     if (!record || !isRecordClosed(record)) return;
     const entry = { reason: reasonText, text: noteText, at: demoTimestamp() };
     submitWithFeedback(form, () => {
-      records[records.indexOf(record)] = { ...record, correctionNotes: [entry, ...(record.correctionNotes ?? [])] };
+      demoSavePackage(record, { correctionNotes: [entry, ...(record.correctionNotes ?? [])] });
       render();
       showToast(`入库记录${record.id}已追加更正说明，原业务结果未改变。`);
     });
@@ -713,7 +725,7 @@ function handleCorrection(form) {
 
   const fieldInput = form.elements.fieldName;
   const value = form.elements.newValue;
-  const target = record ?? records[0];
+  const target = record ?? demoData.intakes[0];
   if (!target || isRecordClosed(target)) { showToast("该记录已完成，只能追加更正说明。"); return; }
   const nextValue = value.value.trim();
   if (!nextValue) { setFieldError(value, "请填写更正后内容。"); value.focus(); return; }
@@ -724,17 +736,16 @@ function handleCorrection(form) {
     return;
   }
   if (fieldInput.value === "tracking") {
-    const duplicate = matchingIntakes({ company: target.company, tracking: nextValue }).find(item => item.id !== target.id && !isRecordClosed(item));
+    const duplicate = findOpenIntake(matchingIntakes({ company: target.company, tracking: nextValue }), target.id);
     if (duplicate) { setFieldError(value, `更正后运单号与该快递公司已有记录重复（入库记录编号：${duplicate.id}），请先核对。`); value.focus(); return; }
   }
   setFieldError(value, "");
   const fieldName = fieldInput.value;
   const fieldLabel = fieldInput.selectedOptions[0].textContent;
-  const accountMatches = fieldName === "phone" ? intakeAccounts.filter(account => account.phone === nextValue) : null;
-  const nextAccount = accountMatches ? (accountMatches.length === 1 ? accountMatches[0].account : null) : target.account;
+  const nextAccount = fieldName === "phone" ? demoStudentForPhone(nextValue) : target.account;
   const entry = {
     field: fieldLabel,
-    previous: String(target[fieldName] ?? "待关联"),
+    previous: fieldName === "phone" ? correctionPhone(target) : target[fieldName],
     value: nextValue,
     reason: reasonText,
     previousAccount: target.account ?? "待关联",
@@ -744,12 +755,11 @@ function handleCorrection(form) {
   };
   const result = `入库记录${target.id}已更正，更正字段：${fieldLabel}，更正人：示例工作人员。`;
   submitWithFeedback(form, () => {
-    records[records.indexOf(target)] = {
-      ...target,
+    demoSavePackage(target, {
       [fieldName]: nextValue,
       account: nextAccount,
       correctionEntries: [entry, ...(target.correctionEntries ?? [])]
-    };
+    });
     render();
     showToast(result);
   });
@@ -788,7 +798,7 @@ document.addEventListener("click", event => {
       return;
     }
     setFieldError(form.elements.tracking, "");
-    const duplicate = matchingIntakes(draft).find(record => !isRecordClosed(record));
+    const duplicate = findOpenIntake(matchingIntakes(draft));
     if (duplicate) showIntakeDuplicate(draft, duplicate, '[data-action="check-duplicate"]');
     else showToast("未命中未办结记录，可继续登记；保存前仍会复核。");
   }
@@ -801,12 +811,10 @@ document.addEventListener("click", event => {
     window.location.hash = "intake";
   }
   if (action === "finish-return") {
-    const record = findRecord(actionButton.dataset.recordId);
-    if (record?.status !== "退件中" || !record.returnInfo) return;
-    const returnInfo = { ...record.returnInfo, finishedAt: returnDemo.finishedAt };
-    records[records.indexOf(record)] = { ...record, status: "已退件", returnInfo };
+    const { recordId, returnId } = actionButton.dataset;
+    const finished = demoFinishReturn(recordId, returnId);
     render();
-    showToast(`退件记录${returnInfo.id}已完成登记。`);
+    showToast(finished ? `退件记录${returnId}已完成登记。` : "未登记完成。请核对当前退件记录。");
   }
   if (action === "record-detail") {
     const detailRoute = currentRoute() === "records-admin" ? "records-admin" : "record-detail";
@@ -824,7 +832,7 @@ document.addEventListener("click", event => {
 document.getElementById("app").addEventListener("change", event => {
   const input = event.target;
   if (input.id !== "link-account") return;
-  const account = intakeAccounts.find(option => option.account === input.value);
+  const account = demoStudentAccounts().find(option => option.account === input.value);
   const record = findRecord(input.form.dataset.recordId);
   const matching = canLinkRecord(record) && account.phone === record.phone;
   input.form.querySelector("#link-review").innerHTML = linkReview(account, matching);
@@ -852,7 +860,9 @@ picker.addEventListener("change", () => { window.location.hash = picker.value; }
 document.getElementById("state-picker").addEventListener("change", event => { demoState = event.target.value; render(); });
 document.getElementById("reset-prototype").addEventListener("click", () => {
   demoState = "normal";
-  records.splice(0, records.length, ...initialRecords);
+  demoData.intakes = structuredClone(initialRecords);
+  demoData.sampleRecords = {};
+  saveDemoData();
   recordSearches.clear();
   intakeDraft = undefined;
   duplicateTrigger = '[data-action="check-duplicate"]';
@@ -861,4 +871,5 @@ document.getElementById("reset-prototype").addEventListener("click", () => {
   else window.location.hash = "intake";
 });
 window.addEventListener("hashchange", render);
+window.addEventListener("pageshow", event => { if (event.persisted) render(); });
 render();
