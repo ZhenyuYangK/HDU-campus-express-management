@@ -35,15 +35,46 @@ let companies = initialCompanies.map(([name, referenced]) => ({ name, referenced
 let selectedCompany = "京东快递";
 let demoState = "normal";
 let toastTimer;
-let studentNeedsPasswordChange = !window.history.state?.studentPasswordChanged;
 const demoPassword = "Demo2026";
-let studentDemoPassword = demoPassword;
-const studentAccount = "00120001";
-const accountExamples = {
-  [studentAccount]: { name: "示例学生", phone: "13800000001", role: "学生" },
+const sessionKey = "campus-delivery.req001.demo.v1";
+const defaultIds = { "学生": "00120001", "工作人员": "staff001", "管理员": "admin001" };
+const initialAccounts = {
+  "00120001": { name: "示例学生", phone: "13800000001", role: "学生", changeReason: "first" },
   staff001: { name: "示例工作人员", phone: "13800000002", role: "工作人员" },
   admin001: { name: "示例管理员", phone: "13800000003", role: "管理员" }
 };
+
+function readSession() {
+  const saved = sessionStorage.getItem(sessionKey);
+  return saved ? JSON.parse(saved) : { accounts: structuredClone(initialAccounts), currentId: null };
+}
+let session = readSession();
+
+function saveSession() {
+  sessionStorage.setItem(sessionKey, JSON.stringify(session));
+}
+
+function accountIdFor(role) {
+  return session.accounts[session.currentId]?.role === role ? session.currentId : defaultIds[role];
+}
+
+async function demoDigest(value) {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function passwordMatches(account, value, digest) {
+  return account.digest ? digest === account.digest : value === demoPassword;
+}
+
+function escapeHtml(text) {
+  return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+function enterHome(role) {
+  if (role === "工作人员") window.location.assign(prototypeHref("002", "intake"));
+  else window.location.hash = role === "管理员" ? "account-create" : "student";
+}
 
 function icon(name) {
   return `<svg class="icon" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
@@ -71,8 +102,8 @@ function shell(route, content) {
   const isAdmin = role === "管理员";
   const menuRole = isAdmin ? "admin" : role === "工作人员" ? "staff" : "student";
   const current = route.startsWith("company-") ? "company-list" : route;
-  const displayName = "示例" + role;
-  const account = isAdmin ? "admin001" : menuRole === "staff" ? "staff001" : studentAccount;
+  const account = accountIdFor(role);
+  const displayName = escapeHtml(session.accounts[account].name);
   const section = isAdmin ? (route.startsWith("company-") || route === "locations" ? "基础信息" : "账号与权限") : "学生端";
   return `<div class="app-shell">
     <aside class="sidebar" aria-label="功能导航">${roleBrand(menuRole, brandLogo)}${roleNavigation(menuRole, current, icon)}</aside>
@@ -146,11 +177,11 @@ function passwordRules() {
 
 function normalPasswordPage(route) {
   const page = pages[route];
-  const account = Object.keys(accountExamples).find(id => accountExamples[id].role === page.role);
+  const account = accountIdFor(page.role);
   const content = `${pageHeading(page, "")}
     <div class="form-layout single"><form class="form-card" id="normal-password-form" novalidate>
       <div class="form-grid">
-        <div class="field field-full"><label for="password-account">当前账号</label><input id="password-account" value="${account} · ${accountExamples[account].name} · ${page.role}" readonly><p class="field-hint">DATA-001-01 · 当前身份</p></div>
+        <div class="field field-full"><label for="password-account">当前账号</label><input id="password-account" value="${account} · ${escapeHtml(session.accounts[account].name)} · ${page.role}" readonly><p class="field-hint">DATA-001-01 · 当前身份</p></div>
         <div class="field field-full"><label for="old-password">原密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="old-password" name="oldPassword" type="password" autocomplete="current-password" placeholder="输入原密码"><button class="input-action" type="button" data-toggle-password="old-password" aria-label="显示原密码">显示</button></div><p class="field-hint">DATA-001-08</p></div>
         <div class="field field-full"><label for="new-password">新密码<span class="required" aria-hidden="true">*</span></label><div class="input-with-action"><input id="new-password" name="newPassword" type="password" autocomplete="new-password" placeholder="设置新密码" data-password-rules><button class="input-action" type="button" data-toggle-password="new-password" aria-label="显示新密码">显示</button></div><p class="field-hint">DATA-001-09</p>${passwordRules()}</div>
       </div>
@@ -159,10 +190,11 @@ function normalPasswordPage(route) {
   return shell(route, content);
 }
 
-function forcedPasswordDialog() {
+function forcedPasswordDialog(id) {
+  const account = session.accounts[id];
   return `<dialog class="dialog password-dialog" id="forced-password-dialog" closedby="none" aria-labelledby="forced-title" aria-describedby="forced-description">
-    <h2 id="forced-title">首次登录，请修改密码</h2>
-    <p id="forced-description">学生账号${studentAccount}。设置新密码后即可继续使用。</p>
+    <h2 id="forced-title">${account.changeReason === "reset" ? "密码已重置，请修改密码" : "首次登录，请修改密码"}</h2>
+    <p id="forced-description">${account.role}账号${id}。设置新密码后即可继续使用。</p>
     <form id="forced-password-form" novalidate>
       <div class="field"><label for="forced-new-password">新密码<span class="required" aria-hidden="true">*</span></label>
         <div class="input-with-action"><input id="forced-new-password" name="newPassword" type="password" autocomplete="new-password" placeholder="设置新密码" autofocus data-password-rules><button class="input-action" type="button" data-toggle-password="forced-new-password" aria-label="显示新密码">显示</button></div>
@@ -173,19 +205,19 @@ function forcedPasswordDialog() {
   </dialog>`;
 }
 
-function studentPage(route, showPasswordDialog) {
+function studentPage(route) {
   const content = pageHeading(pages.student, "");
-  return shell(route, content) + (showPasswordDialog ? forcedPasswordDialog() : "");
+  return shell(route, content);
 }
 
 function accountOptions(selected = "00120001") {
-  return Object.entries(accountExamples).map(([account, item]) => `<option value="${account}" ${account === selected ? "selected" : ""}>${account} · ${item.name} · ${item.role}</option>`).join("");
+  return Object.entries(session.accounts).map(([account, item]) => `<option value="${account}" ${account === selected ? "selected" : ""}>${account} · ${escapeHtml(item.name)} · ${item.role}</option>`).join("");
 }
 
 function identityCard(prefix, account = "00120001") {
-  const item = accountExamples[account];
+  const item = session.accounts[account];
   return `<section class="identity-card" aria-label="选定账号资料"><dl class="identity-grid">
-    <div><dt>账号 · DATA-001-01</dt><dd id="${prefix}-detail-account">${account}</dd></div><div><dt>账号姓名 · DATA-001-02</dt><dd id="${prefix}-detail-name">${item.name}</dd></div><div><dt>绑定手机号 · DATA-001-03</dt><dd id="${prefix}-detail-phone">${item.phone}</dd></div>
+    <div><dt>账号 · DATA-001-01</dt><dd id="${prefix}-detail-account">${account}</dd></div><div><dt>账号姓名 · DATA-001-02</dt><dd id="${prefix}-detail-name">${escapeHtml(item.name)}</dd></div><div><dt>绑定手机号 · DATA-001-03</dt><dd id="${prefix}-detail-phone">${item.phone}</dd></div>
   </dl></section>`;
 }
 
@@ -218,9 +250,9 @@ function phoneChangePage() {
 }
 
 function companyRows(selected = "") {
-  return companies.map(company => `<tr class="${company.name === selected ? "selected" : ""}"><td><div class="row-title"><span class="company-glyph" aria-hidden="true">${company.name.slice(0, 1)}</span><span>${company.name}</span></div></td>
+  return companies.map(company => `<tr class="${company.name === selected ? "selected" : ""}"><td><div class="row-title"><span class="company-glyph" aria-hidden="true">${escapeHtml(company.name.slice(0, 1))}</span><span>${escapeHtml(company.name)}</span></div></td>
     <td>${company.referenced ? '<span class="status-badge warning">已引用</span>' : '<span class="status-badge neutral">未引用</span>'}</td>
-    <td><div class="row-actions"><button class="button button-text" type="button" data-edit-company="${company.name}">${icon("edit")}修改</button><button class="button button-text ${company.referenced ? "text-danger" : ""}" type="button" data-delete-company="${company.name}" data-referenced="${company.referenced}">${icon("trash")}删除</button></div></td></tr>`).join("");
+    <td><div class="row-actions"><button class="button button-text" type="button" data-edit-company="${escapeHtml(company.name)}">${icon("edit")}修改</button><button class="button button-text ${company.referenced ? "text-danger" : ""}" type="button" data-delete-company="${escapeHtml(company.name)}" data-referenced="${company.referenced}">${icon("trash")}删除</button></div></td></tr>`).join("");
 }
 
 function companyListBlock(selected = "") {
@@ -243,7 +275,7 @@ function companyDrawer(mode) {
   return `<div class="overlay" aria-hidden="true"></div><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="company-drawer-title">
     <div class="drawer-header"><h2 id="company-drawer-title">${add ? "新增快递公司" : "修改快递公司"}</h2><button class="icon-button" type="button" data-drawer-close data-route="company-list" aria-label="关闭">${icon("close")}</button></div>
     <form id="${add ? "company-add-form" : "company-edit-form"}" class="drawer-body" novalidate>
-      <div class="field"><label for="company-name">${add ? "公司名称" : "新公司名称"}<span class="required" aria-hidden="true">*</span></label><input id="company-name" name="companyName" value="${value}" maxlength="50" data-char-count="company-count" autocomplete="off"><p class="field-hint">DATA-001-11 · 1～50位，清单内唯一</p><div class="char-count" id="company-count">${value.length} / 50</div></div>
+      <div class="field"><label for="company-name">${add ? "公司名称" : "新公司名称"}<span class="required" aria-hidden="true">*</span></label><input id="company-name" name="companyName" value="${escapeHtml(value)}" maxlength="50" data-char-count="company-count" autocomplete="off"><p class="field-hint">DATA-001-11 · 1～50位，清单内唯一</p><div class="char-count" id="company-count">${value.length} / 50</div></div>
       ${add ? "" : '<div class="info-card warning" style="margin-top:22px">更名保留业务关联，历史业务显示当前名称。</div>'}
     </form>
     <div class="drawer-footer"><button class="button button-secondary" type="button" data-route="company-list">取消</button><button class="button button-primary" type="submit" form="${add ? "company-add-form" : "company-edit-form"}">${add ? "新增公司" : "保存修改"}</button></div>
@@ -252,8 +284,7 @@ function companyDrawer(mode) {
 }
 
 function companyDeleteDialog(blocked) {
-  const name = blocked ? "顺丰速运" : "跨越速运";
-  selectedCompany = name;
+  const name = escapeHtml(selectedCompany);
   const page = pages[blocked ? "company-delete-blocked" : "company-delete"];
   return `<div class="overlay" aria-hidden="true"></div><div class="dialog-wrap"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description">
     <div class="dialog-icon">${icon(blocked ? "alert" : "trash")}</div><h2 id="delete-title">${blocked ? `无法删除“${name}”` : `删除“${name}”？`}</h2>
@@ -268,7 +299,19 @@ function companyPage(mode) {
   const page = pages[route];
   const action = mode === "list" ? `<button class="button button-primary" type="button" data-route="company-add">${icon("plus")}新增快递公司</button>` : "";
   const heading = pageHeading(page, "", action);
-  const body = mode === "list" && demoState !== "normal" ? listStateBlock() : companyListBlock(mode === "edit" ? selectedCompany : mode === "blocked" ? "顺丰速运" : mode === "delete" ? "跨越速运" : "");
+  if (mode === "blocked" || mode === "delete") {
+    const blocked = mode === "blocked";
+    const selected = window.history.state?.companyName;
+    const preview = blocked ? "顺丰速运" : "跨越速运";
+    const target = selected ? companies.find(company => company.name === selected)
+      : companies.find(company => company.name === preview) || companies.find(company => company.referenced === blocked);
+    if (!target || target.referenced !== blocked) {
+      window.history.replaceState(null, "", "#company-list");
+      return companyPage("list");
+    }
+    selectedCompany = target.name;
+  }
+  const body = mode === "list" && demoState !== "normal" ? listStateBlock() : companyListBlock(["edit", "blocked", "delete"].includes(mode) ? selectedCompany : "");
   const extra = mode === "add" || mode === "edit" ? companyDrawer(mode) : mode === "blocked" || mode === "delete" ? companyDeleteDialog(mode === "blocked") : "";
   return shell(route, `${heading}${body}${extra}`);
 }
@@ -284,9 +327,7 @@ function locationsPage() {
 
 function render() {
   const route = currentRoute();
-  if (pages[route].role === "学生" && !studentNeedsPasswordChange && !window.history.state?.studentPasswordChanged) {
-    window.history.replaceState({ ...window.history.state, studentPasswordChanged: true }, "");
-  }
+  const id = accountIdFor(pages[route].role);
   const listRoute = route === "company-list" || route === "locations";
   if (!listRoute) demoState = "normal";
   let html;
@@ -295,7 +336,7 @@ function render() {
   else if (route === "account-create") html = accountCreatePage();
   else if (["password", "password-admin", "password-staff"].includes(route)) html = normalPasswordPage(route);
   else if (route === "student" || route === "password-forced") {
-    html = studentPage(route, route === "password-forced" || studentNeedsPasswordChange);
+    html = studentPage(route);
   }
   else if (route === "password-reset") html = passwordResetPage();
   else if (route === "phone-change") html = phoneChangePage();
@@ -305,6 +346,11 @@ function render() {
   else if (route === "company-delete-blocked") html = companyPage("blocked");
   else if (route === "company-delete") html = companyPage("delete");
   else if (route === "locations") html = locationsPage();
+  if (currentRoute() !== route) { render(); return; }
+  const changeReason = session.accounts[id]?.changeReason;
+  if (route === "password-forced" || (changeReason && (route === "student" || id === session.currentId))) {
+    html += forcedPasswordDialog(id);
+  }
   document.getElementById("app").innerHTML = html;
   document.title = `${pages[route].ui} ${pages[route].title}｜REQ-001原型`;
   const picker = document.getElementById("page-picker");
@@ -379,10 +425,16 @@ function submitWithFeedback(form, callback) {
   const identityControls = form.querySelectorAll("[data-account-select], [data-submit-gate]");
   identityControls.forEach(control => { control.disabled = true; });
   if (button) { button.disabled = true; button.dataset.originalText = button.textContent; button.textContent = "正在提交…"; }
-  setTimeout(() => {
-    identityControls.forEach(control => { control.disabled = false; });
-    if (button) { button.disabled = false; button.textContent = button.dataset.originalText; }
-    callback();
+  setTimeout(async () => {
+    if (!form.isConnected) return;
+    try {
+      await callback();
+    } finally {
+      identityControls.forEach(control => { control.disabled = false; });
+      if (button) { button.disabled = false; button.textContent = button.dataset.originalText; }
+      const confirmation = form.querySelector("[data-submit-gate]");
+      if (confirmation) syncSubmitGate(confirmation);
+    }
   }, 450);
 }
 
@@ -400,21 +452,20 @@ function handleLogin(form) {
   const phoneValid = /^\d{11}$/.test(id);
   if (!accountValid && !phoneValid) { setFieldError(idInput, "请输入8位账号或11位绑定手机号；staff和admin前缀仅接受小写。"); idInput.focus(); return; }
   if (!validPassword(password)) { setFieldError(passwordInput, "密码为8～20个字符，至少含字母和数字，且不含空白。"); passwordInput.focus(); return; }
-  const matched = Object.entries(accountExamples).find(([account, example]) => id === account || id === example.phone);
-  submitWithFeedback(form, () => {
+  const matched = Object.entries(session.accounts).find(([account, example]) => id === account || id === example.phone);
+  submitWithFeedback(form, async () => {
+    const digest = await demoDigest(password);
     if (!form.isConnected) return;
-    const expectedPassword = matched?.[0] === studentAccount ? studentDemoPassword : demoPassword;
-    if (!matched || password !== expectedPassword) {
+    if (!matched || !passwordMatches(matched[1], password, digest)) {
       loginAlert.hidden = false;
       passwordInput.focus();
       return;
     }
-    const role = matched[1].role;
-    if (role === "工作人员") {
-      window.location.assign(prototypeHref("002", "intake"));
-    } else {
-      window.location.hash = role === "管理员" ? "account-create" : "student";
-    }
+    session.currentId = matched[0];
+    saveSession();
+    const { role, changeReason } = matched[1];
+    if (role === "工作人员" && changeReason) window.location.hash = "password-staff";
+    else enterHome(role);
   });
 }
 
@@ -433,14 +484,21 @@ function handleAccountCreate(form) {
   if (!name.value.trim()) { setFieldError(name, "账号姓名不能仅为空白字符。"); name.focus(); return; }
   if (phone.value !== phone.value.trim() || !/^\d{11}$/.test(phone.value)) { setFieldError(phone, "请输入11位数字手机号，且不能含首尾空白。"); phone.focus(); return; }
   if (!validPassword(password.value)) { setFieldError(password, "初始密码须为8～20位，含字母和数字，不含空白。"); password.focus(); return; }
-  const duplicateAccount = Object.hasOwn(accountExamples, account.value);
-  const duplicatePhone = Object.values(accountExamples).some(example => example.phone === phone.value);
+  const duplicateAccount = Object.hasOwn(session.accounts, account.value);
+  const duplicatePhone = Object.values(session.accounts).some(example => example.phone === phone.value);
   if (duplicateAccount) setFieldError(account, "该账号已存在，请更换账号。");
   if (duplicatePhone) setFieldError(phone, "该手机号已被绑定，请更换手机号。");
   const firstError = form.querySelector('[aria-invalid="true"]');
   if (firstError) { firstError.focus(); return; }
-  submitWithFeedback(form, () => {
-    if (form.isConnected) showToast("账号已创建。首次登录须修改密码。");
+  const id = account.value;
+  const record = { name: name.value.trim(), phone: phone.value, role, changeReason: "first" };
+  const initialPassword = password.value;
+  submitWithFeedback(form, async () => {
+    record.digest = await demoDigest(initialPassword);
+    if (!form.isConnected) return;
+    session.accounts[id] = record;
+    saveSession();
+    showToast("账号已创建。首次登录须修改密码。");
   });
 }
 
@@ -448,9 +506,23 @@ function handleNormalPassword(form) {
   if (!requireFields(form, ["oldPassword", "newPassword"])) return;
   const oldPassword = form.elements.oldPassword;
   const newPassword = form.elements.newPassword;
-  if (oldPassword.value === "Wrong2026") { setFieldError(oldPassword, "原密码不正确，请重新输入；密码未修改。"); oldPassword.focus(); return; }
+  const account = session.accounts[accountIdFor(pages[currentRoute()].role)];
+  const original = oldPassword.value;
   if (!validPassword(newPassword.value)) { setFieldError(newPassword, "新密码须为8～20位，含字母和数字，不含空白字符。"); newPassword.focus(); return; }
-  submitWithFeedback(form, () => showToast("密码修改成功", "原型反馈：仅当前账号的密码被更新；实际哈希处理与登录态策略待详细设计。"));
+  const replacement = newPassword.value;
+  submitWithFeedback(form, async () => {
+    const [oldDigest, newDigest] = await Promise.all([demoDigest(original), demoDigest(replacement)]);
+    if (!form.isConnected) return;
+    if (!passwordMatches(account, original, oldDigest)) {
+      setFieldError(oldPassword, "原密码不正确，请重新输入；密码未修改。");
+      oldPassword.focus();
+      return;
+    }
+    account.digest = newDigest;
+    account.changeReason = null;
+    saveSession();
+    showToast("密码修改成功");
+  });
 }
 
 function handleForcedPassword(form) {
@@ -458,15 +530,16 @@ function handleForcedPassword(form) {
   const input = form.elements.newPassword;
   const newPassword = input.value;
   if (!validPassword(newPassword)) { setFieldError(input, "新密码须为8～20位，含字母和数字，不含空白字符。"); input.focus(); return; }
-  submitWithFeedback(form, () => {
+  const id = accountIdFor(pages[currentRoute()].role);
+  const account = session.accounts[id];
+  submitWithFeedback(form, async () => {
+    const digest = await demoDigest(newPassword);
     if (!form.isConnected) return;
-    studentDemoPassword = newPassword;
-    studentNeedsPasswordChange = false;
-    if (currentRoute() === "password-forced") {
-      const studentUrl = new URL(window.location.href);
-      studentUrl.hash = "student";
-      window.history.replaceState(window.history.state, "", studentUrl);
-    }
+    account.digest = digest;
+    account.changeReason = null;
+    saveSession();
+    if (currentRoute() === "password-forced") window.history.replaceState(null, "", "#student");
+    if (account.role === "工作人员") { enterHome(account.role); return; }
     render();
     document.getElementById("main").focus({ preventScroll: true });
     showToast("密码修改成功，强制改密已解除");
@@ -478,7 +551,18 @@ function handlePasswordReset(form) {
   if (!document.getElementById("reset-confirm").checked) { showToast("暂不能重置密码", "请先完成线下身份核对。"); return; }
   if (!requireFields(form, ["password"])) return;
   if (!validPassword(password.value)) { setFieldError(password, "临时密码须为8～20位，含字母和数字，不含空白字符。"); password.focus(); return; }
-  submitWithFeedback(form, () => showToast("已重置；下次登录先修改密码", "原型反馈：原密码立即失效，强制改密标记为“是”；请线下告知临时密码。"));
+  const select = document.getElementById("reset-account");
+  const target = session.accounts[select.value];
+  const temporary = password.value;
+  submitWithFeedback(form, async () => {
+    const digest = await demoDigest(temporary);
+    if (!form.isConnected) return;
+    target.digest = digest;
+    target.changeReason = "reset";
+    saveSession();
+    updateAccountDetails(select);
+    showToast("已重置；下次登录先修改密码");
+  });
 }
 
 function handlePhoneChange(form) {
@@ -486,8 +570,17 @@ function handlePhoneChange(form) {
   if (!document.getElementById("phone-confirm").checked) { showToast("暂不能变更手机号", "请先完成线下身份核对。"); return; }
   if (!requireFields(form, ["phone"])) return;
   if (phone.value !== phone.value.trim() || !/^\d{11}$/.test(phone.value)) { setFieldError(phone, "请输入11位数字手机号，且不能含首尾空白。"); phone.focus(); return; }
-  if (phone.value === "13800000002") { setFieldError(phone, "该手机号已被其他账号占用，请核对后更换。"); phone.focus(); return; }
-  submitWithFeedback(form, () => showToast("绑定手机号已修改", "原型反馈：新号码可作为该账号登录标识；历史包裹与已完成业务仍归原账号。"));
+  const select = document.getElementById("phone-account");
+  const newPhone = phone.value;
+  const occupied = Object.entries(session.accounts).some(([id, account]) => id !== select.value && account.phone === newPhone);
+  if (occupied) { setFieldError(phone, "该手机号已被其他账号占用，请核对后更换。"); phone.focus(); return; }
+  const target = session.accounts[select.value];
+  submitWithFeedback(form, () => {
+    target.phone = newPhone;
+    saveSession();
+    updateAccountDetails(select);
+    showToast("绑定手机号已修改");
+  });
 }
 
 function normalizedCompanyName(form) {
@@ -515,7 +608,7 @@ function handleCompanySave(form, editing) {
 
 function updateAccountDetails(select) {
   const prefix = select.dataset.accountSelect;
-  const item = accountExamples[select.value];
+  const item = session.accounts[select.value];
   document.getElementById(`${prefix}-detail-account`).textContent = select.value;
   document.getElementById(`${prefix}-detail-name`).textContent = item.name;
   document.getElementById(`${prefix}-detail-phone`).textContent = item.phone;
@@ -539,14 +632,17 @@ document.getElementById("reset-prototype").addEventListener("click", () => {
   companies = initialCompanies.map(([name, referenced]) => ({ name, referenced }));
   selectedCompany = "京东快递";
   demoState = "normal";
-  studentNeedsPasswordChange = true;
-  studentDemoPassword = demoPassword;
+  sessionStorage.removeItem(sessionKey);
+  session = readSession();
   if (window.location.hash === "#login") render();
   else window.location.hash = "login";
   showToast("原型演示已重置", "所有清单与页面已恢复到初始合成示例。");
 });
 
 window.addEventListener("hashchange", render);
+window.addEventListener("pageshow", event => {
+  if (event.persisted) { session = readSession(); render(); }
+});
 document.addEventListener("click", event => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) { window.location.hash = routeButton.dataset.route; return; }
@@ -565,7 +661,12 @@ document.addEventListener("click", event => {
   const edit = event.target.closest("[data-edit-company]");
   if (edit) { selectedCompany = edit.dataset.editCompany; window.location.hash = "company-edit"; return; }
   const remove = event.target.closest("[data-delete-company]");
-  if (remove) { selectedCompany = remove.dataset.deleteCompany; window.location.hash = remove.dataset.referenced === "true" ? "company-delete-blocked" : "company-delete"; return; }
+  if (remove) {
+    const route = remove.dataset.referenced === "true" ? "company-delete-blocked" : "company-delete";
+    window.history.pushState({ companyName: remove.dataset.deleteCompany }, "", "#" + route);
+    render();
+    return;
+  }
   if (event.target.closest("#confirm-company-delete")) {
     const target = companies.find(company => company.name === selectedCompany);
     if (target?.referenced) { window.location.hash = "company-delete-blocked"; return; }
