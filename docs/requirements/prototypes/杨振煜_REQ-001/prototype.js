@@ -167,7 +167,7 @@ function forcedPasswordDialog(id) {
   const account = demoData.accounts[id];
   return `<dialog class="dialog password-dialog" id="forced-password-dialog" closedby="none" aria-labelledby="forced-title" aria-describedby="forced-description">
     <h2 id="forced-title">${account.changeReason === "reset" ? "密码已重置，请修改密码" : "首次登录，请修改密码"}</h2>
-    <p id="forced-description">${account.role}账号${id}。设置新密码后即可继续使用。</p>
+    <p id="forced-description">${account.role}账号${id}。请设置与当前密码不同的新密码，保存成功后即可继续使用。</p>
     <form id="forced-password-form" novalidate>
       <div class="field"><label for="forced-new-password">新密码<span class="required" aria-hidden="true">*</span></label>
         <div class="input-with-action"><input id="forced-new-password" name="newPassword" type="password" autocomplete="new-password" placeholder="设置新密码" autofocus data-password-rules><button class="input-action" type="button" data-toggle-password="forced-new-password" aria-label="显示新密码">显示</button></div>
@@ -311,7 +311,12 @@ function locationsPage() {
 }
 
 function render() {
-  const route = currentRoute();
+  let route = currentRoute();
+  const currentAccount = demoData.accounts[demoData.currentId];
+  if (!exportMode && currentAccount?.changeReason && !["login", "login-error"].includes(route)) {
+    route = { "学生": "student", "工作人员": "password-staff", "管理员": "account-create" }[currentAccount.role];
+    if (route !== currentRoute()) window.history.replaceState(null, "", "#" + route);
+  }
   const id = demoAccountId(pages[route].role);
   const listRoute = route === "company-list" || route === "locations";
   if (!listRoute) demoState = "normal";
@@ -520,9 +525,20 @@ function handleForcedPassword(form) {
   submitWithFeedback(form, async () => {
     const digest = await demoDigest(newPassword);
     if (!form.isConnected) return;
-    account.digest = digest;
-    account.changeReason = null;
-    saveDemoData();
+    if (passwordMatches(account, newPassword, digest)) {
+      setFieldError(input, "新密码必须与当前密码不同。");
+      input.focus();
+      return;
+    }
+    demoData.accounts[id] = { ...account, digest, changeReason: null };
+    try {
+      saveDemoData();
+    } catch {
+      demoData.accounts[id] = account;
+      setFieldError(input, "密码保存失败，请重试。");
+      input.focus();
+      return;
+    }
     if (currentRoute() === "password-forced") window.history.replaceState(null, "", "#student");
     if (account.role === "工作人员") { enterHome(account.role); return; }
     render();
